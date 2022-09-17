@@ -5,15 +5,15 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{F96B8EB8-3607-4C31-AD39-FEE59C1A677B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assignments", "Assignments", "{638F4CEC-8C29-4726-A32C-50382CB42879}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{638F4CEC-8C29-4726-A32C-50382CB42879}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dearimgui", "ThirdParty\dearimgui\dearimgui.vcxproj", "{BF7CD1E9-C8FD-4DE3-A8D2-A055613F99FE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "ThirdParty\GLFW\GLFW.vcxproj", "{7157709C-3BE5-4291-A89A-EACB1EA0D582}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui-Example-OpenGL", "ImGui-Example-OpenGL\ImGui-Example-OpenGL.vcxproj", "{624D6520-29E7-42DC-8788-F88800659011}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui-Example-OpenGL", "Apps\ImGui-Example-OpenGL\ImGui-Example-OpenGL.vcxproj", "{624D6520-29E7-42DC-8788-F88800659011}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW-Example-Window", "GLFW-Example-Window\GLFW-Example-Window.vcxproj", "{6ECA727D-AE54-43B4-8E32-4AFBC5C4A76B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW-Example-Window", "Apps\GLFW-Example-Window\GLFW-Example-Window.vcxproj", "{6ECA727D-AE54-43B4-8E32-4AFBC5C4A76B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
