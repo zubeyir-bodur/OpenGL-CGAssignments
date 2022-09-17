@@ -56,7 +56,10 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
+    int width, height;
+    const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui GLFW+OpenGL3 example", main_monitor, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -90,6 +93,9 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+    ImFontConfig* cfg = new ImFontConfig();
+    cfg->SizePixels = 20;
+    io.Fonts->AddFontDefault(cfg);
     //IM_ASSERT(font != NULL);
 
     // Our state
@@ -156,6 +162,17 @@ int main(int, char**)
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // Draw triangle(s) behind the ImGui
+        glBegin(GL_TRIANGLE_FAN);
+
+        glVertex2f(-0.5f, -0.5f);
+        glVertex2f(0.0f, 0.5f);
+        glVertex2f(0.5f, -0.5f);
+
+        glEnd();
+
+        // Always draw ImGui on top of the app
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
