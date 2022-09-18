@@ -112,34 +112,9 @@ int main(int, char**)
         sizeof(float) * num_coordinates_per_vertex, // stride size, in bytes
         nullptr // pointer to the next attribute
     );
-
-    // Vertex Shader for the triangle as a string
-    std::string vertex_shader = R"glsl(
-	#version 330 core
-
-    layout(location = 0) in vec4 position;
-
-	void main()
-    {
-		gl_Position = position;
-	}
-
-	)glsl";
-
-    // Fragment Shader for the triangle as a string
-    std::string fragment_shader = R"glsl(
-	#version 330 core
-
-    layout(location = 0) out vec4 color;
-
-    void main()
-    {
-		color = vec4(1.0, 0.0, 0.0, 1.0);
-	}
-
-	)glsl";
-
-    unsigned int program_id = create_program_from_shaders(vertex_shader, fragment_shader);
+    
+    std::string program_src = parse_shader_file("../../Common/ShaderManager/shaders/triangle.glsl");
+    unsigned int program_id = create_program_from_shaders(program_src);
     glUseProgram(program_id);
 
     // Main loop
@@ -204,17 +179,6 @@ int main(int, char**)
         // Draw triangle(s) behind the ImGui
         glDrawArrays(GL_TRIANGLES, start_index, num_vertices);
 
-        /*
-        // Legacy OpenGL code that draws a triangle
-        glBegin(GL_TRIANGLE_FAN);
-
-        glVertex2f(-0.5f, -0.5f);
-        glVertex2f(0.0f, 0.5f);
-        glVertex2f(0.5f, -0.5f);
-
-        glEnd();
-        */
-
         // Always draw ImGui on top of the app
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -223,6 +187,7 @@ int main(int, char**)
 
     // Cleanup
     glDeleteProgram(program_id);
+    glDeleteBuffers(1, &buffer_id);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

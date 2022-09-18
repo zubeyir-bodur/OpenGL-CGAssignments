@@ -56,33 +56,8 @@ int main(void)
         nullptr // pointer to the next attribute
     );
 
-    // Vertex Shader for the triangle as a string
-    std::string vertex_shader = R"glsl(
-	#version 330 core
-
-    layout(location = 0) in vec4 position;
-
-	void main()
-    {
-		gl_Position = position;
-	}
-
-	)glsl";
-
-    // Fragment Shader for the triangle as a string
-    std::string fragment_shader = R"glsl(
-	#version 330 core
-
-    layout(location = 0) out vec4 color;
-
-    void main()
-    {
-		color = vec4(1.0, 0.0, 0.0, 1.0);
-	}
-
-	)glsl";
-
-    unsigned int program_id = create_program_from_shaders(vertex_shader, fragment_shader);
+    std::string program_src = parse_shader_file("../../Common/ShaderManager/shaders/triangle.glsl");
+    unsigned int program_id = create_program_from_shaders(program_src);
     glUseProgram(program_id);
 
     /* Loop until the user closes the window */
@@ -111,7 +86,7 @@ int main(void)
         glfwPollEvents();
     }
     glDeleteProgram(program_id);
-    
+    glDeleteBuffers(1, &buffer_id);
     glfwTerminate();
     return 0;
 }

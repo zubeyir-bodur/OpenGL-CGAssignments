@@ -1,12 +1,33 @@
 #include "shader_manager.h"
 #include "glew.h"
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
-unsigned int create_program_from_shaders(const std::string vertext_shader, const std::string fragment_shader)
+std::string parse_shader_file(const std::string& file_path)
+{
+	std::ifstream stream(file_path);
+	
+	std::string line;
+	std::stringstream ss;
+	while (getline(stream, line))
+	{
+		ss << line << '\n';
+	}
+	return ss.str();
+}
+
+unsigned int create_program_from_shaders(const std::string& shader)
 {
 	unsigned int program_id = glCreateProgram();
-	unsigned int vertex_shader_id = compile_shader(GL_VERTEX_SHADER, vertext_shader);
-	unsigned int fragment_shader_id = compile_shader(GL_FRAGMENT_SHADER, fragment_shader);
+
+	//TODO insert the actual OpenGL version here
+	auto ss_vertex = std::string("#version 460 core\n#define COMPILING_VS\n");
+	auto ss_fragment = std::string("#version 460 core\n#define COMPILING_FS\n");
+	ss_vertex += shader;
+	ss_fragment += shader;
+	unsigned int vertex_shader_id = compile_shader(GL_VERTEX_SHADER, ss_vertex);
+	unsigned int fragment_shader_id = compile_shader(GL_FRAGMENT_SHADER, ss_fragment);
 
 	glAttachShader(program_id, vertex_shader_id);
 	glAttachShader(program_id, fragment_shader_id);
@@ -19,7 +40,7 @@ unsigned int create_program_from_shaders(const std::string vertext_shader, const
 	return program_id;
 }
 
-unsigned int compile_shader(unsigned int type, const std::string shader_source_code)
+unsigned int compile_shader(unsigned int type, const std::string& shader_source_code)
 {
 	unsigned int shader_id = glCreateShader(type);
 
