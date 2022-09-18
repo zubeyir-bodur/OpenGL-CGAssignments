@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{2d19309b-f965-4868-849b-2933e2e018e5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="shader_manager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shader_manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\triangle.glsl">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
