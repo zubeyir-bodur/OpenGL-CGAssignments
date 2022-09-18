@@ -22,10 +22,15 @@ unsigned int create_program_from_shaders(const std::string& shader)
 	unsigned int program_id = glCreateProgram();
 
 	//TODO insert the actual OpenGL version here
-	auto ss_vertex = std::string("#version 460 core\n#define COMPILING_VS\n");
-	auto ss_fragment = std::string("#version 460 core\n#define COMPILING_FS\n");
-	ss_vertex += shader;
-	ss_fragment += shader;
+	std::string ss_vertex, ss_fragment;
+
+	const std::string version_line = "#version 460 core\n";
+	const int new_line_idx = shader.find(version_line) + version_line.size();
+	const std::string substr = shader.substr(new_line_idx + 1);
+
+	ss_vertex = version_line + "#define COMPILING_VS\n" + substr;
+	ss_fragment = version_line + "#define COMPILING_FS\n" + substr;
+
 	unsigned int vertex_shader_id = compile_shader(GL_VERTEX_SHADER, ss_vertex);
 	unsigned int fragment_shader_id = compile_shader(GL_FRAGMENT_SHADER, ss_fragment);
 

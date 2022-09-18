@@ -176,7 +176,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\ShaderManager\ShaderManager.vcxproj">
+    <ProjectReference Include="..\..\Common\Common.vcxproj">
       <Project>{43d0b166-fa15-4c34-8ecb-acff67b633b5}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\ThirdParty\dearimgui\dearimgui.vcxproj">

@@ -6,7 +6,7 @@
 #include <GLES2/gl2.h>
 #endif
 #include <iostream>
-#include "Common/ShaderManager/shader_manager.h"
+#include "Common/shader_manager.h"
 #include "glew.h" // always include before glfw, which includes GL.h
 #include "glfw3.h" // Will drag system OpenGL headers
 
@@ -113,7 +113,7 @@ int main(int, char**)
         nullptr // pointer to the next attribute
     );
     
-    std::string program_src = parse_shader_file("../../Common/ShaderManager/shaders/triangle.glsl");
+    std::string program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
     unsigned int program_id = create_program_from_shaders(program_src);
     glUseProgram(program_id);
 
@@ -121,7 +121,6 @@ int main(int, char**)
     while (!glfwWindowShouldClose(window))
     {
         // Needed for ImGui
-        glfwPollEvents();
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -181,8 +180,10 @@ int main(int, char**)
 
         // Always draw ImGui on top of the app
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+        
         glfwSwapBuffers(window);
+        
+        glfwPollEvents();
     }
 
     // Cleanup
