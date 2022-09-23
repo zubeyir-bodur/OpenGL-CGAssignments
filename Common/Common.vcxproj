@@ -154,10 +154,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="shader_manager.cpp" />
+    <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="ErrorManager.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader_manager.h" />
+    <ClInclude Include="ErrorManager.h" />
+    <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="Draw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl" />

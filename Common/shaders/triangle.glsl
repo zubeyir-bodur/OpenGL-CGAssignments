@@ -1,5 +1,3 @@
-#version 460 core
-
 // Vertex shader
 #ifdef COMPILING_VS
 layout(location = 0) in vec4 position;

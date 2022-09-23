@@ -1,14 +1,15 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "glew.h"
+#include "glfw3.h"
+#include "Common/ShaderManager.h"
+#include "Common/Draw.h"
+#include "Common/ErrorManager.h"
+
 #include <stdio.h>
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <GLES2/gl2.h>
-#endif
 #include <iostream>
-#include "Common/shader_manager.h"
-#include "glew.h" // always include before glfw, which includes GL.h
-#include "glfw3.h" // Will drag system OpenGL headers
+#include <string>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -26,27 +27,11 @@ int main(int, char**)
     if (!glfwInit())
         return 1;
 
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#elif defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            
-#else
-    const char* glsl_version = "#version 130";
+    // Inputting 3.0 successfully attempts to get the highest OpenGL version
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-#endif
 
-    // Create GLFW fullscreen window
+    // Create GLFW full screen window
     GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
     GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui GLFW+OpenGL3 example", main_monitor, NULL);
@@ -64,8 +49,10 @@ int main(int, char**)
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    // Setup Platform/Renderer back ends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	std::string glsl_version_std = "#version " + std::to_string(get_glsl_version()) + " core";
+	const char* glsl_version = glsl_version_std.c_str();
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Default Font
@@ -81,41 +68,45 @@ int main(int, char**)
     }
     else
     {
-        std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+		const unsigned char* opengl_version;
+		glCallReturn(glGetString(GL_VERSION), opengl_version);
+		std::cout << "OpenGL version: " << opengl_version << std::endl;
+
+		const unsigned char* glsl_version;
+		glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
+		std::cout << "GLSL version: " << glsl_version << std::endl;
     }
 
-    // Our state
+    // ImGui state
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+    ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    // The triangle
-    unsigned int buffer_id;
-    constexpr int num_vertices = 3;
-    constexpr int num_coordinates_per_vertex = 2;
+    // The triangles
+    unsigned int vertex_buffer_id;
+    constexpr int num_vertices = 4;
+	constexpr int num_coordinates_per_vertex = 2;
+	constexpr unsigned int num_indices = 6;
     constexpr int start_index = 0;
-    float positions[num_vertices * num_coordinates_per_vertex] = {
-        -0.5f, -0.5f,
-        0.0f, 0.5f,
-        0.5f, -0.5f
+    float vertex_buffer[num_vertices * num_coordinates_per_vertex] = {
+		 -0.5f, -0.5f,
+		0.5f, -0.5f,
+		0.5f, 0.5f,
+		-0.5f, 0.5f
     };
+	unsigned int index_buffer[num_indices] = {
+		0, 1, 2,
+		0, 2, 3
+	};
 
-    // Setting up the triangle for OpenGL
-    glGenBuffers(1, &buffer_id);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-    glBufferData(GL_ARRAY_BUFFER, num_vertices * 2 * sizeof(float), positions, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(start_index);
-    glVertexAttribPointer(start_index, 
-        num_coordinates_per_vertex, 
-        GL_FLOAT, //type
-        GL_FALSE, // normalized flag
-        sizeof(float) * num_coordinates_per_vertex, // stride size, in bytes
-        nullptr // pointer to the next attribute
-    );
-    
-    std::string program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
-    unsigned int program_id = create_program_from_shaders(program_src);
-    glUseProgram(program_id);
+	// Create the vertex buffer
+	vertex_buffer_id = set_up_vertex_buffer(vertex_buffer, num_vertices, num_coordinates_per_vertex);
+
+	// Create index buffer
+	unsigned int index_buffer_id = set_up_index_buffer(index_buffer, num_indices);
+
+	// Compile & bind shaders
+	unsigned int program_id = compile_and_bind_shader("../../Common/shaders/triangle.glsl");
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -168,15 +159,15 @@ int main(int, char**)
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, 
+        glCallVoid(glViewport(0, 0, display_w, display_h));
+        glCallVoid(glClearColor(clear_color.x * clear_color.w,
             clear_color.y * clear_color.w, 
             clear_color.z * clear_color.w, 
-            clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+            clear_color.w));
+        glCallVoid(glClear(GL_COLOR_BUFFER_BIT));
 
-        // Draw triangle(s) behind the ImGui
-        glDrawArrays(GL_TRIANGLES, start_index, num_vertices);
+		// Draw triangle(s) behind the ImGui
+        glCallVoid(glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr));
 
         // Always draw ImGui on top of the app
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -187,11 +178,10 @@ int main(int, char**)
     }
 
     // Cleanup
-    glDeleteProgram(program_id);
-    glDeleteBuffers(1, &buffer_id);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+	ImGui::DestroyContext();
+	shutdown(program_id, vertex_buffer_id, index_buffer_id);
 
     glfwDestroyWindow(window);
     glfwTerminate();

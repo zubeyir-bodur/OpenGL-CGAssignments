@@ -6,10 +6,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="shader_manager.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
+    <ClCompile Include="ErrorManager.cpp" />
+    <ClCompile Include="Draw.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader_manager.h" />
+    <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="ErrorManager.h" />
+    <ClInclude Include="Draw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl">
