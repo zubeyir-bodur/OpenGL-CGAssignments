@@ -8,12 +8,18 @@
   <ItemGroup>
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ErrorManager.cpp" />
-    <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="ErrorManager.h" />
-    <ClInclude Include="Draw.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="VertexArray.h" />
+    <ClInclude Include="VertexBufferLayout.h" />
+    <ClInclude Include="ImGuiManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl">

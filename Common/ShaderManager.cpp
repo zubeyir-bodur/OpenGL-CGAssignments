@@ -23,7 +23,7 @@ std::string parse_shader_file(const std::string& file_path)
 unsigned int create_program_from_shaders(const std::string& shader)
 {
 	unsigned int program_id;
-	glCallReturn(glCreateProgram(), program_id);
+	__glCallReturn(glCreateProgram(), program_id);
 
 	std::string ss_vertex, ss_fragment;
 
@@ -37,13 +37,13 @@ unsigned int create_program_from_shaders(const std::string& shader)
 	unsigned int vertex_shader_id = compile_shader(GL_VERTEX_SHADER, ss_vertex);
 	unsigned int fragment_shader_id = compile_shader(GL_FRAGMENT_SHADER, ss_fragment);
 
-	glCallVoid(glAttachShader(program_id, vertex_shader_id));
-	glCallVoid(glAttachShader(program_id, fragment_shader_id));
-	glCallVoid(glLinkProgram(program_id));
-	glCallVoid(glValidateProgram(program_id));
+	__glCallVoid(glAttachShader(program_id, vertex_shader_id));
+	__glCallVoid(glAttachShader(program_id, fragment_shader_id));
+	__glCallVoid(glLinkProgram(program_id));
+	__glCallVoid(glValidateProgram(program_id));
 
-	glCallVoid(glDeleteShader(vertex_shader_id));
-	glCallVoid(glDeleteShader(fragment_shader_id));
+	__glCallVoid(glDeleteShader(vertex_shader_id));
+	__glCallVoid(glDeleteShader(fragment_shader_id));
 
 	return program_id;
 }
@@ -51,7 +51,7 @@ unsigned int create_program_from_shaders(const std::string& shader)
 unsigned int compile_shader(unsigned int type, const std::string& shader_source_code)
 {
 	unsigned int shader_id;
-	glCallReturn(glCreateShader(type), shader_id);
+	__glCallReturn(glCreateShader(type), shader_id);
 
 	if (shader_id == GL_INVALID_ENUM)
 	{
@@ -59,24 +59,24 @@ unsigned int compile_shader(unsigned int type, const std::string& shader_source_
 	}
 
 	const char* src = shader_source_code.c_str();
-	glCallVoid(glShaderSource(shader_id, 1, &src, nullptr));
-	glCallVoid(glCompileShader(shader_id));
+	__glCallVoid(glShaderSource(shader_id, 1, &src, nullptr));
+	__glCallVoid(glCompileShader(shader_id));
 
 	int result;
 
-	glCallVoid(glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result));
+	__glCallVoid(glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result));
 
 	if (result == GL_FALSE)
 	{
 		int length;
-		glCallVoid(glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length));
+		__glCallVoid(glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length));
 		char* error_msg = new char[length];
-		glCallVoid(glGetShaderInfoLog(shader_id, length, &length, error_msg));
+		__glCallVoid(glGetShaderInfoLog(shader_id, length, &length, error_msg));
 		std::cout << "Failed to compile "
 			<< (type == GL_VERTEX_SHADER ? "vertex" : "fragment")
 			<< " shader!" << std::endl;
 		std::cout << error_msg << std::endl;
-		glCallVoid(glDeleteShader(shader_id));
+		__glCallVoid(glDeleteShader(shader_id));
 		delete [] error_msg;
 		return 0;
 	}
@@ -87,14 +87,14 @@ unsigned int compile_and_bind_shader(const char* path)
 {
 	std::string program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
 	unsigned int program_id = create_program_from_shaders(program_src);
-	glCallVoid(glUseProgram(program_id));
+	__glCallVoid(glUseProgram(program_id));
 	return program_id;
 }
 
 unsigned int get_glsl_version()
 {
 	const unsigned char* glsl_version;
-	glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
+	__glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
 	const float glsl_float_version = (const float)std::stof(std::string((const char*)glsl_version));
 	return (unsigned int)(glsl_float_version * 100);
 }

@@ -4,9 +4,11 @@
 #include "glew.h"
 #include "glfw3.h"
 #include "Common/ShaderManager.h"
-#include "Common/Draw.h"
 #include "Common/ErrorManager.h"
-
+#include "Common/VertexBuffer.h"
+#include "Common/IndexBuffer.h"
+#include "Common/VertexArray.h"
+#include "Common/VertexBufferLayout.h"
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -14,6 +16,7 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+#include <Common/ImGuiManager.h>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -25,40 +28,27 @@ int main(int, char**)
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
-        return 1;
+        return -1;
 
-    // Inputting 3.0 successfully attempts to get the highest OpenGL version
+    // Set up core profile
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create GLFW full screen window
     GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui GLFW + OpenGL example", NULL, NULL);
     if (window == NULL)
-        return 1;
+	{
+		glfwTerminate();
+		return -1;
+    }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer back ends
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	std::string glsl_version_std = "#version " + std::to_string(get_glsl_version()) + " core";
-	const char* glsl_version = glsl_version_std.c_str();
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Load Default Font
-    ImFontConfig* cfg = new ImFontConfig();
-    cfg->SizePixels = 20;
-    io.Fonts->AddFontDefault(cfg);
+    auto cfg = init_imgui(window);
 
     // Init GLEW
     if (glewInit() != GLEW_OK)
@@ -69,119 +59,139 @@ int main(int, char**)
     else
     {
 		const unsigned char* opengl_version;
-		glCallReturn(glGetString(GL_VERSION), opengl_version);
+		__glCallReturn(glGetString(GL_VERSION), opengl_version);
 		std::cout << "OpenGL version: " << opengl_version << std::endl;
 
 		const unsigned char* glsl_version;
-		glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
+		__glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
 		std::cout << "GLSL version: " << glsl_version << std::endl;
     }
 
     // ImGui state
     bool show_demo_window = true;
-    bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The triangles
-    unsigned int vertex_buffer_id;
-    constexpr int num_vertices = 4;
-	constexpr int num_coordinates_per_vertex = 2;
+    constexpr unsigned int num_vertices = 4;
+	constexpr unsigned int num_coordinates = 2;
 	constexpr unsigned int num_indices = 6;
-    constexpr int start_index = 0;
-    float vertex_buffer[num_vertices * num_coordinates_per_vertex] = {
+    float positions[num_vertices * num_coordinates] = {
 		 -0.5f, -0.5f,
 		0.5f, -0.5f,
 		0.5f, 0.5f,
 		-0.5f, 0.5f
     };
-	unsigned int index_buffer[num_indices] = {
+	unsigned int indices[num_indices] = {
 		0, 1, 2,
 		0, 2, 3
 	};
 
+	// Init vertex array object
+    VertexArray* vertex_array_obj = new VertexArray;
+
 	// Create the vertex buffer
-	vertex_buffer_id = set_up_vertex_buffer(vertex_buffer, num_vertices, num_coordinates_per_vertex);
+    VertexBuffer* vertex_buffer_obj = new VertexBuffer(positions, num_vertices*num_coordinates*sizeof(float));
+    VertexBufferLayout* vertex_buffer_layout = new VertexBufferLayout();
+    vertex_buffer_layout->push_back_elements<float>(num_coordinates);
+    vertex_array_obj->add_buffer(*vertex_buffer_obj, *vertex_buffer_layout);
 
 	// Create index buffer
-	unsigned int index_buffer_id = set_up_index_buffer(index_buffer, num_indices);
+	IndexBuffer* index_buffer_obj = new IndexBuffer(indices, num_indices);
 
 	// Compile & bind shaders
 	unsigned int program_id = compile_and_bind_shader("../../Common/shaders/triangle.glsl");
+    
+	// Specify the color of the triangle
+	unsigned int uniform_location;
+	float triangle_color[4] = { 0.3f, 0.2f, 1.0f, 1.0f };
+	__glCallReturn(glGetUniformLocation(program_id, "u_color"), uniform_location);
+	ASSERT(uniform_location != -1);
+	__glCallVoid(glUniform4f(uniform_location,
+		triangle_color[0],
+		triangle_color[1],
+		triangle_color[2],
+		triangle_color[3]));
+    
+    // Unbind all buffers, as no longer binding needed
+    vertex_array_obj->unbind();
+    __glCallVoid(glUseProgram(0));
+    vertex_buffer_obj->unbind();
+    index_buffer_obj->unbind();
 
+	float increment = 0.01f;
     // Main loop
     while (!glfwWindowShouldClose(window))
-    {
-        // Needed for ImGui
+	{
+		glfwPollEvents();
 
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        new_imgui_frame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
+		ImGui::Begin("Hello, world!");
 
-            ImGui::Begin("Hello, world!");                          
+		ImGui::Text("This is some useful text.");
+		ImGui::Checkbox("Demo Window", &show_demo_window);
 
-            ImGui::Text("This is some useful text.");               
-            ImGui::Checkbox("Demo Window", &show_demo_window);      
-            ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); 
+		ImGui::ColorEdit4("uniform color", (float*)&triangle_color);
 
-            if (ImGui::Button("Button"))                            
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 
+            1000.0f / ImGui::GetIO().Framerate, 
+            ImGui::GetIO().Framerate);
+		ImGui::End();
 
         // Rendering
-        ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
-        glCallVoid(glViewport(0, 0, display_w, display_h));
-        glCallVoid(glClearColor(clear_color.x * clear_color.w,
+        __glCallVoid(glViewport(0, 0, display_w, display_h));
+        __glCallVoid(glClearColor(clear_color.x * clear_color.w,
             clear_color.y * clear_color.w, 
             clear_color.z * clear_color.w, 
             clear_color.w));
-        glCallVoid(glClear(GL_COLOR_BUFFER_BIT));
+        __glCallVoid(glClear(GL_COLOR_BUFFER_BIT));
+
+		__glCallVoid(glUseProgram(program_id));
+		__glCallVoid(glUniform4f(uniform_location,
+			triangle_color[0],
+			triangle_color[1],
+			triangle_color[2],
+			triangle_color[3]));
+
+        vertex_array_obj->bind();
+        index_buffer_obj->bind();
 
 		// Draw triangle(s) behind the ImGui
-        glCallVoid(glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr));
+        index_buffer_obj->draw();
 
-        // Always draw ImGui on top of the app
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        
+		// Always draw ImGui on top of the app
+        render_imgui();
+
+		// Square color animation
+		if (triangle_color[2] >= 1.0f)
+		{
+			increment *= -1;
+		}
+		else if (triangle_color[2] <= 0.0f)
+		{
+			increment *= -1;
+		}
+		triangle_color[2] += increment;
+
         glfwSwapBuffers(window);
         
-        glfwPollEvents();
     }
 
+    // delete for each new
+    delete vertex_buffer_obj;
+    delete index_buffer_obj;
+    delete vertex_array_obj;
+    delete vertex_buffer_layout;
+
     // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	shutdown(program_id, vertex_buffer_id, index_buffer_id);
+    shutdown_imgui(cfg);
 
     glfwDestroyWindow(window);
     glfwTerminate();

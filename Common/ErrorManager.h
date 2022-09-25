@@ -1,5 +1,6 @@
 #pragma once
 #include "signal.h"
+#include "glew.h"
 
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)
@@ -12,12 +13,12 @@
 	GENERAL_BREAK();\
 }\
 
-#define glCallVoid(x) \
+#define __glCallVoid(x) \
 	__glClearErrors();\
 	x;\
 	ASSERT(!__glLogCall(#x, __FILE__, __LINE__))
 
-#define glCallReturn(x, out) \
+#define __glCallReturn(x, out) \
 	__glClearErrors();\
 	out = x;\
 	ASSERT(!__glLogCall(#x, __FILE__, __LINE__))
