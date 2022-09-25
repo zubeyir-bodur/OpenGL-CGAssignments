@@ -96,5 +96,5 @@ unsigned int get_glsl_version()
 	const unsigned char* glsl_version;
 	glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
 	const float glsl_float_version = (const float)std::stof(std::string((const char*)glsl_version));
-	return glsl_float_version * 100;
+	return (unsigned int)(glsl_float_version * 100);
 }

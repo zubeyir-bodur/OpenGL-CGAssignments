@@ -1,6 +1,7 @@
 #include "ErrorManager.h"
 #include "glew.h"
 #include "GL/GL.h"
+#include "ThirdParty/magic_enum/magic_enum.hpp"
 #include <iostream>
 #include <cassert>
 
@@ -16,49 +17,30 @@ enum class GLErrorEnum
 	InvalidFrameBufferOperation = GL_INVALID_FRAMEBUFFER_OPERATION
 };
 
-static const char* GLErrorEnum_string[] = {
-	"NoError",
-	"InvalidEnum",
-	"InvalidValue",
-	"InvalidOperation",
-	"InvalidFrameBufferOperation",
-	"OutOfMemory",
-	"StackUnderflow",
-	"StackOverflow"
-};
-
-const char* to_string(GLErrorEnum error)
+const char* to_string(GLenum gl_enum)
 {
-	if (error == (GLErrorEnum)0)
-	{
-		return GLErrorEnum_string[0];
-	}
-	else
-	{
-		unsigned int index = (unsigned int)error - 0x4ff;
-		return GLErrorEnum_string[index];
-	}
+	return magic_enum::enum_name<GLErrorEnum>((GLErrorEnum)gl_enum).data();
 }
 
 void __glClearErrors()
 {
-	GLErrorEnum error = (GLErrorEnum)glGetError();
-	while (error != GLErrorEnum::NoError)
+	GLenum error = glGetError();
+	while (error != GL_NO_ERROR)
 	{
 		std::cout << "Clearing [OpenGL Error] : " << to_string(error) << std::endl;
-		error = (GLErrorEnum)glGetError();
+		error = glGetError();
 	}
 }
 
 bool __glLogCall(const char* function, const char* file, int line)
 {
 	bool has_error = false;
-	GLErrorEnum error = (GLErrorEnum)glGetError();
-	while (error != GLErrorEnum::NoError)
+	GLenum error = glGetError();
+	while (error != GL_NO_ERROR)
 	{
 		std::cout << "[OpenGL Error]  (" << file << "): " << function << ":" << line << " = " << to_string(error) << std::endl;
 		has_error = true;
-		error = (GLErrorEnum)glGetError();
+		error = glGetError();
 	}
 	if (has_error)
 	{
