@@ -1,16 +1,64 @@
-#pragma once
-#include "ShaderManager.h"
+#include "Shader.h"
 #include "ErrorManager.h"
-#include <glew.h>
-#include <GL/GL.h>
-#include <fstream>
+#include "glew.h"
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <filesystem>
 
-std::string parse_shader_file(const std::string& file_path)
+Shader::Shader(const char* path) 
+{
+	m_shader_path = std::filesystem::absolute(path).string();
+	const std::string& program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
+	m_shader_id = create_program_from_shaders(program_src);
+	__glCallVoid(glUseProgram(m_shader_id));
+}
+
+Shader::~Shader()
+{
+	__glCallVoid(glDeleteProgram(m_shader_id));
+}
+
+void Shader::bind() const
+{
+	__glCallVoid(glUseProgram(m_shader_id));
+}
+
+void Shader::unbind() const
+{
+	__glCallVoid(glUseProgram(0));
+}
+
+void Shader::set_uniform4f(const std::string& name, float v0, float v1, float v2, float v3)
+{
+	__glCallVoid(glUniform4f(uniform_location(name), v0, v1, v2, v3));
+}
+
+int Shader::uniform_location(const std::string& name)
+{
+	if (m_uniform_location_cache.find(name)
+		!= m_uniform_location_cache.end())
+	{
+		return m_uniform_location_cache[name];
+	}
+	else
+	{
+		int loc;
+		__glCallReturn(glGetUniformLocation(m_shader_id, name.c_str()), loc);
+		if (loc == -1)
+		{
+			std::cout << "Warning: The uniform " << name
+				<< " in " << m_shader_path << " was not found, or it was unused." << std::endl;
+		}
+		m_uniform_location_cache[name] = loc;
+		return loc;
+	}
+}
+
+std::string Shader::parse_shader_file(const char* file_path)
 {
 	std::ifstream stream(file_path);
-	
+
 	std::string line;
 	std::stringstream ss;
 	while (getline(stream, line))
@@ -20,7 +68,7 @@ std::string parse_shader_file(const std::string& file_path)
 	return ss.str();
 }
 
-unsigned int create_program_from_shaders(const std::string& shader)
+unsigned int Shader::create_program_from_shaders(const std::string& shader)
 {
 	unsigned int program_id;
 	__glCallReturn(glCreateProgram(), program_id);
@@ -28,11 +76,21 @@ unsigned int create_program_from_shaders(const std::string& shader)
 	std::string ss_vertex, ss_fragment;
 
 	const unsigned int glsl_int_version = get_glsl_version();
-
+	std::string shader_mod;
 	const std::string version_line = "#version " + std::to_string(glsl_int_version) + " core\n";
-
-	ss_vertex = version_line + "#define COMPILING_VS\n" + shader;
-	ss_fragment = version_line + "#define COMPILING_FS\n" + shader;
+	size_t pos;
+	bool version_header_flag;
+	if ((pos = shader.find("#version")) != std::string::npos)
+	{
+		version_header_flag = true;
+		shader_mod = shader.substr(shader.substr(pos).find('\n') + 1); // shader code after the version header
+	}
+	else
+	{
+		version_header_flag = false;
+	}
+	ss_vertex = version_line + "#define COMPILING_VS\n" + (version_header_flag ? shader_mod : shader);
+	ss_fragment = version_line + "#define COMPILING_FS\n" + (version_header_flag ? shader_mod : shader);
 
 	unsigned int vertex_shader_id = compile_shader(GL_VERTEX_SHADER, ss_vertex);
 	unsigned int fragment_shader_id = compile_shader(GL_FRAGMENT_SHADER, ss_fragment);
@@ -48,7 +106,7 @@ unsigned int create_program_from_shaders(const std::string& shader)
 	return program_id;
 }
 
-unsigned int compile_shader(unsigned int type, const std::string& shader_source_code)
+unsigned int Shader::compile_shader(unsigned int type, const std::string& shader_source_code)
 {
 	unsigned int shader_id;
 	__glCallReturn(glCreateShader(type), shader_id);
@@ -77,24 +135,17 @@ unsigned int compile_shader(unsigned int type, const std::string& shader_source_
 			<< " shader!" << std::endl;
 		std::cout << error_msg << std::endl;
 		__glCallVoid(glDeleteShader(shader_id));
-		delete [] error_msg;
+		delete[] error_msg;
 		return 0;
 	}
 	return shader_id;
 }
 
-unsigned int compile_and_bind_shader(const char* path)
-{
-	std::string program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
-	unsigned int program_id = create_program_from_shaders(program_src);
-	__glCallVoid(glUseProgram(program_id));
-	return program_id;
-}
-
-unsigned int get_glsl_version()
+unsigned int Shader::get_glsl_version()
 {
 	const unsigned char* glsl_version;
 	__glCallReturn(glGetString(GL_SHADING_LANGUAGE_VERSION), glsl_version);
 	const float glsl_float_version = (const float)std::stof(std::string((const char*)glsl_version));
 	return (unsigned int)(glsl_float_version * 100);
 }
+

@@ -31,8 +31,3 @@ void IndexBuffer::unbind() const
 {
 	__glCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
-
-void IndexBuffer::draw() const
-{
-	__glCallVoid(glDrawElements(GL_TRIANGLES, m_count, GL_UNSIGNED_INT, nullptr));
-}

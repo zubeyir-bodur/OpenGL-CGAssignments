@@ -1,14 +1,14 @@
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+
 #include "glew.h"
 #include "glfw3.h"
-#include "Common/ShaderManager.h"
-#include "Common/ErrorManager.h"
-#include "Common/VertexBuffer.h"
-#include "Common/IndexBuffer.h"
-#include "Common/VertexArray.h"
-#include "Common/VertexBufferLayout.h"
+#include "ErrorManager.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "VertexBufferLayout.h"
+#include "ImGuiManager.h"
+#include "Shader.h"
+#include "Renderer.h"
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -16,7 +16,6 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
-#include <Common/ImGuiManager.h>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -99,24 +98,24 @@ int main(int, char**)
 	IndexBuffer* index_buffer_obj = new IndexBuffer(indices, num_indices);
 
 	// Compile & bind shaders
-	unsigned int program_id = compile_and_bind_shader("../../Common/shaders/triangle.glsl");
+    Shader* shader_obj = new Shader("../../Common/shaders/triangle.glsl");
+	//unsigned int program_id = compile_and_bind_shader("../../Common/shaders/triangle.glsl");
     
 	// Specify the color of the triangle
-	unsigned int uniform_location;
 	float triangle_color[4] = { 0.3f, 0.2f, 1.0f, 1.0f };
-	__glCallReturn(glGetUniformLocation(program_id, "u_color"), uniform_location);
-	ASSERT(uniform_location != -1);
-	__glCallVoid(glUniform4f(uniform_location,
-		triangle_color[0],
-		triangle_color[1],
-		triangle_color[2],
-		triangle_color[3]));
+    shader_obj->set_uniform4f("u_color", 
+        triangle_color[0], 
+        triangle_color[1], 
+        triangle_color[2], 
+        triangle_color[3]);
     
-    // Unbind all buffers, as no longer binding needed
+    // Unbind all, as no longer binding needed
     vertex_array_obj->unbind();
-    __glCallVoid(glUseProgram(0));
     vertex_buffer_obj->unbind();
-    index_buffer_obj->unbind();
+	index_buffer_obj->unbind();
+	shader_obj->unbind();
+
+    Renderer renderer;
 
 	float increment = 0.01f;
     // Main loop
@@ -125,7 +124,6 @@ int main(int, char**)
 		glfwPollEvents();
 
         new_imgui_frame();
-
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -142,29 +140,19 @@ int main(int, char**)
             1000.0f / ImGui::GetIO().Framerate, 
             ImGui::GetIO().Framerate);
 		ImGui::End();
+		ImGui::EndFrame();
 
         // Rendering
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        __glCallVoid(glViewport(0, 0, display_w, display_h));
-        __glCallVoid(glClearColor(clear_color.x * clear_color.w,
-            clear_color.y * clear_color.w, 
-            clear_color.z * clear_color.w, 
-            clear_color.w));
-        __glCallVoid(glClear(GL_COLOR_BUFFER_BIT));
+		renderer.set_viewport(window);
+        renderer.clear((float*)&clear_color);
 
-		__glCallVoid(glUseProgram(program_id));
-		__glCallVoid(glUniform4f(uniform_location,
+		shader_obj->bind();
+		shader_obj->set_uniform4f("u_color",
 			triangle_color[0],
 			triangle_color[1],
 			triangle_color[2],
-			triangle_color[3]));
-
-        vertex_array_obj->bind();
-        index_buffer_obj->bind();
-
-		// Draw triangle(s) behind the ImGui
-        index_buffer_obj->draw();
+			triangle_color[3]);
+        renderer.draw(vertex_array_obj, index_buffer_obj, shader_obj);
 
 		// Always draw ImGui on top of the app
         render_imgui();
@@ -189,6 +177,7 @@ int main(int, char**)
     delete index_buffer_obj;
     delete vertex_array_obj;
     delete vertex_buffer_layout;
+    delete shader_obj;
 
     // Cleanup
     shutdown_imgui(cfg);

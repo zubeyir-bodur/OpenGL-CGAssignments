@@ -13,7 +13,7 @@ VertexArray::~VertexArray()
 	__glCallVoid(glDeleteVertexArrays(1, &m_vertex_array_id));
 }
 
-void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBufferLayout& layout)
+void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBufferLayout& layout) const
 {
 	bind();
 	vertex_buffer.bind();
@@ -34,12 +34,12 @@ void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBuff
 	}
 }
 
-void VertexArray::bind()
+void VertexArray::bind() const
 {
 	__glCallVoid(glBindVertexArray(m_vertex_array_id));
 }
 
-void VertexArray::unbind()
+void VertexArray::unbind() const
 {
 
 	__glCallVoid(glBindVertexArray(0));

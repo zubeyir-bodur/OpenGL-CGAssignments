@@ -12,7 +12,6 @@ public:
 
 	void bind() const;
 	void unbind() const;
-	void draw() const;
 
 	inline unsigned int count() const { return m_count; }
 };

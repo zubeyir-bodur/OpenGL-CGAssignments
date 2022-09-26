@@ -6,20 +6,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ErrorManager.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="VertexArray.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="ErrorManager.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="VertexArray.h" />
     <ClInclude Include="VertexBufferLayout.h" />
     <ClInclude Include="ImGuiManager.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl">

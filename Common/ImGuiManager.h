@@ -2,7 +2,7 @@
 #include "ThirdParty/dearimgui/imgui.h"
 #include "ThirdParty/dearimgui/backend/imgui_impl_glfw.h"
 #include "ThirdParty/dearimgui/backend/imgui_impl_opengl3.h"
-#include "ShaderManager.h"
+#include "Shader.h"
 
 ImFontConfig* init_imgui(GLFWwindow* window)
 {
@@ -17,7 +17,7 @@ ImFontConfig* init_imgui(GLFWwindow* window)
 
 	// Setup Platform/Renderer back ends
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	std::string glsl_version_std = "#version " + std::to_string(get_glsl_version()) + " core";
+	std::string glsl_version_std = "#version " + std::to_string(Shader::get_glsl_version()) + " core";
 	const char* glsl_version = glsl_version_std.c_str();
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
