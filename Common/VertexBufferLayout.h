@@ -42,21 +42,21 @@ public:
 	void push_back_elements<float>(unsigned int count)
 	{
 		m_elements.push_back({ GL_FLOAT, count, GL_FALSE });
-		m_stride = VertexBufferElement::get_size_of_type(GL_FLOAT) * count;
+		m_stride += VertexBufferElement::get_size_of_type(GL_FLOAT) * count;
 	}
 
 	template <>
 	void push_back_elements<unsigned int>(unsigned int count)
 	{
 		m_elements.push_back({ GL_UNSIGNED_INT, count,GL_FALSE });
-		m_stride = VertexBufferElement::get_size_of_type(GL_UNSIGNED_INT) * count;
+		m_stride += VertexBufferElement::get_size_of_type(GL_UNSIGNED_INT) * count;
 	}
 
 	template <>
 	void push_back_elements<unsigned char>(unsigned int count)
 	{
 		m_elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
-		m_stride = VertexBufferElement::get_size_of_type(GL_UNSIGNED_BYTE) * count;
+		m_stride += VertexBufferElement::get_size_of_type(GL_UNSIGNED_BYTE) * count;
 	}
 
 	inline const std::vector<VertexBufferElement>& elements() const { return m_elements; }

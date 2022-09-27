@@ -28,7 +28,7 @@ void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBuff
 			element.type,		//type
 			element.normalized,	// normalized flag
 			layout.stride(),	// stride size, in bytes
-			(const void*)offset				// offset to the next attribute
+			(const void*)offset	// offset to the first item of the next attribute
 		));
 		offset += element.count * VertexBufferElement::get_size_of_type(element.type);
 	}

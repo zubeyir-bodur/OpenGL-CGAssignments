@@ -1,7 +1,7 @@
 #include "ErrorManager.h"
 #include "glew.h"
 #include "GL/GL.h"
-#include "ThirdParty/magic_enum/magic_enum.hpp"
+#include "magic_enum/magic_enum.hpp"
 #include <iostream>
 #include <cassert>
 

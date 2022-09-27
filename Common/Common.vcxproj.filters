@@ -12,6 +12,8 @@
     <ClCompile Include="VertexArray.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorManager.h" />
@@ -22,6 +24,7 @@
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl">

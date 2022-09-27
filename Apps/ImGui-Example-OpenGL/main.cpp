@@ -9,6 +9,7 @@
 #include "ImGuiManager.h"
 #include "Shader.h"
 #include "Renderer.h"
+#include <Texture.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -73,25 +74,39 @@ int main(int, char**)
     // The triangles
     constexpr unsigned int num_vertices = 4;
 	constexpr unsigned int num_coordinates = 2;
+    #define has_texture true
+    constexpr unsigned int num_coord_p_vertex = (has_texture ? num_coordinates : 0) + num_coordinates;
 	constexpr unsigned int num_indices = 6;
-    float positions[num_vertices * num_coordinates] = {
-		 -0.5f, -0.5f,
-		0.5f, -0.5f,
-		0.5f, 0.5f,
-		-0.5f, 0.5f
+    float positions[num_vertices * num_coord_p_vertex] = { // Vertex + Texture positions
+    #if has_texture
+		-0.5f, -0.5f, 0.0f, 0.0f,  // 0
+		0.5f, -0.5f, 1.0f, 0.0f,    // 1
+		0.5f, 0.5f, 1.0f, 1.0f,     // 2
+		-0.5f, 0.5f, 0.0f, 1.0f     // 3
+    #else
+		- 0.5f, -0.5f,  // 0
+		0.5f, -0.5f,    // 1
+		0.5f, 0.5f,     // 2
+		-0.5f, 0.5f     // 3
+    #endif
     };
 	unsigned int indices[num_indices] = {
 		0, 1, 2,
-		0, 2, 3
+		2, 3, 0
 	};
+
+    // Enable blending
+    __glCallVoid(glEnable(GL_BLEND));
+    __glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
 
 	// Init vertex array object
     VertexArray* vertex_array_obj = new VertexArray;
 
 	// Create the vertex buffer
-    VertexBuffer* vertex_buffer_obj = new VertexBuffer(positions, num_vertices*num_coordinates*sizeof(float));
+    VertexBuffer* vertex_buffer_obj = new VertexBuffer(positions, num_vertices*num_coord_p_vertex *sizeof(float));
     VertexBufferLayout* vertex_buffer_layout = new VertexBufferLayout();
-    vertex_buffer_layout->push_back_elements<float>(num_coordinates);
+	vertex_buffer_layout->push_back_elements<float>(num_coordinates);
+	if (has_texture) vertex_buffer_layout->push_back_elements<float>(num_coordinates);
     vertex_array_obj->add_buffer(*vertex_buffer_obj, *vertex_buffer_layout);
 
 	// Create index buffer
@@ -99,7 +114,15 @@ int main(int, char**)
 
 	// Compile & bind shaders
     Shader* shader_obj = new Shader("../../Common/shaders/triangle.glsl");
-	//unsigned int program_id = compile_and_bind_shader("../../Common/shaders/triangle.glsl");
+
+	// Texture
+    Texture* texture_obj;
+    if (has_texture)
+	{
+		texture_obj = new Texture("../../Data/textures/yellow_crack.png");
+		texture_obj->bind();
+		shader_obj->set_uniform1i("u_texture", 0);
+    }
     
 	// Specify the color of the triangle
 	float triangle_color[4] = { 0.3f, 0.2f, 1.0f, 1.0f };
@@ -178,6 +201,7 @@ int main(int, char**)
     delete vertex_array_obj;
     delete vertex_buffer_layout;
     delete shader_obj;
+    if (has_texture) delete texture_obj;
 
     // Cleanup
     shutdown_imgui(cfg);
