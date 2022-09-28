@@ -43,13 +43,14 @@ int main(int, char**)
     GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
     GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui GLFW + OpenGL example", NULL, NULL);
-    if (window == NULL)
+    if (window == NULL || mode == NULL)
 	{
 		glfwTerminate();
 		return -1;
     }
-    glfwSetWindowAspectRatio(window, 16, 9); // force 16:9 aspect ratio
-    glfwMakeContextCurrent(window);
+	glfwSetWindowAspectRatio(window, 16, 9); // force 16:9 aspect ratio
+	glfwMakeContextCurrent(window);
+	glfwMaximizeWindow(window);
     glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
@@ -73,7 +74,6 @@ int main(int, char**)
     }
 
     // ImGui state
-    bool show_demo_window = true;
     ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The triangles
@@ -84,15 +84,15 @@ int main(int, char**)
 	constexpr unsigned int num_indices = 6;
     float positions[num_vertices * num_coord_p_vertex] = { // Vertex + Texture positions
     #if has_texture
-		-0.5f, -0.5f, 0.0f, 0.0f,  // 0
-		0.5f, -0.5f, 1.0f, 0.0f,    // 1
-		0.5f, 0.5f, 1.0f, 1.0f,     // 2
-		-0.5f, 0.5f, 0.0f, 1.0f     // 3
+		3*(mode->width) / 8.0f, (mode->height) / 2.0f - (mode->width) / 8.0f, 0.0f, 0.0f,  // 0 ==> Our triangles will form a square at the middle of the window
+        5*(mode->width) / 8.0f, (mode->height) / 2.0f - (mode->width) / 8.0f, 1.0f, 0.0f,  // 1    with side length equal to quarter of the screen width
+        5*(mode->width) / 8.0f, (mode->height) / 2.0f + (mode->width) / 8.0f, 1.0f, 1.0f,  // 2    and also we assume that the initial vertex buffer coordinates come from window
+        3*(mode->width) / 8.0f, (mode->height) / 2.0f + (mode->width) / 8.0f, 0.0f, 1.0f   // 3
     #else
-		- 0.5f, -0.5f,  // 0
-		0.5f, -0.5f,    // 1
-		0.5f, 0.5f,     // 2
-		-0.5f, 0.5f     // 3
+		3*(mode->width) / 8.0f, 3*(mode->width) / 8.0f, // 0
+		5*(mode->width) / 8.0f, 3*(mode->width) / 8.0f, // 1
+		5*(mode->width) / 8.0f, 5*(mode->width) / 8.0f, // 2
+		3*(mode->width) / 8.0f, 5*(mode->width) / 8.0f, // 3
     #endif
     };
 	unsigned int indices[num_indices] = {
@@ -120,9 +120,16 @@ int main(int, char**)
 	// Compile & bind shaders
     Shader* shader_obj = new Shader("../../Common/shaders/triangle.glsl");
 
-    // 16/9 aspect ratio - need to modify if zooming is enabled
-    glm::mat4 projection_matrix = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+    // Project into window content coordinate system
+    glm::mat4 projection_matrix = glm::ortho(0.0f, (float)mode->width, (float)mode->height, 0.0f, -1.0f, 1.0f);
 
+    // Move the "camera" to 3*window_width/8 right 
+    // Moving everything 3*window_width/8 units to the left
+    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3 * mode->width/8.0f, 0.0f, 0.0f));
+
+    //glm::vec4 vp(3 * (mode->width) / 8.0f, 3 * (mode->width) / 8.0f, 0.0f, 1.0f);
+    //auto result = projection_matrix * vp;
+    
 	// Texture
     Texture* texture_obj;
     if (has_texture)
@@ -133,8 +140,7 @@ int main(int, char**)
     }
     
 	// Specify the color of the triangle
-	float triangle_color[4] = { 0.3f, 0.2f, 1.0f, 1.0f };
-    shader_obj->set_uniform_mat4f("u_MVP", projection_matrix);
+	float triangle_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     shader_obj->set_uniform_4f("u_color", 
         triangle_color[0], 
         triangle_color[1], 
@@ -150,19 +156,24 @@ int main(int, char**)
     Renderer renderer;
 
 	float increment = 0.01f;
+	glm::vec3 model_pos(0, -(mode->height) / 2.0f + (mode->width) / 8.0f, 0.0f);
     // Main loop
     while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 
         new_imgui_frame();
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
 
 		ImGui::Begin("Hello, world!");
 
 		ImGui::Text("This is some useful text.");
-		ImGui::Checkbox("Demo Window", &show_demo_window);
+
+
+		// Move the model up (means closer to 0 in content coords)
+		ImGui::SliderFloat2("Model Coordinates", &model_pos.x, mode->width / -2.0f, mode->width / 2.0f, "%.3f", 1.0f);
+		ImGui::SliderFloat("Z Coordinate", &model_pos.z, -2.0f, 2.0f, "%.3f", 1.0f);
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), model_pos);
+		glm::mat4 MVP_matrix = projection_matrix * view_matrix * model_matrix;
 
 		ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
@@ -179,6 +190,7 @@ int main(int, char**)
         renderer.clear((float*)&clear_color);
 
 		shader_obj->bind();
+		shader_obj->set_uniform_mat4f("u_MVP", MVP_matrix);
 		shader_obj->set_uniform_4f("u_color",
 			triangle_color[0],
 			triangle_color[1],
@@ -192,10 +204,12 @@ int main(int, char**)
 		// Square color animation
 		if (triangle_color[2] >= 1.0f)
 		{
+            triangle_color[2] = 1.0f;
 			increment *= -1;
 		}
 		else if (triangle_color[2] <= 0.0f)
 		{
+            triangle_color[2] = 0.0f;
 			increment *= -1;
 		}
 		triangle_color[2] += increment;

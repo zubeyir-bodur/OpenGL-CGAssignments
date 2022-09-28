@@ -7,7 +7,7 @@ Texture::Texture(const std::string& path) :
 	m_file_path(path), m_width(0), m_height(0),
 	m_texture_id(0), m_local_buffer(nullptr), m_bytes_per_pixel(0)
 {
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(false);
 	m_local_buffer = stbi_load(path.c_str(), &m_width, &m_height, &m_bytes_per_pixel, 4);
 
 	__glCallVoid(glGenTextures(1, &m_texture_id));
