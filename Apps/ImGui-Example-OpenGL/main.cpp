@@ -10,6 +10,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "nothings-stb/stb_image.h"
 #include "dearimgui/imgui.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -84,15 +85,15 @@ int main(int, char**)
 	constexpr unsigned int num_indices = 6;
     float positions[num_vertices * num_coord_p_vertex] = { // Vertex + Texture positions
     #if has_texture
-		3*(mode->width) / 8.0f, (mode->height) / 2.0f - (mode->width) / 8.0f, 0.0f, 0.0f,  // 0 ==> Our triangles will form a square at the middle of the window
-        5*(mode->width) / 8.0f, (mode->height) / 2.0f - (mode->width) / 8.0f, 1.0f, 0.0f,  // 1    with side length equal to quarter of the screen width
-        5*(mode->width) / 8.0f, (mode->height) / 2.0f + (mode->width) / 8.0f, 1.0f, 1.0f,  // 2    and also we assume that the initial vertex buffer coordinates come from window
-        3*(mode->width) / 8.0f, (mode->height) / 2.0f + (mode->width) / 8.0f, 0.0f, 1.0f   // 3
+		0.0f,                 0.0f,                 0.0f, 0.0f,  // 0 ==> Our triangles will form a square at the middle of the window
+        (mode->width) / 8.0f, 0.0f,                 1.0f, 0.0f,  // 1    with side length equal to quarter of the screen width
+        (mode->width) / 8.0f, (mode->width) / 8.0f, 1.0f, 1.0f,  // 2    and also we assume that the initial vertex buffer coordinates come from window
+        0,                    (mode->width) / 8.0f, 0.0f, 1.0f   // 3
     #else
-		3*(mode->width) / 8.0f, 3*(mode->width) / 8.0f, // 0
-		5*(mode->width) / 8.0f, 3*(mode->width) / 8.0f, // 1
-		5*(mode->width) / 8.0f, 5*(mode->width) / 8.0f, // 2
-		3*(mode->width) / 8.0f, 5*(mode->width) / 8.0f, // 3
+		0.0f,                 0.0f,                    // 0
+		(mode->width) / 8.0f, 0.0f,                    // 1
+		(mode->width) / 8.0f, (mode->width) / 8.0f,    // 2
+		0,                    (mode->width) / 8.0f     // 3
     #endif
     };
 	unsigned int indices[num_indices] = {
@@ -122,13 +123,6 @@ int main(int, char**)
 
     // Project into window content coordinate system
     glm::mat4 projection_matrix = glm::ortho(0.0f, (float)mode->width, (float)mode->height, 0.0f, -1.0f, 1.0f);
-
-    // Move the "camera" to 3*window_width/8 right 
-    // Moving everything 3*window_width/8 units to the left
-    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3 * mode->width/8.0f, 0.0f, 0.0f));
-
-    //glm::vec4 vp(3 * (mode->width) / 8.0f, 3 * (mode->width) / 8.0f, 0.0f, 1.0f);
-    //auto result = projection_matrix * vp;
     
 	// Texture
     Texture* texture_obj;
@@ -141,11 +135,6 @@ int main(int, char**)
     
 	// Specify the color of the triangle
 	float triangle_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    shader_obj->set_uniform_4f("u_color", 
-        triangle_color[0], 
-        triangle_color[1], 
-        triangle_color[2], 
-        triangle_color[3]);
     
     // Unbind all, as no longer binding needed
     vertex_array_obj->unbind();
@@ -156,7 +145,9 @@ int main(int, char**)
     Renderer renderer;
 
 	float increment = 0.01f;
-	glm::vec3 model_pos(0, -(mode->height) / 2.0f + (mode->width) / 8.0f, 0.0f);
+	glm::vec3 model_a_pos(0, 0.0f, 0.0f);
+	glm::vec3 model_b_pos(mode->width/ 2.0f - mode->width/16.0f, mode->height / 2.0f - mode->width / 16.0f, 0.0f);
+	glm::vec3 camera_pos(0.0f);
     // Main loop
     while (!glfwWindowShouldClose(window))
 	{
@@ -168,16 +159,14 @@ int main(int, char**)
 
 		ImGui::Text("This is some useful text.");
 
-
-		// Move the model up (means closer to 0 in content coords)
-		ImGui::SliderFloat2("Model Coordinates", &model_pos.x, mode->width / -2.0f, mode->width / 2.0f, "%.3f", 1.0f);
-		ImGui::SliderFloat("Z Coordinate", &model_pos.z, -2.0f, 2.0f, "%.3f", 1.0f);
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), model_pos);
-		glm::mat4 MVP_matrix = projection_matrix * view_matrix * model_matrix;
+		// Move the model up (means closer to 0 in content coordinates)
+		ImGui::SliderFloat2("Model A Coordinates", &model_a_pos.x, 0.0f, mode->width, "%.1f", 1.0f);
+		ImGui::SliderFloat2("Model B Coordinates", &model_b_pos.x, 0.0f, mode->width, "%.1f", 1.0f);
+        ImGui::SliderFloat2("Camera Coordinates", &camera_pos.x, mode->width / -2.0f, mode->width / 2.0f, "%.3f", 1.0f);
 
 		ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
-		ImGui::ColorEdit4("uniform color", (float*)&triangle_color);
+		//ImGui::ColorEdit4("uniform color", (float*)&triangle_color);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 
             1000.0f / ImGui::GetIO().Framerate, 
@@ -185,34 +174,29 @@ int main(int, char**)
 		ImGui::End();
 		ImGui::EndFrame();
 
-        // Rendering
+        // Clear background
 		renderer.set_viewport(window);
         renderer.clear((float*)&clear_color);
 
-		shader_obj->bind();
-		shader_obj->set_uniform_mat4f("u_MVP", MVP_matrix);
-		shader_obj->set_uniform_4f("u_color",
-			triangle_color[0],
-			triangle_color[1],
-			triangle_color[2],
-			triangle_color[3]);
-        renderer.draw(vertex_array_obj, index_buffer_obj, shader_obj);
+		glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
+
+        // draw calls for each separate translations
+        for (const auto& model_positions = {model_a_pos, model_b_pos}; const auto& model_i_pos : model_positions)
+		{
+			// Compute MVP, view translations are reversed to mimic a camera
+			glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), model_i_pos);
+			glm::mat4 MVP_matrix = projection_matrix * view_matrix * model_matrix;
+
+			// Update locations and colors
+			shader_obj->bind();
+			shader_obj->set_uniform_mat4f("u_MVP", MVP_matrix);
+
+			// Draw call
+			renderer.draw(vertex_array_obj, index_buffer_obj, shader_obj);
+        }
 
 		// Always draw ImGui on top of the app
         render_imgui();
-
-		// Square color animation
-		if (triangle_color[2] >= 1.0f)
-		{
-            triangle_color[2] = 1.0f;
-			increment *= -1;
-		}
-		else if (triangle_color[2] <= 0.0f)
-		{
-            triangle_color[2] = 0.0f;
-			increment *= -1;
-		}
-		triangle_color[2] += increment;
 
         glfwSwapBuffers(window);
         
