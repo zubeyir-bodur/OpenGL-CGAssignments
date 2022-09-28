@@ -1,7 +1,6 @@
 #include "VertexBuffer.h"
 #include "ErrorManager.h"
 #include "glew.h"
-#include "GL/GL.h"
 
 VertexBuffer::VertexBuffer()
 {

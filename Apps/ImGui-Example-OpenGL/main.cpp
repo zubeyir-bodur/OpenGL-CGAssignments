@@ -1,15 +1,19 @@
-
 #include "glew.h"
 #include "glfw3.h"
+
+#include "ImGuiManager.h"
 #include "ErrorManager.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "VertexArray.h"
 #include "VertexBufferLayout.h"
-#include "ImGuiManager.h"
-#include "Shader.h"
+#include "VertexArray.h"
 #include "Renderer.h"
-#include <Texture.h>
+#include "Shader.h"
+#include "Texture.h"
+#include "dearimgui/imgui.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -44,6 +48,7 @@ int main(int, char**)
 		glfwTerminate();
 		return -1;
     }
+    glfwSetWindowAspectRatio(window, 16, 9); // force 16:9 aspect ratio
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
@@ -115,18 +120,22 @@ int main(int, char**)
 	// Compile & bind shaders
     Shader* shader_obj = new Shader("../../Common/shaders/triangle.glsl");
 
+    // 16/9 aspect ratio - need to modify if zooming is enabled
+    glm::mat4 projection_matrix = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
 	// Texture
     Texture* texture_obj;
     if (has_texture)
 	{
-		texture_obj = new Texture("../../Data/textures/yellow_crack.png");
+		texture_obj = new Texture("../../Data/textures/eye.png");
 		texture_obj->bind();
-		shader_obj->set_uniform1i("u_texture", 0);
+		shader_obj->set_uniform_1i("u_texture", 0);
     }
     
 	// Specify the color of the triangle
 	float triangle_color[4] = { 0.3f, 0.2f, 1.0f, 1.0f };
-    shader_obj->set_uniform4f("u_color", 
+    shader_obj->set_uniform_mat4f("u_MVP", projection_matrix);
+    shader_obj->set_uniform_4f("u_color", 
         triangle_color[0], 
         triangle_color[1], 
         triangle_color[2], 
@@ -170,7 +179,7 @@ int main(int, char**)
         renderer.clear((float*)&clear_color);
 
 		shader_obj->bind();
-		shader_obj->set_uniform4f("u_color",
+		shader_obj->set_uniform_4f("u_color",
 			triangle_color[0],
 			triangle_color[1],
 			triangle_color[2],

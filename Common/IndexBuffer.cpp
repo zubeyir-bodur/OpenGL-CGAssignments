@@ -1,7 +1,6 @@
 #include "IndexBuffer.h"
 #include "ErrorManager.h"
 #include "glew.h"
-#include "GL/GL.h"
 
 IndexBuffer::IndexBuffer() : m_count(0)
 {

@@ -29,14 +29,19 @@ void Shader::unbind() const
 	__glCallVoid(glUseProgram(0));
 }
 
-void Shader::set_uniform1i(const std::string& name, int value)
+void Shader::set_uniform_1i(const std::string& name, int value)
 {
 	__glCallVoid(glUniform1i(uniform_location(name), value));
 }
 
-void Shader::set_uniform4f(const std::string& name, float v0, float v1, float v2, float v3)
+void Shader::set_uniform_4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
 	__glCallVoid(glUniform4f(uniform_location(name), v0, v1, v2, v3));
+}
+
+void Shader::set_uniform_mat4f(const std::string& name, glm::mat4 mat)
+{
+	__glCallVoid(glUniformMatrix4fv(uniform_location(name), 1, GL_FALSE, &mat[0][0]));
 }
 
 int Shader::uniform_location(const std::string& name)

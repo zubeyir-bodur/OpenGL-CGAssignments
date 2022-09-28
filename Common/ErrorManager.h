@@ -1,6 +1,5 @@
 #pragma once
 #include "signal.h"
-#include "glew.h"
 
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)
