@@ -16,6 +16,9 @@
     <ClInclude Include="backend\imgui_impl_glfw.h">
       <Filter>backend</Filter>
     </ClInclude>
+    <ClInclude Include="misc\freetype\imgui_freetype.h">
+      <Filter>misc\freetype</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp" />
@@ -29,6 +32,9 @@
     <ClCompile Include="backend\imgui_impl_glfw.cpp">
       <Filter>backend</Filter>
     </ClCompile>
+    <ClCompile Include="misc\freetype\imgui_freetype.cpp">
+      <Filter>misc\freetype</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="backend">
@@ -37,13 +43,13 @@
     <Filter Include="misc">
       <UniqueIdentifier>{a5e76127-b749-4e4d-a0f0-be6675b45000}</UniqueIdentifier>
     </Filter>
-    <Filter Include="misc\fonts">
-      <UniqueIdentifier>{aa2aaf60-7376-4444-a8cd-318004530c82}</UniqueIdentifier>
+    <Filter Include="misc\freetype">
+      <UniqueIdentifier>{e1879038-c7ea-4a48-bd31-f8a63c72f504}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="misc\fonts\Cousine-Regular.ttf">
-      <Filter>misc\fonts</Filter>
-    </Font>
+    <None Include="misc\freetype\README.md">
+      <Filter>misc\freetype</Filter>
+    </None>
   </ItemGroup>
 </Project>

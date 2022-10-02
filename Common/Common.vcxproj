@@ -95,6 +95,10 @@
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
+    <PreBuildEvent>
+      <Command>xcopy "$(SolutionDir)ThirdParty\FreeType\objs\freetype.dll" "$(OutDir)" /Y</Command>
+      <Message>Copying freetype.dll</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
