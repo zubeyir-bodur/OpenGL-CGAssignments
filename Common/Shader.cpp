@@ -9,7 +9,7 @@
 Shader::Shader(const char* path) 
 {
 	m_shader_path = std::filesystem::absolute(path).string();
-	const std::string& program_src = parse_shader_file("../../Common/shaders/triangle.glsl");
+	const std::string& program_src = parse_shader_file(m_shader_path.c_str());
 	m_shader_id = create_program_from_shaders(program_src);
 	__glCallVoid(glUseProgram(m_shader_id));
 }

@@ -3,32 +3,80 @@
   <ItemGroup>
     <Filter Include="shaders">
       <UniqueIdentifier>{2d19309b-f965-4868-849b-2933e2e018e5}</UniqueIdentifier>
+      <Extensions>glsl</Extensions>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{b5e174d3-889c-4580-bb21-748e1cbf5d9a}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{9ead94cb-ce1d-4b8f-be3d-a0a3b24a961b}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ErrorManager.cpp" />
-    <ClCompile Include="VertexBuffer.cpp" />
-    <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="VertexArray.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="VertexBufferLayout.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
+    <ClCompile Include="ErrorManager.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiManager.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexArray.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBufferLayout.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ErrorManager.h" />
-    <ClInclude Include="VertexBuffer.h" />
-    <ClInclude Include="IndexBuffer.h" />
-    <ClInclude Include="VertexArray.h" />
-    <ClInclude Include="VertexBufferLayout.h" />
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ErrorManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexArray.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBufferLayout.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\triangle.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\textured_triangle.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
