@@ -22,10 +22,10 @@ ImFontConfig* init_imgui(GLFWwindow* window)
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	// Load Default Font
-	ImFontConfig* cfg = new ImFontConfig();
-	cfg->SizePixels = 20;
-	io.Fonts->AddFontDefault(cfg);
-	return cfg;
+// 	ImFontConfig* cfg = new ImFontConfig();
+// 	cfg->SizePixels = 20;
+	io.Fonts->AddFontFromFileTTF("../../Data/fonts/Roboto-Medium.ttf", 25);
+	return nullptr;
 }
 
 void new_imgui_frame()
@@ -47,5 +47,5 @@ void shutdown_imgui(ImFontConfig* cfg)
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	delete cfg;
+	//delete cfg;
 }
