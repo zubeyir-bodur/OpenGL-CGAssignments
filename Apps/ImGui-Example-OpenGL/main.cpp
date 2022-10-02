@@ -80,7 +80,7 @@ int main(int, char**)
     // The triangles
     constexpr unsigned int num_vertices = 4;
 	constexpr unsigned int num_coordinates = 2;
-    #define has_texture true
+    #define has_texture false
     constexpr unsigned int num_coord_p_vertex = (has_texture ? num_coordinates : 0) + num_coordinates;
 	constexpr unsigned int num_indices = 6;
     float positions[num_vertices * num_coord_p_vertex] = { // Vertex + Texture positions
@@ -102,8 +102,11 @@ int main(int, char**)
 	};
 
     // Enable blending
-    __glCallVoid(glEnable(GL_BLEND));
-    __glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
+    if (has_texture)
+    {
+		__glCallVoid(glEnable(GL_BLEND));
+		__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
+    }
 
 	// Init vertex array object
     VertexArray* vertex_array_obj = new VertexArray;
@@ -134,7 +137,8 @@ int main(int, char**)
     }
     
 	// Specify the color of the triangle
-	float triangle_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	float triangle_color_a[4] = { 0.6f, 0.9f, 0.0f, 1.0f };
+	float triangle_color_b[4] = { 0.9f, 0.6f, 0.0f, 1.0f };
     
     // Unbind all, as no longer binding needed
     vertex_array_obj->unbind();
@@ -148,6 +152,9 @@ int main(int, char**)
 	glm::vec3 model_a_pos(0, 0.0f, 0.0f);
 	glm::vec3 model_b_pos(mode->width/ 2.0f - mode->width/16.0f, mode->height / 2.0f - mode->width / 16.0f, 0.0f);
 	glm::vec3 camera_pos(0.0f);
+	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
+		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
+		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
     // Main loop
     while (!glfwWindowShouldClose(window))
 	{
@@ -164,9 +171,17 @@ int main(int, char**)
 		ImGui::SliderFloat2("Model B Coordinates", &model_b_pos.x, 0.0f, mode->width, "%.1f", 1.0f);
         ImGui::SliderFloat2("Camera Coordinates", &camera_pos.x, mode->width / -2.0f, mode->width / 2.0f, "%.3f", 1.0f);
 
-		ImGui::ColorEdit3("clear color", (float*)&clear_color);
+		ImGui::NewLine();
+		ImGui::ColorEdit3("Clear Color", (float*)&clear_color, f);
 
-		//ImGui::ColorEdit4("uniform color", (float*)&triangle_color);
+		if (!has_texture)
+		{
+            ImGui::SameLine();
+			ImGui::ColorEdit4("Model A Color", triangle_color_a, f);
+			ImGui::SameLine();
+			ImGui::ColorEdit4("Model B Color", triangle_color_b, f);
+            ImGui::NewLine();
+		}
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 
             1000.0f / ImGui::GetIO().Framerate, 
@@ -181,14 +196,27 @@ int main(int, char**)
 		glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 
         // draw calls for each separate translations
-        for (const auto& model_positions = {model_a_pos, model_b_pos}; const auto& model_i_pos : model_positions)
+        //for (const auto& model_positions = {model_a_pos, model_b_pos}; const auto& model_i_pos : model_positions)
+        std::vector<glm::vec3*> model_positions = { &model_a_pos, &model_b_pos };
+        std::vector<float*> model_colors = { &(triangle_color_a[0]), &(triangle_color_b[0])};
+        for (int i = 0; i < 2; i++)
 		{
+            auto model_i_pos = model_positions[i];
+            auto model_i_color = model_colors[i];
 			// Compute MVP, view translations are reversed to mimic a camera
-			glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), model_i_pos);
+			glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), *model_i_pos);
 			glm::mat4 MVP_matrix = projection_matrix * view_matrix * model_matrix;
 
 			// Update locations and colors
 			shader_obj->bind();
+			if (!has_texture)
+			{
+				shader_obj->set_uniform_4f("u_color",
+                    model_i_color[0],
+                    model_i_color[1],
+                    model_i_color[2],
+                    model_i_color[3]);
+			}
 			shader_obj->set_uniform_mat4f("u_MVP", MVP_matrix);
 
 			// Draw call
