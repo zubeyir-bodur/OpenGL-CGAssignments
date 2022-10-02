@@ -146,13 +146,12 @@ int main(int, char**)
     
 	// Texture
 	Texture* texture_obj;
-    Shader* shader_texture;
+    Shader* shader_texture = new Shader("../../Common/shaders/textured_triangle.glsl");;
     if (has_texture)
 	{
 
 		texture_obj = new Texture("../../Data/textures/eye.png");
 		texture_obj->bind();
-        shader_texture = new Shader("../../Common/shaders/textured_triangle.glsl");
         shader_texture->set_uniform_1i("u_texture", 0);
     }
     
@@ -249,15 +248,14 @@ int main(int, char**)
 
 			// Update locations and colors
 			shader_raw->bind();
-			if (!has_texture)
-			{
-				shader_raw->set_uniform_4f("u_color",
-                    model_i_color[0],
-                    model_i_color[1],
-                    model_i_color[2],
-                    model_i_color[3]);
-			}
+			shader_raw->set_uniform_4f("u_color",
+				model_i_color[0],
+				model_i_color[1],
+				model_i_color[2],
+				model_i_color[3]);
 			shader_raw->set_uniform_mat4f("u_MVP", MVP_matrix);
+            shader_texture->bind();
+			shader_texture->set_uniform_mat4f("u_MVP", MVP_matrix);
 
 			// Draw call
             if (has_texture)
