@@ -54,8 +54,6 @@ int main(int, char**)
 	glfwMaximizeWindow(window);
     glfwSwapInterval(1); // Enable vsync
 
-    // Setup Dear ImGui context
-    auto cfg = init_imgui(window);
 
     // Init GLEW
     if (glewInit() != GLEW_OK)
@@ -74,6 +72,9 @@ int main(int, char**)
 		std::cout << "GLSL version: " << glsl_version << std::endl;
     }
 
+    // Setup Dear ImGui context
+    auto cfg = init_imgui(window);
+    SetupImGuiStyle();
     // ImGui state
     ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
