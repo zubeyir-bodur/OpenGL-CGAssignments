@@ -15,11 +15,12 @@ class VertexBufferLayout
 private:
 	std::vector<VertexBufferElement> m_elements;
 	unsigned int m_stride;
+	unsigned int m_tot_elemets;
 public:
-	VertexBufferLayout() : m_stride(0) {};
+	VertexBufferLayout() : m_stride(0), m_tot_elemets(0) {};
 
 	/// <summary>
-	/// Accept only registered templates below
+	/// Accept only registered templates
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <param name="count"></param>
@@ -28,4 +29,5 @@ public:
 	
 	const std::vector<VertexBufferElement>& elements() const;
 	unsigned int stride() const;
+	unsigned int tot_elements() const;
 };

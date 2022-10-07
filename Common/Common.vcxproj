@@ -161,6 +161,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DrawList.cpp" />
     <ClCompile Include="ErrorManager.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DrawList.h" />
     <ClInclude Include="ErrorManager.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="IndexBuffer.h" />

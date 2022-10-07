@@ -10,6 +10,8 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "DrawList.h"
+
 #include "nothings-stb/stb_image.h"
 #include "dearimgui/imgui.h"
 #include <glm/glm.hpp>
@@ -59,7 +61,7 @@ int main(int, char**)
     if (glewInit() != GLEW_OK)
     {
         std::cout << "Could not init GLEW..." << std::endl;
-
+        GENERAL_BREAK();
     }
     else
     {
@@ -103,18 +105,15 @@ int main(int, char**)
 	};
 
     float sheet_positions[num_vertices * num_coordinates] = {
-        0.0f,                       0.0f,         // 4
-        (float)mode->width,        0.0f,         // 5
-        (float)mode->width,        (float)mode->height, // 6
-        0,                          (float)mode->height  // 7
+		0.0f,                      0.0f,                // 0
+		(float)mode->width,        0.0f,                // 1
+        (float)mode->width,        (float)mode->height, // 2
+        0,                         (float)mode->height  // 3
     };
 
     // Enable blending
-    if (has_texture)
-    {
-		__glCallVoid(glEnable(GL_BLEND));
-		__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
-    }
+	__glCallVoid(glEnable(GL_BLEND));
+	__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
 
 	// Init vertex array object
     VertexArray* vertex_array_obj = new VertexArray;
@@ -142,15 +141,12 @@ int main(int, char**)
 	// Compile & bind shaders
 	Shader* shader_raw = new Shader("../../Common/shaders/triangle.glsl");
 
-    // Project into window content coordinate system
-    glm::mat4 projection_matrix = glm::ortho(0.0f, (float)mode->width, (float)mode->height, 0.0f, -1.0f, 1.0f);
     
 	// Texture
 	Texture* texture_obj;
     Shader* shader_texture = new Shader("../../Common/shaders/textured_triangle.glsl");;
     if (has_texture)
 	{
-
 		texture_obj = new Texture("../../Data/textures/eye.png");
 		texture_obj->bind();
         shader_texture->set_uniform_1i("u_texture", 0);
@@ -173,11 +169,45 @@ int main(int, char**)
 
     Renderer renderer;
 
-	float increment = 0.01f;
 	glm::vec3 sheet_pos(0, 0.0f, 0.0f);
+
+    // Initialize two equivalent shapes
 	glm::vec3 model_a_pos(0, 0.0f, 0.0f);
 	glm::vec3 model_b_pos(mode->width/ 2.0f - mode->width/16.0f, mode->height / 2.0f - mode->width / 16.0f, 0.0f);
-	glm::vec3 camera_pos(0.0f);
+	std::vector<glm::vec2> std_positions;
+	for (int i = 0; i < num_vertices; i++)
+	{
+		std_positions.push_back(
+            { 
+                *(positions + i*vertex_buffer_layout->stride()),                    // x coordinate of the vertices
+                *(positions + i * vertex_buffer_layout->stride() + sizeof(float))   // y coordinate of the vertices
+            });
+	}
+
+    Shape model_a, model_b;
+    model_b.m_index_buffer = model_a.m_index_buffer = index_buffer_obj;
+    model_b.m_layout = model_a.m_layout = vertex_buffer_layout;
+    model_b.m_shader = model_a.m_shader = has_texture ? shader_texture: shader_raw;
+	model_b.m_vertex_array = model_a.m_vertex_array = vertex_array_obj;
+	model_b.m_vertex_coordinates = model_a.m_vertex_coordinates = &std_positions;
+
+	model_a.m_model_colors = static_cast<float*>(triangle_color_a);
+	model_a.m_model_positions = &model_a_pos;
+
+	model_b.m_model_colors = static_cast<float*>(triangle_color_b);
+	model_b.m_model_positions = &model_b_pos;
+
+    // View matrix - camera
+	glm::vec3 camera_pos(0.0f); 
+    glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
+
+	// Project into window content coordinate system
+	glm::mat4 projection_matrix = glm::ortho(0.0f, (float)mode->width, (float)mode->height, 0.0f, -1.0f, 1.0f);
+
+    DrawList list(&renderer, projection_matrix, view_matrix);
+    list.add_shape(&model_a);
+	list.add_shape(&model_b);
+
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -186,15 +216,15 @@ int main(int, char**)
 	{
 		glfwPollEvents();
 
+        // ImGui Components 
         new_imgui_frame();
 
 		ImGui::Begin("Hello, world!");
 
 		ImGui::Text("This is some useful text.");
 
-		// Move the model up (means closer to 0 in content coordinates)
-		ImGui::SliderFloat2("Model A Coordinates", &model_a_pos.x, 0.0f - 500, (float)mode->width, "%.1f", 1.0f);
-		ImGui::SliderFloat2("Model B Coordinates", &model_b_pos.x, 0.0f - 500, (float)mode->width, "%.1f", 1.0f);
+		ImGui::SliderFloat2("Model A Coordinates", &model_a_pos.x, -500.0f, (float)mode->width, "%.1f", 1.0f);
+		ImGui::SliderFloat2("Model B Coordinates", &model_b_pos.x, -500.0f, (float)mode->width, "%.1f", 1.0f);
         ImGui::SliderFloat2("Camera Coordinates", &camera_pos.x, (float)mode->width / -2.0f, (float)mode->width / 2.0f, "%.3f", 1.0f);
 
 		ImGui::NewLine();
@@ -219,8 +249,8 @@ int main(int, char**)
 		renderer.set_viewport(window);
         renderer.clear((float*)&clear_color);
 
-        // View matrix
-		glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
+        // Update camera position
+		view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 
         // Model matrix for the sheet
         glm::mat4 model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos);
@@ -236,44 +266,13 @@ int main(int, char**)
 		// Draw the sheet
 		renderer.draw(sheet_vertex_array_obj, sheet_idx_buffer, shader_raw);
 
-        // draw calls for each separate translations
-        std::vector<glm::vec3*> model_positions = { &model_a_pos, &model_b_pos };
-        std::vector<float*> model_colors = { &(triangle_color_a[0]), &(triangle_color_b[0])};
-        for (int i = 0; i < 2; i++)
-		{
-            auto model_i_pos = model_positions[i];
-            auto model_i_color = model_colors[i];
-			// Compute MVP, view translations are reversed to mimic a camera
-			glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), *model_i_pos);
-			glm::mat4 MVP_matrix = projection_matrix * view_matrix * model_matrix;
-
-			// Update locations and colors
-			shader_raw->bind();
-			shader_raw->set_uniform_4f("u_color",
-				model_i_color[0],
-				model_i_color[1],
-				model_i_color[2],
-				model_i_color[3]);
-			shader_raw->set_uniform_mat4f("u_MVP", MVP_matrix);
-            shader_texture->bind();
-			shader_texture->set_uniform_mat4f("u_MVP", MVP_matrix);
-
-			// Draw call
-            if (has_texture)
-            {
-				renderer.draw(vertex_array_obj, index_buffer_obj, shader_texture);
-            }
-            else
-			{
-				renderer.draw(vertex_array_obj, index_buffer_obj, shader_raw);
-            }
-        }
+        // Draw the draw list
+		list.draw_all();
 
 		// Always draw ImGui on top of the app
         render_imgui();
 
         glfwSwapBuffers(window);
-        
     }
 
     // delete for each new
