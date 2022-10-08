@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glm", "ThirdParty\glm\glm.v
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "ThirdParty\FreeType\builds\windows\vc2010\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "2DVectorBasedGeometricPaintApp", "Apps\2DVectorBasedGeometricPaintApp\2DVectorBasedGeometricPaintApp.vcxproj", "{82EE8293-5B81-47F3-9B33-74CB91224D79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Static|ARM64 = Debug Static|ARM64
@@ -257,6 +259,30 @@ Global
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x64.Build.0 = Release|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x86.ActiveCfg = Release|Win32
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release|x86.Build.0 = Release|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|ARM64.ActiveCfg = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|ARM64.Build.0 = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|x64.ActiveCfg = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|x64.Build.0 = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|x86.ActiveCfg = Debug|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug Static|x86.Build.0 = Debug|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|ARM64.ActiveCfg = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|ARM64.Build.0 = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|x64.ActiveCfg = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|x64.Build.0 = Debug|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|x86.ActiveCfg = Debug|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Debug|x86.Build.0 = Debug|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|ARM64.ActiveCfg = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|ARM64.Build.0 = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|x64.ActiveCfg = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|x64.Build.0 = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|x86.ActiveCfg = Release|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release Static|x86.Build.0 = Release|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|ARM64.ActiveCfg = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|ARM64.Build.0 = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|x64.ActiveCfg = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|x64.Build.0 = Release|x64
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|x86.ActiveCfg = Release|Win32
+		{82EE8293-5B81-47F3-9B33-74CB91224D79}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -270,6 +296,7 @@ Global
 		{A5E98C8B-7FFE-4DC1-9349-644748BCDFB7} = {F96B8EB8-3607-4C31-AD39-FEE59C1A677B}
 		{D1D9E1C9-08ED-426B-BE9D-5EF46B18FE6E} = {F96B8EB8-3607-4C31-AD39-FEE59C1A677B}
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B} = {F96B8EB8-3607-4C31-AD39-FEE59C1A677B}
+		{82EE8293-5B81-47F3-9B33-74CB91224D79} = {638F4CEC-8C29-4726-A32C-50382CB42879}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {45868C56-C9A6-4790-8139-19AE72023DFE}
