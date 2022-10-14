@@ -1,6 +1,6 @@
 #include "Shader.h"
 #include "ErrorManager.h"
-#include "glew.h"
+#include <glew.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>

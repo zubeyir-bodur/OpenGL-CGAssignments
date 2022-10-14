@@ -1,5 +1,5 @@
 #pragma once
-#include "signal.h"
+#include <csignal>
 
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)

@@ -1,13 +1,15 @@
 #include "VertexBuffer.h"
 #include "ErrorManager.h"
-#include "glew.h"
+#include <glew.h>
 
-VertexBuffer::VertexBuffer()
+VertexBuffer::VertexBuffer() :
+	m_size(0)
 {
 	__glCallVoid(glGenBuffers(1, &m_vertex_buffer_id));
 }
 
-VertexBuffer::VertexBuffer(const void* data, unsigned int size)
+VertexBuffer::VertexBuffer(const void* data, unsigned int size) :
+	m_size(size)
 {
 	__glCallVoid(glGenBuffers(1, &m_vertex_buffer_id));
 	__glCallVoid(glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer_id));

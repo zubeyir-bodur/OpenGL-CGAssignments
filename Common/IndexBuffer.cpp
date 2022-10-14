@@ -1,6 +1,6 @@
 #include "IndexBuffer.h"
 #include "ErrorManager.h"
-#include "glew.h"
+#include <glew.h>
 
 IndexBuffer::IndexBuffer() : m_count(0)
 {

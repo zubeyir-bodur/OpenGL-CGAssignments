@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "ErrorManager.h"
-#include "glew.h"
-#include "glfw3.h"
+#include <glew.h>
+#include <glfw3.h>
 
 void Renderer::draw(const VertexArray* vertex_array_obj,
 	const IndexBuffer* index_buffer_obj,

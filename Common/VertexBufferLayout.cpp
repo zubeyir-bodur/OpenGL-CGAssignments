@@ -1,6 +1,6 @@
 #include "ErrorManager.h"
 #include "VertexBufferLayout.h"
-#include "glew.h"
+#include <glew.h>
 
 unsigned int VertexBufferElement::get_size_of_type(unsigned int type)
 {

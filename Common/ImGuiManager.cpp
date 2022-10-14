@@ -1,7 +1,7 @@
 #include "ImGuiManager.h"
-#include "dearimgui/imgui.h"
-#include "dearimgui/backend/imgui_impl_glfw.h"
-#include "dearimgui/backend/imgui_impl_opengl3.h"
+#include <dearimgui/imgui.h>
+#include <dearimgui/backend/imgui_impl_glfw.h>
+#include <dearimgui/backend/imgui_impl_opengl3.h>
 #include "Shader.h"
 
 ImFontConfig* init_imgui(GLFWwindow* window)

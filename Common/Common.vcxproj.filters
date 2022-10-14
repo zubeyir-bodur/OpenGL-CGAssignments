@@ -45,6 +45,9 @@
     <ClCompile Include="DrawList.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorManager.h">
@@ -75,6 +78,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DrawList.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

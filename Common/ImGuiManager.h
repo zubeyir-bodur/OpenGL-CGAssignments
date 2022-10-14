@@ -1,5 +1,4 @@
 #pragma once
-
 struct ImFontConfig;
 struct GLFWwindow;
 

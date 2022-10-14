@@ -1,7 +1,7 @@
 #include "Texture.h"
 #include "ErrorManager.h"
-#include "glew.h"
-#include "nothings-stb/stb_image.h"
+#include <glew.h>
+#include <nothings-stb/stb_image.h>
 
 Texture::Texture(const std::string& path) :
 	m_file_path(path), m_width(0), m_height(0),

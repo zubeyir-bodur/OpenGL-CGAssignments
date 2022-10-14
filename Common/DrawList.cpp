@@ -1,41 +1,7 @@
 #include "DrawList.h"
 #include "ErrorManager.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "glew.h"
-
-bool Shape::contains(float model_x, float model_y)
-{
-	unsigned int nvert = m_vertex_coordinates->size() * 2;
-	unsigned int i, j, c = 0;
-	ASSERT(!m_layout->elements().empty() &&
-		m_layout->elements()[0].count == 2 &&
-		m_layout->elements()[0].type == GL_FLOAT);
-	// Assuming the data coordinates are initial model coordinates
-	for (i = 0, j = nvert - 1; i < nvert; j = i++) {
-		if ( 
-			((m_vertex_coordinates[0][i].y > model_y) != (m_vertex_coordinates[0][j].y > model_y)) &&
-			(model_x < (m_vertex_coordinates[0][j].x - m_vertex_coordinates[0][i].x) * (model_y - m_vertex_coordinates[0][i].y) / (m_vertex_coordinates[0][j].y - m_vertex_coordinates[0][i].y) + m_vertex_coordinates[0][j].x)
-			)
-			c = !c;
-	}
-	return (bool)c;
-}
-
-/// <summary>
-/// This function will be called if the outline of the shape 
-/// is changed other than transformations, such as adding a vertex
-/// resizing from the edges (not from the corner) or other things that
-/// require the all the buffers to be rebound
-/// </summary>
-/// <param name="r"></param>
-/// <param name="proj"></param>
-/// <param name="view"></param>
-void Shape::on_vertex_coordinates_changed(const std::vector<glm::vec2>& new_coords)
-{
-	// Update the vertex buffer, vertex array and layout if necessary
-	// TODO, necessary for displaying polygons as they are drawn
-	return;
-}
+#include <glew.h>
 
 DrawList::DrawList(Renderer* r, const glm::mat4& proj, const glm::mat4& view)
 {
@@ -89,16 +55,20 @@ void DrawList::draw_all()
 {
 	for (auto shape : m_shapes)
 	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), *shape->m_model_positions);
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), *shape->m_position) 
+			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).x, glm::vec3(1, 0, 0))
+			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).y, glm::vec3(0, 1, 0))
+			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).z, glm::vec3(0, 0, 1))
+			* glm::scale(glm::mat4(1.0f), (*shape->m_scale));
 		glm::mat4 MVP_matrix = (* m_proj_mat) * (*m_view_mat) * model_matrix;
 
 		// Update locations and colors
 		shape->m_shader->bind();
 		shape->m_shader->set_uniform_4f("u_color",
-			shape->m_model_colors[0],
-			shape->m_model_colors[1],
-			shape->m_model_colors[2],
-			shape->m_model_colors[3]);
+			shape->m_color[0],
+			shape->m_color[1],
+			shape->m_color[2],
+			shape->m_color[3]);
 		shape->m_shader->set_uniform_mat4f("u_MVP", MVP_matrix);
 		m_renderer->draw(shape->m_vertex_array, shape->m_index_buffer, shape->m_shader);
 	}
