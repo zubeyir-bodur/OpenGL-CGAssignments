@@ -51,15 +51,19 @@ unsigned int DrawList::idx_of(Shape* s)
 	return -1;
 }
 
+/// <summary>
+/// Currently, scaling is not supported together with rotation
+/// </summary>
 void DrawList::draw_all()
 {
 	for (auto shape : m_shapes)
 	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), *shape->m_position) 
-			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).x, glm::vec3(1, 0, 0))
-			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).y, glm::vec3(0, 1, 0))
-			* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).z, glm::vec3(0, 0, 1))
-			* glm::scale(glm::mat4(1.0f), (*shape->m_scale));
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), (*shape->m_position) - (*shape->m_position) + shape->center_position())
+			//* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).x, glm::vec3(1, 0, 0)) rotates around x axis
+			//* glm::rotate(glm::mat4(1.0f), (*shape->m_rotation).y, glm::vec3(0, 1, 0)) rotates around y axis
+			* glm::rotate(glm::mat4(1.0f), glm::radians((*shape->m_rotation).z), glm::vec3(0, 0, 1))
+			* glm::translate(glm::mat4(1.0f), -shape->center_position() + (*shape->m_position))
+			/** glm::scale(glm::mat4(1.0f), (*shape->m_scale))*/;
 		glm::mat4 MVP_matrix = (* m_proj_mat) * (*m_view_mat) * model_matrix;
 
 		// Update locations and colors
@@ -70,6 +74,8 @@ void DrawList::draw_all()
 			shape->m_color[2],
 			shape->m_color[3]);
 		shape->m_shader->set_uniform_mat4f("u_MVP", MVP_matrix);
+
+		// draw
 		m_renderer->draw(shape->m_vertex_array, shape->m_index_buffer, shape->m_shader);
 	}
 }

@@ -4,7 +4,7 @@
 #include <dearimgui/backend/imgui_impl_opengl3.h>
 #include "Shader.h"
 
-ImFontConfig* init_imgui(GLFWwindow* window)
+void init_imgui(GLFWwindow* window)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -24,7 +24,6 @@ ImFontConfig* init_imgui(GLFWwindow* window)
 
 	// Load Selected Font;
 	io.Fonts->AddFontFromFileTTF("../../Data/fonts/Roboto-Medium.ttf", 25);
-	return nullptr;
 }
 
 void new_imgui_frame()
@@ -41,7 +40,7 @@ void render_imgui()
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void shutdown_imgui(ImFontConfig* cfg)
+void shutdown_imgui()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

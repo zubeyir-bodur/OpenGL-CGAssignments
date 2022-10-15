@@ -73,7 +73,7 @@ int main(int, char**)
     }
 
     // Setup Dear ImGui context
-    auto cfg = init_imgui(window);
+    init_imgui(window);
     SetupImGuiStyle();
     // ImGui state
     ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -179,13 +179,17 @@ int main(int, char**)
 	// scale
 	glm::vec3 model_a_scale(1.0f, 1.0f, 1.0f);
 	glm::vec3 model_b_scale(1.0f, 1.0f, 1.0f);
-	std::vector<glm::vec2> std_positions;
+	std::vector<glm::vec3> std_positions;
 	for (int i = 0; i < num_vertices; i++)
 	{
-		std_positions.emplace_back(
-                *(positions + i*vertex_buffer_layout->stride()),                    // x coordinate of the vertices
-                *(positions + i * vertex_buffer_layout->stride() + sizeof(float))   // y coordinate of the vertices
-);
+		float* x_ptr = positions + i * vertex_buffer_layout->tot_elements();
+		float* y_ptr = positions + i * vertex_buffer_layout->tot_elements() + 1;
+		float* z_ptr = positions + i * vertex_buffer_layout->tot_elements() + 2;
+		float x = *x_ptr;
+		float y = *y_ptr;
+		float z = *z_ptr;
+        std_positions.emplace_back(glm::vec3(x, y, z));
+
 	}
 
     Shape model_a{}, model_b{};
@@ -293,7 +297,7 @@ int main(int, char**)
     if (has_texture) delete texture_obj;
 
     // Cleanup
-    shutdown_imgui(cfg);
+    shutdown_imgui();
 
     glfwDestroyWindow(window);
     glfwTerminate();
