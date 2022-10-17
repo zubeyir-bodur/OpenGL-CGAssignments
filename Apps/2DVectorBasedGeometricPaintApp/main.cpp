@@ -31,6 +31,7 @@ static void glfw_error_callback(int error, const char* description)
 	fprintf(stderr, "GlFW Error %d: %s\n", error, description);
 }
 
+
 int main(int, char**)
 {
 	// Setup window
@@ -46,13 +47,14 @@ int main(int, char**)
 	// Create GLFW full screen window
 	GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
-	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "CS 465 - Assignment 1 - 2D Vector-based Geometric Paint Application", main_monitor, nullptr);
+	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "CS 465 - Assignment 1 - 2D Vector-based Geometric Paint Application", nullptr, nullptr);
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
 	if(!window || !mode)
 	{
 		glfwTerminate();
 		return -1;
 	}
-	glfwSetWindowAspectRatio(window, 16, 9); // force 16:9 aspect ratio
 	glfwMakeContextCurrent(window);
 	glfwMaximizeWindow(window);
 	glfwSwapInterval(1); // Enable vsync
@@ -83,10 +85,10 @@ int main(int, char**)
 	ImVec4 clear_color = ImVec4(0.3984375f, 0.3984375f, 0.3984375f, 1.0f);
 
 
-	float init_shape_length = (mode->width) / 8.0f;
+	float init_shape_length = width / 8.0f;
 
 	// The triangles
-	constexpr float global_z_pos_2d = 0.5f;
+	constexpr float global_z_pos_2d = 0.0f;
 	constexpr unsigned int rect_num_vertices = 4;
 	constexpr unsigned int num_coordinates = 3;
 	constexpr unsigned int num_indices = 6;
@@ -155,8 +157,8 @@ int main(int, char**)
 	// Initialize shapes
 	// positions - respect to their initial 0th vertex positions
 	glm::vec3 model_a_pos(0, 0.0f, 0.0f);
-	glm::vec3 model_b_pos(mode->width / 2.0f - init_shape_length/2, mode->height / 2.0f - init_shape_length / 2, 0.0f);
-	glm::vec3 model_c_pos(mode->width / 4.0f - init_shape_length / 2, mode->height / 4.0f - init_shape_length / 2, 0.0f);
+	glm::vec3 model_b_pos(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
+	glm::vec3 model_c_pos(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
 
 	// copy the initial model positions
 	std::vector<glm::vec3> std_rect_positions;
@@ -217,26 +219,18 @@ int main(int, char**)
 	model_c.m_rotation = &model_c_rot;
 	model_c.m_scale = &model_c_scale;
 
-	constexpr float global_aspect_ratio = 16.0f / 9.0f;
-	constexpr float global_fovy = 90.0f;
-	auto z_far = (float)mode->width;
-	float sheet_z_location = mode->width * global_z_pos_2d / (global_aspect_ratio * tan(glm::radians(global_fovy / 2.0f)));
-	// View matrix - camera - since the app is 2D, it is not affected any of these values unless the camera is ahead of the z=0.5 plane
-	glm::vec3 camera_pos(0.0f, 0.0f, sheet_z_location);
-	float zoom_ratio = 100.0f * sheet_z_location / camera_pos.z;
-	glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 
-	// Project into window content coordinate system
-	
-	// new perspective projection
-	// FOV does not really matter as z positions will be the same
-	glm::mat4 projection_matrix = glm::perspective(glm::radians(global_fovy), global_aspect_ratio, 0.0f, z_far)
-		* glm::mat4(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f, // symmetry w.r.t. x-axis is necessary for imitating GLFW window coordinate system
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f)
-		* glm::translate(glm::mat4(1.0f), glm::vec3(-mode->width/2.0f, -mode->height/2.0f, 0.0f)); // and also moving the origin to the top left of the screen for GLFW 
+	// View matrix - camera
+	glm::vec3 camera_pos(0.0f, 0.0f, global_z_pos_2d);
+	float zoom_ratio = 100.0f;
+	glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos)
+		* glm::scale(glm::mat4(1.0f), glm::vec3(zoom_ratio/100.0f, zoom_ratio/100.0f, 1.0f));
+
+	// Orthographic projection is used
+	glm::mat4 projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+
+	// Mouse location
+	glm::vec3 cursor_model_coords = (camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio);
 
 	// Sheet initializations
 	glm::mat4 model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos)
@@ -247,17 +241,28 @@ int main(int, char**)
 	list.add_shape(&model_a);
 	list.add_shape(&model_b);
 	list.add_shape(&model_c);
-
+	bool should_select = true;
+	bool should_draw_rect = false;
+	bool should_draw_eq_tri = false;
+	bool should_draw_convex_poly = false;
+	bool should_delete_shape = false;
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
+
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
+		Input::ButtonState s = window_input.m_lmb_state;
 		window_input.m_scroll_y = 0.0;
 		glfwPollEvents();
 
-		// Camera movement
+		// Update the projection matrix
+		glfwGetWindowSize(window, &width, &height);
+		projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+		cursor_model_coords = (camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio);
+
+		// Camera movement - simple
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
 			camera_pos.y -= 20.0f;
@@ -278,8 +283,12 @@ int main(int, char**)
 		// Camera zooming with mouse wheel
 		if (zoom_ratio >= 20 && zoom_ratio <= 1000)
 		{
-			zoom_ratio += window_input.m_scroll_y * 20;
+			if (window_input.m_scroll_y != 0)
+			{
+				zoom_ratio += window_input.m_scroll_y * 10;
+			}
 		}
+		// Avoid exceeding limits
 		if (zoom_ratio < 20.0f)
 		{
 			zoom_ratio = 20.0f;
@@ -287,6 +296,62 @@ int main(int, char**)
 		if (zoom_ratio > 1000.0f)
 		{
 			zoom_ratio = 1000.0f;
+		}
+		// Move the camera to the mouse location
+		if (zoom_ratio >= 20 && zoom_ratio <= 1000)
+		{
+			if (window_input.m_scroll_y != 0)
+			{
+				camera_pos -= (zoom_ratio / 100) * ((camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio) - cursor_model_coords);
+			}
+		}
+
+		if (should_draw_rect)
+		{
+			if (window_input.m_lmb_state == Input::ButtonState::JustPressed)
+			{
+
+			}
+			if (window_input.m_lmb_state == Input::ButtonState::Released)
+			{
+
+			}
+		}
+
+		if (should_draw_eq_tri)
+		{
+			if (window_input.m_lmb_state == Input::ButtonState::JustPressed)
+			{
+
+			}
+			if (window_input.m_lmb_state == Input::ButtonState::Released)
+			{
+
+			}
+		}
+
+		if (should_draw_convex_poly)
+		{
+			if (window_input.m_lmb_state == Input::ButtonState::JustPressed)
+			{
+
+			}
+			if (window_input.m_lmb_state == Input::ButtonState::Released)
+			{
+
+			}
+		}
+
+		if (should_delete_shape)
+		{
+			if (window_input.m_lmb_state == Input::ButtonState::JustPressed)
+			{
+
+			}
+			if (window_input.m_lmb_state == Input::ButtonState::Released)
+			{
+
+			}
 		}
 
 		// update center positions of models for logging
@@ -326,7 +391,6 @@ int main(int, char**)
 		ImGui::NewLine();
 
 		ImGui::SliderFloat("Zoom Ratio (%)", &zoom_ratio, 20.0f, 1000.0f, "%.3f", 1.0f);
-		camera_pos.z = 100.0f * sheet_z_location / zoom_ratio;
 		ImGui::NewLine();
 
 		ImGui::ColorEdit4("Model A Color", color_a, f);
@@ -339,15 +403,20 @@ int main(int, char**)
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 			1000.0f / ImGui::GetIO().Framerate,
 			ImGui::GetIO().Framerate);
-		ImGui::End();
-		ImGui::EndFrame();
 
 		// Clear background
 		renderer.set_viewport(window);
 		renderer.clear((float*)&clear_color);
 
 		// Update camera position
-		view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
+		view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos)
+			* glm::scale(glm::mat4(1.0f), glm::vec3(zoom_ratio / 100.0f, zoom_ratio / 100.0f, 1.0f));
+
+		// Get cursor model coordinates
+		
+		ImGui::Text("Cursor Model Coordinates: %f, %f", cursor_model_coords.x, cursor_model_coords.y);
+		ImGui::End();
+		ImGui::EndFrame();
 
 		// Shader for sheet
 		triangle_shader->bind();
@@ -369,6 +438,26 @@ int main(int, char**)
 		render_imgui();
 
 		glfwSwapBuffers(window);
+
+		// Next state logic for LMB
+		if (s == Input::ButtonState::BeingPressed
+			&& window_input.m_lmb_state == Input::ButtonState::Released)
+		{
+			// Consume the released state
+			window_input.m_mouse_release_y = -1.0f;
+			window_input.m_mouse_release_x = -1.0f;
+			window_input.m_mouse_press_y = -1.0f;
+			window_input.m_mouse_press_x = -1.0f;
+			window_input.m_lmb_state = Input::ButtonState::Idle;
+			std::cout << "LMB is now Idle" << std::endl;
+		}
+		if (s == Input::ButtonState::Idle
+			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
+		{
+			// Consume the released state
+			window_input.m_lmb_state = Input::ButtonState::BeingPressed;
+			std::cout << "LMB is now BeingPressed" << std::endl;
+		}
 	}
 
 	// delete for each new

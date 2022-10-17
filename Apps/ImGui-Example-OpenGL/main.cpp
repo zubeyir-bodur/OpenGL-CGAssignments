@@ -223,6 +223,7 @@ int main(int, char**)
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
+    bool show_demo = true;
     // Main loop
     while (!glfwWindowShouldClose(window))
 	{
@@ -255,6 +256,12 @@ int main(int, char**)
             1000.0f / ImGui::GetIO().Framerate, 
             ImGui::GetIO().Framerate);
 		ImGui::End();
+
+        if (show_demo)
+		{
+			ImGui::ShowDemoWindow(&show_demo);
+        }
+
 		ImGui::EndFrame();
 
         // Clear background

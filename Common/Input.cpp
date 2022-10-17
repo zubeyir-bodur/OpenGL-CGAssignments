@@ -1,6 +1,7 @@
 #include "Input.h"
 #include <iostream>
 #include <string>
+#include <glm/gtc/matrix_transform.hpp>
 
 Input::Input(GLFWwindow* app_window)
 {
@@ -47,7 +48,7 @@ void Input::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	Input& instance = Input::get_instance(window);
 	instance.m_mouse_x = xpos;
-	instance.m_mouse_y = xpos;
+	instance.m_mouse_y = ypos;
 	// std::cout << "Mouse moved: (" << instance.m_mouse_x << ", " << instance.m_mouse_y << ")" << std::endl;
 }
 

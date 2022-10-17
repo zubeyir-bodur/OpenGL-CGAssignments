@@ -1,12 +1,15 @@
 #pragma once
 #include <glfw3.h>
 #include <cstring>
+#include <glm/glm.hpp>
 
 class Input
 {
 private:
 
 	GLFWwindow* m_app_window;
+	GLFWvidmode* m_mode;
+	glm::mat4* m_proj, * m_view;
 
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
