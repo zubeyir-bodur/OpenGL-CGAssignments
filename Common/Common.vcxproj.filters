@@ -48,6 +48,9 @@
     <ClCompile Include="Shape.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorManager.h">
@@ -81,6 +84,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Shape.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

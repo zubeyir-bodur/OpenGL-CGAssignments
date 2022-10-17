@@ -16,6 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glew.h>
+#include "Input.h"
 #include <glfw3.h>
 #include <cstdio>
 #include <iostream>
@@ -45,7 +46,7 @@ int main(int, char**)
 	// Create GLFW full screen window
 	GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
-	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "CS 465 - Assignment 1 - 2D Vector-based Geometric Paint Application", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "CS 465 - Assignment 1 - 2D Vector-based Geometric Paint Application", main_monitor, nullptr);
 	if(!window || !mode)
 	{
 		glfwTerminate();
@@ -73,11 +74,13 @@ int main(int, char**)
 		std::cout << "GLSL version: " << glsl_version << std::endl;
 	}
 
+	Input& window_input = Input::get_instance(window);
+
 	// Setup Dear ImGui context
 	init_imgui(window);
 	SetupImGuiStyle();
 	// ImGui state
-	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	ImVec4 clear_color = ImVec4(0.3984375f, 0.3984375f, 0.3984375f, 1.0f);
 
 
 	float init_shape_length = (mode->width) / 8.0f;
@@ -217,14 +220,13 @@ int main(int, char**)
 	constexpr float global_aspect_ratio = 16.0f / 9.0f;
 	constexpr float global_fovy = 90.0f;
 	auto z_far = (float)mode->width;
+	float sheet_z_location = mode->width * global_z_pos_2d / (global_aspect_ratio * tan(glm::radians(global_fovy / 2.0f)));
 	// View matrix - camera - since the app is 2D, it is not affected any of these values unless the camera is ahead of the z=0.5 plane
-	glm::vec3 camera_pos(0.0f, 0.0f, mode->width*global_z_pos_2d / (global_aspect_ratio*tan(glm::radians(global_fovy / 2.0f))));
+	glm::vec3 camera_pos(0.0f, 0.0f, sheet_z_location);
+	float zoom_ratio = 100.0f * sheet_z_location / camera_pos.z;
 	glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos);
 
 	// Project into window content coordinate system
-	
-	// old orthogonal projection, does not support zooming and out
-	// glm::mat4 projection_matrix = glm::ortho(0.0f, (float)mode->width, (float)mode->height, 0.0f, -1.0f, 1.0f);
 	
 	// new perspective projection
 	// FOV does not really matter as z positions will be the same
@@ -252,8 +254,42 @@ int main(int, char**)
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
+		window_input.m_scroll_y = 0.0;
 		glfwPollEvents();
 
+		// Camera movement
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			camera_pos.y -= 20.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			camera_pos.x -= 20.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			camera_pos.y += 20.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			camera_pos.x += 20.0f;
+		}
+
+		// Camera zooming with mouse wheel
+		if (zoom_ratio >= 20 && zoom_ratio <= 1000)
+		{
+			zoom_ratio += window_input.m_scroll_y * 20;
+		}
+		if (zoom_ratio < 20.0f)
+		{
+			zoom_ratio = 20.0f;
+		}
+		if (zoom_ratio > 1000.0f)
+		{
+			zoom_ratio = 1000.0f;
+		}
+
+		// update center positions of models for logging
 		glm::vec2 size_a = model_a.shape_size();
 		glm::vec2 center_a = model_a.center_position();
 		glm::vec2 size_b = model_b.shape_size();
@@ -289,12 +325,10 @@ int main(int, char**)
 		ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
 		ImGui::NewLine();
 
-		ImGui::SliderFloat2("Camera Coordinates", &camera_pos.x, -(float)mode->width, (float)mode->width, "%.3f", 1.0f);
-		ImGui::SliderFloat("Camera Zoom", &camera_pos.z, 0.51f, (float)mode->width, "%.3f", 1.0f);
+		ImGui::SliderFloat("Zoom Ratio (%)", &zoom_ratio, 20.0f, 1000.0f, "%.3f", 1.0f);
+		camera_pos.z = 100.0f * sheet_z_location / zoom_ratio;
 		ImGui::NewLine();
 
-		ImGui::ColorEdit3("Clear Color", (float*)&clear_color, f);
-		ImGui::SameLine();
 		ImGui::ColorEdit4("Model A Color", color_a, f);
 		ImGui::SameLine();
 		ImGui::ColorEdit4("Model B Color", color_b, f);
