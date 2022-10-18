@@ -77,7 +77,7 @@
       <PreprocessorDefinitions>WIN32;GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\glm;$(SolutionDir)Common;$(SolutionDir)ThirdParty;$(SolutionDir)ThirdParty\GLEW\include\GL;$(SolutionDir)ThirdParty\GLFW\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\glm;$(SolutionDir)Engine;$(SolutionDir)ThirdParty;$(SolutionDir)ThirdParty\GLEW\include\GL;$(SolutionDir)ThirdParty\GLFW\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common.vcxproj">
+    <ProjectReference Include="..\..\Engine\Engine.vcxproj">
       <Project>{43d0b166-fa15-4c34-8ecb-acff67b633b5}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -1,20 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="shaders">
-      <UniqueIdentifier>{2d19309b-f965-4868-849b-2933e2e018e5}</UniqueIdentifier>
-      <Extensions>glsl</Extensions>
-    </Filter>
-    <Filter Include="include">
-      <UniqueIdentifier>{b5e174d3-889c-4580-bb21-748e1cbf5d9a}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-    </Filter>
-    <Filter Include="source">
-      <UniqueIdentifier>{9ead94cb-ce1d-4b8f-be3d-a0a3b24a961b}</UniqueIdentifier>
-      <Extensions>cpp</Extensions>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawList.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="ErrorManager.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -24,10 +16,19 @@
     <ClCompile Include="IndexBuffer.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeModel.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
@@ -42,20 +43,14 @@
     <ClCompile Include="VertexBufferLayout.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="DrawList.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawList.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="ErrorManager.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -65,10 +60,19 @@
     <ClInclude Include="IndexBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeModel.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
@@ -83,25 +87,24 @@
     <ClInclude Include="VertexBufferLayout.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DrawList.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>include</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\triangle.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="shaders\textured_triangle.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shaders\triangle.glsl">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{23a837a5-873d-419c-865b-9bf3707182dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{ba52e3af-66f9-47ad-8ca7-eb730228a09a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{7e3f70fa-9ffc-4ded-bed8-034279d6c0af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

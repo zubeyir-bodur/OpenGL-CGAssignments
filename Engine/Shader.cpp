@@ -6,7 +6,7 @@
 #include <fstream>
 #include <filesystem>
 
-Shader::Shader(const char* path) 
+Shader::Shader(const char* path)
 {
 	m_shader_path = std::filesystem::absolute(path).string();
 	const std::string& program_src = parse_shader_file(m_shader_path.c_str());
