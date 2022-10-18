@@ -10,22 +10,37 @@ Shape* Shape::s_rectangle = new Shape();
 
 Shape::Shape(const std::vector<glm::vec3>& coords)
 {
-	m_no_transform_vertex_positions = new std::vector<float>(coords.size() * NUM_COORDINATES);
-	for (unsigned int i = 0; i < m_no_transform_vertex_positions->size(); i++)
+	ASSERT(coords.size() >= 3);
+	m_no_transform_vertex_positions = new std::vector<float>((coords.size() + 1) * NUM_COORDINATES);
+	glm::vec3 center(0.0f, 0.0f, 0.0f);
+
+	for (auto& coord : coords)
 	{
-		(*m_no_transform_vertex_positions)[i] = coords[i / 3][i % 3];
+		center.x += coord.x;
+		center.y += coord.y;
+		center.z += coord.z;
+	}
+	center /= (float)coords.size();
+
+	(*m_no_transform_vertex_positions)[0] = center.x;
+	(*m_no_transform_vertex_positions)[1] = center.y;
+	(*m_no_transform_vertex_positions)[2] = center.z;
+	for (unsigned int i = NUM_COORDINATES; i < m_no_transform_vertex_positions->size(); i++)
+	{
+		(*m_no_transform_vertex_positions)[i] = coords[i / 3 - 1][i % 3];
 	}
 
 	m_vertex_array = new VertexArray;
 	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data()
 		, m_no_transform_vertex_positions->size() * sizeof(float));
 	m_vertex_array->add_buffer(*m_vertex_buffer, s_layout);
-	m_indices = new std::vector<unsigned int>(coords.size());
-	for (unsigned int i = 0; i < coords.size(); i++)
+	m_indices = new std::vector<unsigned int>(coords.size() + 2);
+	for (unsigned int i = 0; i < coords.size() + 1; i++)
 	{
 		(*m_indices)[i] = i;
 	}
-	m_index_buffer = new IndexBuffer(m_indices->data(), coords.size());
+	(*m_indices)[coords.size() + 1] = 1;
+	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
 }
 
 Shape::~Shape()
@@ -45,22 +60,42 @@ void Shape::push_back_vertex(const glm::vec3& model_pos)
 {
 	ASSERT(this != s_eq_triangle);
 	ASSERT(this != s_rectangle);
-	delete m_vertex_array;
+	ASSERT(m_no_transform_vertex_positions->size() >= 3);
 	delete m_vertex_buffer;
-	delete m_indices;
+	delete m_vertex_array;
 	delete m_index_buffer;
+	delete m_indices;
+
 	m_no_transform_vertex_positions->push_back(model_pos.x);
 	m_no_transform_vertex_positions->push_back(model_pos.y);
 	m_no_transform_vertex_positions->push_back(model_pos.z);
+	glm::vec3 center(0.0f, 0.0f, 0.0f);
+
+	for (unsigned int i = 0; i < num_vertices(); i+=3)
+	{
+		center.x += (*m_no_transform_vertex_positions)[i];
+		center.y += (*m_no_transform_vertex_positions)[i+1];
+		center.z += (*m_no_transform_vertex_positions)[i+2];
+	}
+	center /= (float)num_vertices();
+
+	// Update the center
+	(*m_no_transform_vertex_positions)[0] = center.x;
+	(*m_no_transform_vertex_positions)[1] = center.y;
+	(*m_no_transform_vertex_positions)[2] = center.z;
+
+	// Recreate the vertex buffer & array
 	m_vertex_array = new VertexArray;
-	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data(), 
-		m_no_transform_vertex_positions->size() * sizeof(float));
+	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data()
+		, m_no_transform_vertex_positions->size() * sizeof(float));
 	m_vertex_array->add_buffer(*m_vertex_buffer, s_layout);
-	m_indices = new std::vector<unsigned int>(m_no_transform_vertex_positions->size() / NUM_COORDINATES);
-	for (unsigned int i = 0; i < m_indices->size(); i++)
+
+	m_indices = new std::vector<unsigned int>(num_vertices() + 1);
+	for (unsigned int i = 0; i < num_vertices(); i++)
 	{
 		(*m_indices)[i] = i;
 	}
+	(*m_indices)[num_vertices()] = 1; // draws the last triangle
 	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
 }
 

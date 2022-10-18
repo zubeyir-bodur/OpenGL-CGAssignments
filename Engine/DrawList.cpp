@@ -72,7 +72,24 @@ void DrawList::draw_all()
 		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 
 		// draw
-		m_renderer->draw_triangles(shape->vertex_array(), shape->index_buffer(), Shape::shader());
+		if (!shape->is_poly())
+		{
+			m_renderer->draw_triangles(shape->vertex_array(), shape->index_buffer(), Shape::shader());
+			// TODO
+			// if(shaoe->is_selected())
+			// {
+			//		Shape::shader()->set_uniform_4f("u_color",
+			//			0.0f,
+			//			0.0f,
+			//			0.0f,
+			//			1.0f);
+			//		m_renderer->draw_lines(shape->vertex_array(), shape->index_buffer(), Shape::shader());
+			//	}
+		}
+		else
+		{
+			m_renderer->draw_polygon(shape->vertex_array(), shape->index_buffer(), Shape::shader());
+		}
 	}
 }
 

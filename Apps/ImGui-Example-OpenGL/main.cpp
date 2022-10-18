@@ -90,11 +90,15 @@
 		__glCallVoid(glEnable(GL_BLEND));
 		__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
 
+		// Line width for GL_LINES
+		__glCallVoid(glLineWidth(5.0f));
+
 		// Specify the color of the triangle
 		float color_sheet[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec4 color_a = { 0.6f, 0.9f, 0.0f, 1.0f };
 		glm::vec4 color_b = { 0.9f, 0.6f, 0.0f, 1.0f };
 		glm::vec4 color_c = { 1.0f, 0.0f, 0.0f, 1.0f };
+		glm::vec4 color_d = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 		Shape::init_static_members(width);
 		// Texture
@@ -116,15 +120,18 @@
 		glm::vec3 model_a_pos(0, 0.0f, 0.0f);
 		glm::vec3 model_b_pos(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
 		glm::vec3 model_c_pos(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
+		glm::vec3 model_d_pos(0.0f, 0.0f, 0.0f);
 
 		// rotation - in radians (x, y, z axises respectively)
-		glm::vec3 model_a_rot(0.0f, 0, 0.0f);
+		glm::vec3 model_a_rot(0.0f, 0.0f, 0.0f);
 		glm::vec3 model_b_rot(0.0f, 0.0f, 0.0f);
 		glm::vec3 model_c_rot(0.0f, 0.0f, 0.0f);
+		glm::vec3 model_d_rot(0.0f, 0.0f, 0.0f);
 		// scale
 		glm::vec3 model_a_scale(1.0f, 1.0f, 1.0f);
 		glm::vec3 model_b_scale(1.0f, 1.0f, 1.0f);
 		glm::vec3 model_c_scale(1.0f, 1.0f, 1.0f);
+		glm::vec3 model_d_scale(1.0f, 1.0f, 1.0f);
 
 		ShapeModel model_a(ShapeModel::StaticShape::RECTANGLE,
 			&model_a_pos,
@@ -145,8 +152,28 @@
 			&color_c
 		);
 
-		// View matrix - camera
+		// Test for polygon creation
 		constexpr float global_z_pos_2d = 0.0f;
+		std::vector<glm::vec3> poly_coords{
+		glm::vec3(-init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 0
+		glm::vec3(init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 1
+		glm::vec3(init_shape_length,		0.0f,					global_z_pos_2d),	// 2
+		glm::vec3(init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 3
+		glm::vec3(-init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 4
+		glm::vec3(-init_shape_length,		0.0f,					global_z_pos_2d),	// 5
+		};
+
+		auto* model_d = new ShapeModel(poly_coords,
+			&model_d_pos,
+			&model_d_rot,
+			&model_d_scale,
+			&color_d
+		);
+
+		// Tests for adding a vertex provided that concaveness remains
+		model_d->push_back_vertex(glm::vec3(-3*init_shape_length/4.0f, 3 * init_shape_length / 8.0f, global_z_pos_2d));
+
+		// View matrix - camera
 		Camera::init(glm::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
 		auto view_matrix = Camera::view_matrix();
 
@@ -165,6 +192,7 @@
 		list.add_shape(&model_a);
 		list.add_shape(&model_b);
 		list.add_shape(&model_c);
+		list.add_shape(model_d);
 		bool should_select = true;
 		bool should_draw_rect = false;
 		bool should_draw_eq_tri = false;
@@ -265,6 +293,8 @@
 			glm::vec2 center_b = model_b.center_position();
 			glm::vec2 size_c = model_c.shape_size();
 			glm::vec2 center_c = model_c.center_position();
+			glm::vec2 size_d = model_d->shape_size();
+			glm::vec2 center_d = model_d->center_position();
 
 			// ImGui Components 
 			new_imgui_frame();
@@ -292,6 +322,13 @@
 			ImGui::SliderFloat("Model C-zrot", &model_c_rot.z, 0.0f, 360, "%.3f", 1.0f);
 			ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
 			ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
+			ImGui::NewLine();
+
+			ImGui::SliderFloat("Model D-XPos", &model_d_pos.x, 0.0f, (float)mode->width - size_c.x, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-YPos", &model_d_pos.y, 0.0f, (float)mode->height - size_c.y, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-zrot", &model_d_rot.z, 0.0f, 360, "%.3f", 1.0f);
+			ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
+			ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
 			ImGui::NewLine();
 
 			if (!has_texture)
@@ -362,6 +399,7 @@
 
 		// Cleanup
 		Shape::destroy_static_members_allocated_on_the_heap();
+		delete model_d;
 		shutdown_imgui();
 
 		glfwDestroyWindow(window);

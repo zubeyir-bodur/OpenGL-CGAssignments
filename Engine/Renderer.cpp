@@ -18,7 +18,7 @@ void Renderer::draw_polygon(const VertexArray* vertex_array_obj, const IndexBuff
 	shader_obj->bind();
 	vertex_array_obj->bind();
 	index_buffer_obj->bind();
-	__glCallVoid(glDrawElements(GL_POLYGON, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
+	__glCallVoid(glDrawElements(GL_TRIANGLE_FAN, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
 }
 
 void Renderer::draw_lines(const VertexArray* vertex_array_obj, const IndexBuffer* index_buffer_obj, const Shader* shader_obj) const
