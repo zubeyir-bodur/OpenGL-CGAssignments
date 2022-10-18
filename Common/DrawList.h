@@ -20,7 +20,7 @@ public:
 
 	void move_shape_to_frontview(Shape*);
 
-	Shape* frontmost_shape_at_pos(float model_x, float model_y);
+	Shape* frontmost_shape(const glm::vec3& model_pos);
 
 	unsigned int idx_of(Shape* s);
 

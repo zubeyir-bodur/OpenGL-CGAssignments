@@ -9,6 +9,7 @@
 #include "Texture.h"
 #include "DrawList.h"
 #include "Shape.h"
+#include "Camera.h"
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
@@ -170,7 +171,7 @@ int main(int, char**)
 		float x = *x_ptr;
 		float y = *y_ptr;
 		float z = *z_ptr;
- 		std_rect_positions.emplace_back(glm::vec3(x, y, z));
+		std_rect_positions.emplace_back(glm::vec3(x, y, z));
 	}
 
 	std::vector<glm::vec3> std_triangle_positions;
@@ -221,16 +222,14 @@ int main(int, char**)
 
 
 	// View matrix - camera
-	glm::vec3 camera_pos(0.0f, 0.0f, global_z_pos_2d);
-	float zoom_ratio = 100.0f;
-	glm::mat4 view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos)
-		* glm::scale(glm::mat4(1.0f), glm::vec3(zoom_ratio/100.0f, zoom_ratio/100.0f, 1.0f));
+	Camera::init(glm::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+	auto view_matrix = Camera::view_matrix();
 
 	// Orthographic projection is used
 	glm::mat4 projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
 
 	// Mouse location
-	glm::vec3 cursor_model_coords = (camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio);
+	auto cursor_model_coords = Camera::map_from_global(0, 0);
 
 	// Sheet initializations
 	glm::mat4 model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos)
@@ -246,6 +245,7 @@ int main(int, char**)
 	bool should_draw_eq_tri = false;
 	bool should_draw_convex_poly = false;
 	bool should_delete_shape = false;
+	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -260,51 +260,30 @@ int main(int, char**)
 		// Update the projection matrix
 		glfwGetWindowSize(window, &width, &height);
 		projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
-		cursor_model_coords = (camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio);
+
+		// Update cursor
+		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 
 		// Camera movement - simple
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
-			camera_pos.y -= 20.0f;
+			Camera::move_vertical(-20.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			camera_pos.x -= 20.0f;
+			Camera::move_horizontal(-20.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		{
-			camera_pos.y += 20.0f;
+			Camera::move_vertical(20.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			camera_pos.x += 20.0f;
+			Camera::move_horizontal(20.0f);
 		}
 
 		// Camera zooming with mouse wheel
-		if (zoom_ratio >= 20 && zoom_ratio <= 1000)
-		{
-			if (window_input.m_scroll_y != 0)
-			{
-				zoom_ratio += window_input.m_scroll_y * 10;
-			}
-		}
-		// Avoid exceeding limits
-		if (zoom_ratio < 20.0f)
-		{
-			zoom_ratio = 20.0f;
-		}
-		if (zoom_ratio > 1000.0f)
-		{
-			zoom_ratio = 1000.0f;
-		}
-		// Move the camera to the mouse location
-		if (zoom_ratio >= 20 && zoom_ratio <= 1000)
-		{
-			if (window_input.m_scroll_y != 0)
-			{
-				camera_pos -= (zoom_ratio / 100) * ((camera_pos + glm::vec3(window_input.m_mouse_x, window_input.m_mouse_y, 0.0f)) * (100.0f / zoom_ratio) - cursor_model_coords);
-			}
-		}
+		Camera::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
 
 		if (should_draw_rect)
 		{
@@ -390,9 +369,6 @@ int main(int, char**)
 		ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
 		ImGui::NewLine();
 
-		ImGui::SliderFloat("Zoom Ratio (%)", &zoom_ratio, 20.0f, 1000.0f, "%.3f", 1.0f);
-		ImGui::NewLine();
-
 		ImGui::ColorEdit4("Model A Color", color_a, f);
 		ImGui::SameLine();
 		ImGui::ColorEdit4("Model B Color", color_b, f);
@@ -408,12 +384,7 @@ int main(int, char**)
 		renderer.set_viewport(window);
 		renderer.clear((float*)&clear_color);
 
-		// Update camera position
-		view_matrix = glm::translate(glm::mat4(1.0f), -camera_pos)
-			* glm::scale(glm::mat4(1.0f), glm::vec3(zoom_ratio / 100.0f, zoom_ratio / 100.0f, 1.0f));
-
 		// Get cursor model coordinates
-		
 		ImGui::Text("Cursor Model Coordinates: %f, %f", cursor_model_coords.x, cursor_model_coords.y);
 		ImGui::End();
 		ImGui::EndFrame();
@@ -425,6 +396,7 @@ int main(int, char**)
 			color_sheet[1],
 			color_sheet[2],
 			color_sheet[3]);
+		view_matrix = Camera::view_matrix();
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 		triangle_shader->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
 

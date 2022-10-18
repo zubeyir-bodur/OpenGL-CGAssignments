@@ -51,6 +51,9 @@
     <ClCompile Include="Input.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorManager.h">
@@ -87,6 +90,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

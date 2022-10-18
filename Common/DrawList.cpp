@@ -27,11 +27,11 @@ void DrawList::move_shape_to_frontview(Shape* s)
 	m_shapes.push_back(s);
 }
 
-Shape* DrawList::frontmost_shape_at_pos(float model_x, float model_y)
+Shape* DrawList::frontmost_shape(const glm::vec3& model_pos)
 {
 	for (int i = m_shapes.size() - 1; i >= 0; i--)
 	{
-		if (m_shapes[i]->contains(model_x, model_y))
+		if (m_shapes[i]->contains(model_pos))
 		{
 			return m_shapes[i];
 		}
