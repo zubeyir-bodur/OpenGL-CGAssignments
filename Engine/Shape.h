@@ -3,7 +3,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
-#include <glm/glm.hpp>
+#include "Angel-maths/mat.h"
 #include <vector>
 #include <array>
 #include <string>
@@ -29,10 +29,10 @@ private:
 public:
 	Shape() {}
 	// Convex polygon constructor
-	Shape(const std::vector<glm::vec3>& coords);
+	Shape(const std::vector<Angel::vec3>& coords);
 	~Shape();
 
-	void push_back_vertex(const glm::vec3& model_pos);
+	void push_back_vertex(const Angel::vec3& model_pos);
 	unsigned int num_vertices();
 	const std::vector<float>& vertices();
 	const VertexArray* vertex_array() const { return m_vertex_array; }

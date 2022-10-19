@@ -1,11 +1,9 @@
 #include "Camera.h"
-#include <glm/gtc/matrix_transform.hpp>
-
 
 Camera::Camera(){}
 Camera::~Camera(){}
 
-void Camera::init(const glm::vec3& pos, float zoom_ratio)
+void Camera::init(const Angel::vec3& pos, float zoom_ratio)
 {
 	Camera& c = get_instance();
 	c.m_camera_pos = pos;
@@ -32,14 +30,14 @@ void Camera::move_horizontal(float dx)
 
 void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double global_cursor_y)
 {
-	const glm::vec3& cursor_model_coords = map_from_global(global_cursor_x, global_cursor_y);
+	const Angel::vec3& cursor_model_coords = map_from_global(global_cursor_x, global_cursor_y);
 	Camera& c = get_instance();
 	// Camera zooming with mouse wheel
 	if (c.m_zoom_ratio >= 20 && c.m_zoom_ratio <= 1000) // min 20 % max 10x zoom
 	{
 		if (zoom_percent_delta != 0)
 		{
-			c.m_zoom_ratio += zoom_percent_delta * 10.0;
+			c.m_zoom_ratio += (float)zoom_percent_delta * 10.0f;
 		}
 	}
 	// Avoid exceeding limits
@@ -56,22 +54,22 @@ void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double glob
 	{
 		if (zoom_percent_delta != 0)
 		{
-			c.m_camera_pos -= (c.m_zoom_ratio / 100) * ((c.m_camera_pos + glm::vec3(global_cursor_x, global_cursor_y, 0.0)) * (100.0f / c.m_zoom_ratio) - cursor_model_coords);
+			c.m_camera_pos -= (c.m_zoom_ratio / 100.0f) * ((c.m_camera_pos + Angel::vec3((float)global_cursor_x, (float)global_cursor_y, 0.0f)) * (100.0f / c.m_zoom_ratio) - cursor_model_coords);
 		}
 	}
 }
 
-const glm::mat4& Camera::view_matrix()
+Angel::mat4 Camera::view_matrix()
 {
 	Camera& c = get_instance();
-	return  glm::translate(glm::mat4(1.0f), -c.m_camera_pos)
-		* glm::scale(glm::mat4(1.0f), glm::vec3(c.m_zoom_ratio / 100.0f, c.m_zoom_ratio / 100.0f, 1.0f));
+	return  Angel::Translate(-c.m_camera_pos)
+		* Angel::Scale(Angel::vec3(c.m_zoom_ratio / 100.0f, c.m_zoom_ratio / 100.0f, 1.0f));
 }
 
-const glm::vec3& Camera::map_from_global(double x, double y)
+Angel::vec3 Camera::map_from_global(double x, double y)
 {
 	Camera& c = get_instance();
-	return (c.m_camera_pos + glm::vec3(x, y, 0.0f))* (100.0f / c.m_zoom_ratio);
+	return (c.m_camera_pos + Angel::vec3((float)x, (float)y, 0.0f))* (100.0f / c.m_zoom_ratio);
 }
 
 const float& Camera::get_zoom_ratio()

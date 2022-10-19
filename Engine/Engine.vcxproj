@@ -82,7 +82,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\glm;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -197,11 +197,11 @@
     <None Include="shaders\textured_triangle.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ThirdParty\Angel-maths\Angel-maths.vcxproj">
+      <Project>{0ac3f764-59b1-4f7d-9e26-5a512867605b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ThirdParty\dearimgui\dearimgui.vcxproj">
       <Project>{bf7cd1e9-c8fd-4de3-a8d2-a055613f99fe}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\glm\glm.vcxproj">
-      <Project>{d1d9e1c9-08ed-426b-be9d-5ef46b18fe6e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\magic_enum\magic_enum.vcxproj">
       <Project>{2051c1a2-1827-4373-95a4-108ae49a58f0}</Project>

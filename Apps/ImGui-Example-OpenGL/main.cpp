@@ -13,9 +13,7 @@
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/ext/scalar_constants.hpp>
+#include "Angel-maths/mat.h"
 #include <glew.h>
 #include "Input.h"
 #include <glfw3.h>
@@ -95,10 +93,10 @@
 
 		// Specify the color of the triangle
 		float color_sheet[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glm::vec4 color_a = { 0.6f, 0.9f, 0.0f, 1.0f };
-		glm::vec4 color_b = { 0.9f, 0.6f, 0.0f, 1.0f };
-		glm::vec4 color_c = { 1.0f, 0.0f, 0.0f, 1.0f };
-		glm::vec4 color_d = { 0.0f, 0.0f, 1.0f, 1.0f };
+		Angel::vec4 color_a = { 0.6f, 0.9f, 0.0f, 1.0f };
+		Angel::vec4 color_b = { 0.9f, 0.6f, 0.0f, 1.0f };
+		Angel::vec4 color_c = { 1.0f, 0.0f, 0.0f, 1.0f };
+		Angel::vec4 color_d = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 		Shape::init_static_members(width);
 		// Texture
@@ -113,25 +111,25 @@
 		}
 		Renderer renderer;
 
-		glm::vec3 sheet_pos(0, 0.0f, 0.0f);
+		Angel::vec3 sheet_pos(0, 0.0f, 0.0f);
 
 		// Initialize shapes
 		// positions - respect to their initial 0th vertex positions
-		glm::vec3 model_a_pos(0, 0.0f, 0.0f);
-		glm::vec3 model_b_pos(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
-		glm::vec3 model_c_pos(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
-		glm::vec3 model_d_pos(0.0f, 0.0f, 0.0f);
+		Angel::vec3 model_a_pos(0, 0.0f, 0.0f);
+		Angel::vec3 model_b_pos(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
+		Angel::vec3 model_c_pos(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
+		Angel::vec3 model_d_pos(0.0f, 0.0f, 0.0f);
 
 		// rotation - in radians (x, y, z axises respectively)
-		glm::vec3 model_a_rot(0.0f, 0.0f, 0.0f);
-		glm::vec3 model_b_rot(0.0f, 0.0f, 0.0f);
-		glm::vec3 model_c_rot(0.0f, 0.0f, 0.0f);
-		glm::vec3 model_d_rot(0.0f, 0.0f, 0.0f);
+		Angel::vec3 model_a_rot(0.0f, 0.0f, 0.0f);
+		Angel::vec3 model_b_rot(0.0f, 0.0f, 0.0f);
+		Angel::vec3 model_c_rot(0.0f, 0.0f, 0.0f);
+		Angel::vec3 model_d_rot(0.0f, 0.0f, 0.0f);
 		// scale
-		glm::vec3 model_a_scale(1.0f, 1.0f, 1.0f);
-		glm::vec3 model_b_scale(1.0f, 1.0f, 1.0f);
-		glm::vec3 model_c_scale(1.0f, 1.0f, 1.0f);
-		glm::vec3 model_d_scale(1.0f, 1.0f, 1.0f);
+		Angel::vec3 model_a_scale(1.0f, 1.0f, 1.0f);
+		Angel::vec3 model_b_scale(1.0f, 1.0f, 1.0f);
+		Angel::vec3 model_c_scale(1.0f, 1.0f, 1.0f);
+		Angel::vec3 model_d_scale(1.0f, 1.0f, 1.0f);
 
 		ShapeModel model_a(ShapeModel::StaticShape::RECTANGLE,
 			&model_a_pos,
@@ -154,13 +152,13 @@
 
 		// Test for polygon creation
 		constexpr float global_z_pos_2d = 0.0f;
-		std::vector<glm::vec3> poly_coords{
-		glm::vec3(-init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 0
-		glm::vec3(init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 1
-		glm::vec3(init_shape_length,		0.0f,					global_z_pos_2d),	// 2
-		glm::vec3(init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 3
-		glm::vec3(-init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 4
-		glm::vec3(-init_shape_length,		0.0f,					global_z_pos_2d),	// 5
+		std::vector<Angel::vec3> poly_coords{
+		Angel::vec3(-init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 0
+		Angel::vec3(init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 1
+		Angel::vec3(init_shape_length,		0.0f,					global_z_pos_2d),	// 2
+		Angel::vec3(init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 3
+		Angel::vec3(-init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 4
+		Angel::vec3(-init_shape_length,		0.0f,					global_z_pos_2d),	// 5
 		};
 
 		auto* model_d = new ShapeModel(poly_coords,
@@ -171,22 +169,22 @@
 		);
 
 		// Tests for adding a vertex provided that concaveness remains
-		model_d->push_back_vertex(glm::vec3(-3*init_shape_length/4.0f, 3 * init_shape_length / 8.0f, global_z_pos_2d));
+		model_d->push_back_vertex(Angel::vec3(-3*init_shape_length/4.0f, 3 * init_shape_length / 8.0f, global_z_pos_2d));
 
 		// View matrix - camera
-		Camera::init(glm::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+		Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
 		auto view_matrix = Camera::view_matrix();
 
 		// Orthographic projection is used
-		glm::mat4 projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+		Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 		// Mouse location
 		auto cursor_model_coords = Camera::map_from_global(0, 0);
 
 		// Sheet initializations
-		glm::mat4 model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos)
-			* glm::scale(glm::mat4(1.0f), glm::vec3(8.0f, 8.0f * mode->height / (float)mode->width, 1.0f));
-		glm::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
+		Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
+			* Angel::Scale(Angel::vec3(8.0f, 8.0f * mode->height / (float)mode->width, 1.0f));
+		Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 		DrawList list(&renderer, projection_matrix, view_matrix);
 		list.add_shape(&model_a);
@@ -212,7 +210,7 @@
 
 			// Update the projection matrix
 			glfwGetWindowSize(window, &width, &height);
-			projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+			projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 			// Update cursor
 			cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
@@ -287,14 +285,14 @@
 			}
 
 			// update center positions of models for logging
-			glm::vec2 size_a = model_a.shape_size();
-			glm::vec2 center_a = model_a.center_position();
-			glm::vec2 size_b = model_b.shape_size();
-			glm::vec2 center_b = model_b.center_position();
-			glm::vec2 size_c = model_c.shape_size();
-			glm::vec2 center_c = model_c.center_position();
-			glm::vec2 size_d = model_d->shape_size();
-			glm::vec2 center_d = model_d->center_position();
+			Angel::vec3 size_a = model_a.shape_size();
+			Angel::vec3 center_a = model_a.center_position();
+			Angel::vec3 size_b = model_b.shape_size();
+			Angel::vec3 center_b = model_b.center_position();
+			Angel::vec3 size_c = model_c.shape_size();
+			Angel::vec3 center_c = model_c.center_position();
+			Angel::vec3 size_d = model_d->shape_size();
+			Angel::vec3 center_d = model_d->center_position();
 
 			// ImGui Components 
 			new_imgui_frame();

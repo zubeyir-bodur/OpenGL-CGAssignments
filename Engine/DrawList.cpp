@@ -1,13 +1,13 @@
 #include "DrawList.h"
 #include "ErrorManager.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "Angel-maths/mat.h"
 #include <glew.h>
 
-DrawList::DrawList(Renderer* r, const glm::mat4& proj, const glm::mat4& view)
+DrawList::DrawList(Renderer* r, const Angel::mat4& proj, const Angel::mat4& view)
 {
 	m_renderer = r;
-	m_proj_mat = const_cast<glm::mat4*>(&proj);
-	m_view_mat = const_cast<glm::mat4*>(&view);
+	m_proj_mat = const_cast<Angel::mat4*>(&proj);
+	m_view_mat = const_cast<Angel::mat4*>(&view);
 }
 DrawList::~DrawList()
 {
@@ -22,12 +22,12 @@ void DrawList::add_shape(ShapeModel* s)
 void DrawList::move_shape_to_frontview(ShapeModel* s)
 {
 	unsigned int idx = idx_of(s);
-	assert(idx != -1);
+	ASSERT(idx != -1);
 	m_shape_models.erase(m_shape_models.begin() + idx);
 	m_shape_models.push_back(s);
 }
 
-ShapeModel* DrawList::frontmost_shape(const glm::vec3& model_pos)
+ShapeModel* DrawList::frontmost_shape(const Angel::vec3& model_pos)
 {
 	for (int i = m_shape_models.size() - 1; i >= 0; i--)
 	{
@@ -58,9 +58,9 @@ void DrawList::draw_all()
 {
 	for (auto shape : m_shape_models)
 	{
-		glm::mat4 model_mat = shape->model_matrix();
-		std::vector<glm::vec3> coords = shape->model_coords();
-		glm::mat4 MVP_matrix = (* m_proj_mat) * (*m_view_mat) * model_mat;
+		Angel::mat4 model_mat = shape->model_matrix();
+		std::vector<Angel::vec3> coords = shape->model_coords();
+		Angel::mat4 MVP_matrix = (* m_proj_mat) * (*m_view_mat) * model_mat;
 
 		// Update locations and colors
 		Shape::shader()->bind();

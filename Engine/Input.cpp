@@ -1,7 +1,7 @@
 #include "Input.h"
 #include <iostream>
 #include <string>
-#include <glm/gtc/matrix_transform.hpp>
+#include "Angel-maths/mat.h"
 
 Input::Input(GLFWwindow* app_window)
 {

@@ -39,9 +39,9 @@ void Shader::set_uniform_4f(const std::string& name, float v0, float v1, float v
 	__glCallVoid(glUniform4f(uniform_location(name), v0, v1, v2, v3));
 }
 
-void Shader::set_uniform_mat4f(const std::string& name, glm::mat4 mat)
+void Shader::set_uniform_mat4f(const std::string& name, Angel::mat4 mat)
 {
-	__glCallVoid(glUniformMatrix4fv(uniform_location(name), 1, GL_FALSE, &mat[0][0]));
+	__glCallVoid(glUniformMatrix4fv(uniform_location(name), 1, GL_TRUE, &mat[0][0]));
 }
 
 int Shader::uniform_location(const std::string& name)
