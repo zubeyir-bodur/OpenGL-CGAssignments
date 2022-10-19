@@ -8,12 +8,12 @@ VertexBufferLayout Shape::s_layout;
 Shape* Shape::s_eq_triangle = new Shape();
 Shape* Shape::s_rectangle = new Shape();
 
-Shape::Shape(const std::vector<glm::vec3>& coords)
+Shape::Shape(const std::vector<Angel::vec3>& coords)
 {
 	ASSERT(coords.size() >= 3);
 	m_no_transform_vertex_positions = new std::vector<float>;
 	m_no_transform_vertex_positions->reserve((coords.size() + 1) * NUM_COORDINATES);
-	glm::vec3 center(0.0f, 0.0f, 0.0f);
+	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 	for (auto& coord : coords)
 	{
 		center.x += coord.x;
@@ -57,7 +57,7 @@ Shape::~Shape()
 /// This function will be called whenever a vertex is added to the polygon
 /// </summary>
 /// <param name="model_pos"></param>
-void Shape::push_back_vertex(const glm::vec3& model_pos)
+void Shape::push_back_vertex(const Angel::vec3& model_pos)
 {
 	ASSERT(this != s_eq_triangle);
 	ASSERT(this != s_rectangle);
@@ -68,7 +68,7 @@ void Shape::push_back_vertex(const glm::vec3& model_pos)
 	m_no_transform_vertex_positions->emplace_back(model_pos.x);
 	m_no_transform_vertex_positions->emplace_back(model_pos.y);
 	m_no_transform_vertex_positions->emplace_back(model_pos.z);
-	glm::vec3 center(0.0f, 0.0f, 0.0f);
+	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 
 	for (unsigned int i = 0; i < num_vertices(); i+=3)
 	{

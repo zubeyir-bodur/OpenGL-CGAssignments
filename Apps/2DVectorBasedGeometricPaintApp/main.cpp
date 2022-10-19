@@ -13,9 +13,7 @@
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/ext/scalar_constants.hpp>
+#include "Angel-maths/mat.h"
 #include <glew.h>
 #include "Input.h"
 #include <glfw3.h>
@@ -100,23 +98,23 @@ int main(int, char**)
 
 	Renderer renderer;
 
-	glm::vec3 sheet_pos(0, height/7.0f, 0.0f);
+	Angel::vec3 sheet_pos(0, height/7.0f, 0.0f);
 
 	// View matrix - camera
 	constexpr float global_z_pos_2d = 0.0f;
-	Camera::init(glm::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+	Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
 	auto view_matrix = Camera::view_matrix();
 
 	// Orthographic projection is used
-	glm::mat4 projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+	Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 	// Mouse location
 	auto cursor_model_coords = Camera::map_from_global(0, 0);
 
 	// Sheet initializations
-	glm::mat4 model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos)
-		* glm::scale(glm::mat4(1.0f), glm::vec3(8.0f, (6.0f/7.0f)*(8.0f*height / width), 1.0f));
-	glm::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
+	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
+		* Angel::Scale(Angel::vec3(8.0f, (6.0f/7.0f)*(8.0f*height / width), 1.0f));
+	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	DrawList list(&renderer, projection_matrix, view_matrix);
 
@@ -144,11 +142,11 @@ int main(int, char**)
 		// Update the projection matrix
 		glfwGetWindowSize(window, &width, &height);
 		
-		sheet_pos = glm::vec3(0, height / 7.0f, 0.0f);
-		model_sheet_matrix = glm::translate(glm::mat4(1.0f), sheet_pos)
-			* glm::scale(glm::mat4(1.0f), glm::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
+		sheet_pos = Angel::vec3(0, height / 7.0f, 0.0f);
+		model_sheet_matrix = Angel::Translate(sheet_pos)
+			* Angel::Scale(Angel::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
-		projection_matrix = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+		projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 		// Update cursor
 		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
@@ -237,7 +235,7 @@ int main(int, char**)
 		// ImGui Components 
 		new_imgui_frame();
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_::ImGuiCond_Always);
-		ImGui::SetNextWindowSize(ImVec2(width, height/7.0f), ImGuiCond_::ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2((float)width, height/7.0f), ImGuiCond_::ImGuiCond_Always);
 		ImGuiWindowFlags flags_editor =
 			ImGuiWindowFlags_NoDecoration |
 			ImGuiWindowFlags_NoFocusOnAppearing |

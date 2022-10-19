@@ -1,12 +1,11 @@
 #include "ShapeModel.h"
 #include "ErrorManager.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 ShapeModel::ShapeModel(StaticShape def,
-	glm::vec3* pos,
-	glm::vec3* rot,
-	glm::vec3* scale,
-	glm::vec4* rgba)
+	Angel::vec3* pos,
+	Angel::vec3* rot,
+	Angel::vec3* scale,
+	Angel::vec4* rgba)
 {
 	switch (def)
 	{
@@ -27,11 +26,11 @@ ShapeModel::ShapeModel(StaticShape def,
 	m_color = rgba;
 }
 
-ShapeModel::ShapeModel(const std::vector<glm::vec3>& poly_coords,
-	glm::vec3* pos,
-	glm::vec3* rot,
-	glm::vec3* scale,
-	glm::vec4* rgba)
+ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_coords,
+	Angel::vec3* pos,
+	Angel::vec3* rot,
+	Angel::vec3* scale,
+	Angel::vec4* rgba)
 {
 	m_is_poly = true;
 	m_shape_def = new Shape(poly_coords);
@@ -50,7 +49,7 @@ ShapeModel::~ShapeModel()
 }
 
 
-bool ShapeModel::contains(const glm::vec3& model_pos)
+bool ShapeModel::contains(const Angel::vec3& model_pos)
 {
 	unsigned int nvert = m_shape_def->num_vertices();
 	auto model_coordinates = model_coords();
@@ -70,41 +69,44 @@ bool ShapeModel::contains(const glm::vec3& model_pos)
 	return c;
 }
 
-std::vector<glm::vec3> ShapeModel::model_coords()
+std::vector<Angel::vec3> ShapeModel::model_coords()
 {
 	const std::vector<float>& raw_vertices = m_shape_def->vertices();
-	glm::mat4 mat_model = model_matrix();
-	std::vector<glm::vec3> out(m_shape_def->num_vertices());
+	Angel::mat4 mat_model = model_matrix();
+	std::vector<Angel::vec3> out(m_shape_def->num_vertices());
 	int idx_vertex = 0;
 	for (auto& vertex : out)
 	{
 		float x = raw_vertices[idx_vertex * NUM_COORDINATES];
 		float y = raw_vertices[idx_vertex * NUM_COORDINATES + 1];
 		float z = raw_vertices[idx_vertex * NUM_COORDINATES + 2];
-		vertex = mat_model * glm::vec4(x, y, z, 1.0f);
+		Angel::vec4 tmp = mat_model * Angel::vec4(x, y, z, 1.0f);
+		vertex.x = tmp.x;
+		vertex.y = tmp.y;
+		vertex.z = tmp.z;
 		idx_vertex++;
 	}
 	return out;
 }
 
-glm::mat4 ShapeModel::model_matrix()
+Angel::mat4 ShapeModel::model_matrix()
 {
-	return glm::translate(glm::mat4(1.0f), center_position())
-		//* glm::rotate(glm::mat4(1.0f), glm::radians((*m_rotation).x), glm::vec3(1, 0, 0))
-		//* glm::rotate(glm::mat4(1.0f), glm::radians((*m_rotation).y), glm::vec3(0, 1, 0))
-		* glm::rotate(glm::mat4(1.0f), glm::radians((*m_rotation).z), glm::vec3(0, 0, 1)) // required rotation for assignment 1
-		* glm::translate(glm::mat4(1.0f), -center_position() + (*m_position));
-	// * glm::scale(glm::mat4(1.0f), m_scale);
+	return Angel::Translate(center_position())
+		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0))
+		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel::vec3(0, 1, 0))
+		* Angel::RotateZ(((*m_rotation).z)) // required rotation for assignment 1
+		* Angel::Translate(-center_position() + (*m_position));
+		* Angel::Scale(*m_scale);
 }
 
-void ShapeModel::push_back_vertex(const glm::vec3& model_pos)
+void ShapeModel::push_back_vertex(const Angel::vec3& model_pos)
 {
 	m_shape_def->push_back_vertex(model_pos);
 }
 
-glm::vec3 ShapeModel::center_position()
+Angel::vec3 ShapeModel::center_position()
 {
-	glm::vec3 center(0.0f, 0.0f, 0.0f);
+	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 	std::vector<float> vert = m_shape_def->vertices();
 	for (unsigned int i = 0; i < m_shape_def->num_vertices() * NUM_COORDINATES; i+= NUM_COORDINATES)
 	{
@@ -156,7 +158,7 @@ std::array<float, 6> ShapeModel::shape_bounding_cube()
 	};
 }
 
-glm::vec3 ShapeModel::shape_size()
+Angel::vec3 ShapeModel::shape_size()
 {
 	std::array<float, 6> bounding_cube = this->shape_bounding_cube();
 	return {
