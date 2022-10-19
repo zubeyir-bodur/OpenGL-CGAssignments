@@ -1,6 +1,7 @@
 #include "ImGuiManager.h"
 #include <dearimgui/imgui.h>
 #include <dearimgui/backend/imgui_impl_glfw.h>
+#include <glfw3.h>
 #include <dearimgui/backend/imgui_impl_opengl3.h>
 #include "Shader.h"
 
@@ -9,7 +10,10 @@ void init_imgui(GLFWwindow* window)
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    io.DisplaySize = ImVec2(width, height);
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
         | ImGuiConfigFlags_DockingEnable;     // Enable Keyboard Controls
 
