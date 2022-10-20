@@ -24,6 +24,7 @@ ShapeModel::ShapeModel(StaticShape def,
 	m_rotation = rot;
 	m_scale = scale;
 	m_color = rgba;
+	m_e_def = def;
 }
 
 ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_coords,
@@ -38,6 +39,7 @@ ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_coords,
 	m_rotation = rot;
 	m_scale = scale;
 	m_color = rgba;
+	m_e_def = StaticShape::NONE;
 }
 
 ShapeModel::~ShapeModel()
@@ -46,32 +48,131 @@ ShapeModel::~ShapeModel()
 	{
 		delete m_shape_def;
 	}
+	delete m_position;
+	delete m_rotation;
+	delete m_scale;
+	delete m_color;
 }
 
-
+// Polygon test function, taken from :
+// https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon
 bool ShapeModel::contains(const Angel::vec3& model_pos)
 {
-	unsigned int nvert = m_shape_def->num_vertices();
+	struct Point {
+		float x, y;
+	};
+
+	struct line {
+		Point p1, p2;
+	};
+
+	auto on_line = [](line l1, Point p) -> bool
+	{
+		// Check whether p is on the line or not
+		if (p.x <= std::max(l1.p1.x, l1.p2.x)
+			&& p.x <= std::min(l1.p1.x, l1.p2.x)
+			&& (p.y <= std::max(l1.p1.y, l1.p2.y)
+				&& p.y <= std::min(l1.p1.y, l1.p2.y)))
+			return true;
+
+		return false;
+	};
+
+	auto direction = [](Point a, Point b, Point c) -> int
+	{
+		float val = (b.y - a.y) * (c.x - b.x)
+			- (b.x - a.x) * (c.y - b.y);
+		if (val == 0)
+			// Colinear
+			return 0;
+		else if (val < 0)
+			// Anti-clockwise direction
+			return 2;
+		// Clockwise direction
+		return 1;
+	};
+
+	auto is_intersect = [&, direction, on_line](line l1, line l2) -> bool
+	{
+		// Four direction for two lines and points of other line
+		int dir1 = direction(l1.p1, l1.p2, l2.p1);
+		int dir2 = direction(l1.p1, l1.p2, l2.p2);
+		int dir3 = direction(l2.p1, l2.p2, l1.p1);
+		int dir4 = direction(l2.p1, l2.p2, l1.p2);
+
+		// When intersecting
+		if (dir1 != dir2 && dir3 != dir4)
+			return true;
+
+		// When p2 of line2 are on the line1
+		if (dir1 == 0 && on_line(l1, l2.p1))
+			return true;
+
+		// When p1 of line2 are on the line1
+		if (dir2 == 0 && on_line(l1, l2.p2))
+			return true;
+
+		// When p2 of line1 are on the line2
+		if (dir3 == 0 && on_line(l2, l1.p1))
+			return true;
+
+		// When p1 of line1 are on the line2
+		if (dir4 == 0 && on_line(l2, l1.p2))
+			return true;
+
+		return false;
+	};
+
+	unsigned int num_vertices = m_shape_def->num_vertices();
 	auto model_coordinates = model_coords();
-	unsigned int i, j;
-	bool c = false;
-	for (i = 0, j = nvert - 1; i < nvert; j = i++) {
-		float x_i = model_coordinates[i].x;
-		float y_i = model_coordinates[i].y;
-		float x_j = model_coordinates[j].x;
-		float y_j = model_coordinates[j].y;
-		if (
-			((y_i > model_pos.y) != (y_j > model_pos.y)) &&
-			(model_pos.x < (x_j - x_i) * (model_pos.y - y_i) / (y_j - y_i) + x_j)
-			)
-			c = !c;
+
+	// When polygon has less than 3 edge, it is not polygon
+	if (num_vertices < 3)
+		return false;
+	Point p = { model_pos.x, model_pos.y };
+	// Create a point at infinity, y is same as point p
+	line exline = { p, { INT_MAX, p.y } };
+	int count = 0;
+	int i = 0;
+	do {
+
+		// Forming a line from two consecutive points of our shape
+		Point p1 = { model_coordinates[i].x, model_coordinates[i].y };
+		Point p2 = { model_coordinates[(i + 1) % num_vertices].x, model_coordinates[(i + 1) % num_vertices].y };
+		line side = { p1, p2 };
+		if (is_intersect(side, exline)) {
+
+			// If side is intersects exline
+			if (direction(side.p1, p, side.p2) == 0)
+				return on_line(side, p);
+			count++;
+		}
+		i = (i + 1) % num_vertices;
+	} while (i != 0);
+
+	// When count is odd
+	return count & 1;
+}
+
+unsigned int ShapeModel::true_num_vertices()
+{
+	unsigned int n_vert = m_shape_def->num_vertices();
+	if (m_e_def == StaticShape::NONE)
+	{
+		n_vert -= 2;
 	}
-	return c;
+	return n_vert;
 }
 
 std::vector<Angel::vec3> ShapeModel::model_coords()
 {
-	const std::vector<float>& raw_vertices = m_shape_def->vertices();
+	std::vector<float> raw_vertices = m_shape_def->vertices();
+	if (m_e_def == StaticShape::NONE)
+	{
+		// Exclude the first and the last vertex
+		raw_vertices.erase(raw_vertices.begin(), raw_vertices.begin() + NUM_COORDINATES);
+		raw_vertices.erase(raw_vertices.end() - NUM_COORDINATES, raw_vertices.end());
+	}
 	Angel::mat4 mat_model = model_matrix();
 	std::vector<Angel::vec3> out(m_shape_def->num_vertices());
 	int idx_vertex = 0;
@@ -91,12 +192,14 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 
 Angel::mat4 ShapeModel::model_matrix()
 {
-	return Angel::Translate(center_position())
+
+	return ((Angel::Translate((*m_position))
 		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0))
-		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel::vec3(0, 1, 0))
-		* Angel::RotateZ(((*m_rotation).z)) // required rotation for assignment 1
-		* Angel::Translate(-center_position() + (*m_position));
-		* Angel::Scale(*m_scale);
+		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel
+		//* ::vec3(0, 1, 0))
+		* Angel::RotateZ(((*m_rotation).z))) // required rotation for assignment 1
+		* Angel::Scale(*m_scale))
+		* Angel::Translate(-center_raw());
 }
 
 void ShapeModel::push_back_vertex(const Angel::vec3& model_pos)
@@ -104,15 +207,15 @@ void ShapeModel::push_back_vertex(const Angel::vec3& model_pos)
 	m_shape_def->push_back_vertex(model_pos);
 }
 
-Angel::vec3 ShapeModel::center_position()
+Angel::vec3 ShapeModel::center_raw()
 {
 	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 	std::vector<float> vert = m_shape_def->vertices();
 	for (unsigned int i = 0; i < m_shape_def->num_vertices() * NUM_COORDINATES; i+= NUM_COORDINATES)
 	{
-		center.x += (vert[i]     - (*m_position).x) * (*m_scale).x + 2 * (*m_position).x;
-		center.y += (vert[i + 1] - (*m_position).y) * (*m_scale).y + 2 * (*m_position).y;
-		center.z += (vert[i + 2] - (*m_position).z) * (*m_scale).z + 2 * (*m_position).z;
+		center.x += vert[i]    ;
+		center.y += vert[i + 1];
+		center.z += vert[i + 2];
 	}
 	center /= (float)m_shape_def->num_vertices();
 	return center;

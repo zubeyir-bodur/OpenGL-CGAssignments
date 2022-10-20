@@ -14,8 +14,7 @@ void init_imgui(GLFWwindow* window)
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     io.DisplaySize = ImVec2((float)width, (float)height);
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
-        | ImGuiConfigFlags_DockingEnable;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Keyboard Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();

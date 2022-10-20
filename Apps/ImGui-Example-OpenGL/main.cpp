@@ -86,17 +86,17 @@
 
 		// Enable blending
 		__glCallVoid(glEnable(GL_BLEND));
-		__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA));
+		__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		// Line width for GL_LINES
 		__glCallVoid(glLineWidth(5.0f));
 
 		// Specify the color of the triangle
 		float color_sheet[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		Angel::vec4 color_a = { 0.6f, 0.9f, 0.0f, 1.0f };
-		Angel::vec4 color_b = { 0.9f, 0.6f, 0.0f, 1.0f };
-		Angel::vec4 color_c = { 1.0f, 0.0f, 0.0f, 1.0f };
-		Angel::vec4 color_d = { 0.0f, 0.0f, 1.0f, 1.0f };
+		Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.9f, 0.0f, 1.0f };
+		Angel::vec4* color_b = new Angel::vec4{ 0.9f, 0.6f, 0.0f, 1.0f };
+		Angel::vec4* color_c = new Angel::vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
+		Angel::vec4* color_d = new Angel::vec4{ 0.0f, 0.0f, 1.0f, 1.0f };
 
 		Shape::init_static_members(width);
 		// Texture
@@ -115,39 +115,39 @@
 
 		// Initialize shapes
 		// positions - respect to their initial 0th vertex positions
-		Angel::vec3 model_a_pos(0, 0.0f, 0.0f);
-		Angel::vec3 model_b_pos(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
-		Angel::vec3 model_c_pos(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
-		Angel::vec3 model_d_pos(0.0f, 0.0f, 0.0f);
-
+		auto* model_a_pos = new Angel::vec3(0, 0.0f, 0.0f);
+		auto* model_b_pos = new Angel::vec3(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
+		auto* model_c_pos = new Angel::vec3(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
+		auto* model_d_pos = new Angel::vec3(0.0f, 0.0f, 0.0f);
+				   
 		// rotation - in radians (x, y, z axises respectively)
-		Angel::vec3 model_a_rot(0.0f, 0.0f, 0.0f);
-		Angel::vec3 model_b_rot(0.0f, 0.0f, 0.0f);
-		Angel::vec3 model_c_rot(0.0f, 0.0f, 0.0f);
-		Angel::vec3 model_d_rot(0.0f, 0.0f, 0.0f);
-		// scale
-		Angel::vec3 model_a_scale(1.0f, 1.0f, 1.0f);
-		Angel::vec3 model_b_scale(1.0f, 1.0f, 1.0f);
-		Angel::vec3 model_c_scale(1.0f, 1.0f, 1.0f);
-		Angel::vec3 model_d_scale(1.0f, 1.0f, 1.0f);
+		auto* model_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+		auto* model_b_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+		auto* model_c_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+		auto* model_d_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+		// scale   
+		auto* model_a_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
+		auto* model_b_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
+		auto* model_c_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
+		auto* model_d_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
 
 		ShapeModel model_a(ShapeModel::StaticShape::RECTANGLE,
-			&model_a_pos,
-			&model_a_rot,
-			&model_a_scale,
-			&color_a
+			model_a_pos,
+			model_a_rot,
+			model_a_scale,
+			color_a
 		);
 		ShapeModel model_b(ShapeModel::StaticShape::RECTANGLE,
-			&model_b_pos,
-			&model_b_rot,
-			&model_b_scale,
-			&color_b
+			model_b_pos,
+			model_b_rot,
+			model_b_scale,
+			color_b
 		);
 		ShapeModel model_c(ShapeModel::StaticShape::EQUILATERAL_TRIANGLE,
-			&model_c_pos,
-			&model_c_rot,
-			&model_c_scale,
-			&color_c
+			model_c_pos,
+			model_c_rot,
+			model_c_scale,
+			color_c
 		);
 
 		// Test for polygon creation
@@ -162,10 +162,10 @@
 		};
 
 		auto* model_d = new ShapeModel(poly_coords,
-			&model_d_pos,
-			&model_d_rot,
-			&model_d_scale,
-			&color_d
+			model_d_pos,
+			model_d_rot,
+			model_d_scale,
+			color_d
 		);
 
 		// Tests for adding a vertex provided that concaveness remains
@@ -285,14 +285,14 @@
 			}
 
 			// update center positions of models for logging
-			Angel::vec3 size_a = model_a.shape_size();
-			Angel::vec3 center_a = model_a.center_position();
-			Angel::vec3 size_b = model_b.shape_size();
-			Angel::vec3 center_b = model_b.center_position();
-			Angel::vec3 size_c = model_c.shape_size();
-			Angel::vec3 center_c = model_c.center_position();
-			Angel::vec3 size_d = model_d->shape_size();
-			Angel::vec3 center_d = model_d->center_position();
+			//Angel::vec3 size_a = model_a.shape_size();
+			//Angel::vec3 center_a = model_a.center_position();
+			//Angel::vec3 size_b = model_b.shape_size();
+			//Angel::vec3 center_b = model_b.center_position();
+			//Angel::vec3 size_c = model_c.shape_size();
+			//Angel::vec3 center_c = model_c.center_position();
+			//Angel::vec3 size_d = model_d->shape_size();
+			//Angel::vec3 center_d = model_d->center_position();
 
 			// ImGui Components 
 			new_imgui_frame();
@@ -301,41 +301,43 @@
 
 			ImGui::Text("This is some useful text.");
 
-			ImGui::SliderFloat("Model A-Xpos", &model_a_pos.x, 0.0f, (float)mode->width - size_a.x, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model A-Ypos", &model_a_pos.y, 0.0f, (float)mode->height - size_a.y, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model A-zrot", &model_a_rot.z, 0.0f, 360, "%.3f", 1.0f);
-			ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
-			ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
+			ImGui::SliderFloat("Model A-Xpos", &model_a_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model A-Ypos", &model_a_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model A-zrot", &model_a_rot->z, 0.0f, 360, "%.3f", 1.0f);
+			ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, -2, 2, "%.3f", 1.0f);
+			//ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
+			//ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
+			//ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
 			ImGui::NewLine();
 
-			ImGui::SliderFloat("Model B-XPos", &model_b_pos.x, 0.0f, (float)mode->width - size_b.x, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model B-YPos", &model_b_pos.y, 0.0f, (float)mode->height - size_b.y, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model B-zrot", &model_b_rot.z, 0.0f, 360, "%.3f", 1.0f);
-			ImGui::Text("Size of Model B: %f, %f", size_b.x, size_b.y);
-			ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
+			ImGui::SliderFloat("Model B-XPos", &model_b_pos->x, 0.0f, (float)mode->width , "%.1f", 1.0f);
+			ImGui::SliderFloat("Model B-YPos", &model_b_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model B-zrot", &model_b_rot->z, 0.0f, 360, "%.3f", 1.0f);
+			//ImGui::Text("Size of Model B: %f, %f", size_b.x, size_b.y);
+			//ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
 			ImGui::NewLine();
 
-			ImGui::SliderFloat("Model C-XPos", &model_c_pos.x, 0.0f, (float)mode->width - size_c.x, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model C-YPos", &model_c_pos.y, 0.0f, (float)mode->height - size_c.y, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model C-zrot", &model_c_rot.z, 0.0f, 360, "%.3f", 1.0f);
-			ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
-			ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
+			ImGui::SliderFloat("Model C-XPos", &model_c_pos->x, 0.0f, (float)mode->width  ,"%.1f", 1.0f);
+			ImGui::SliderFloat("Model C-YPos", &model_c_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model C-zrot", &model_c_rot->z, 0.0f, 360, "%.3f", 1.0f);
+			//ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
+			//ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
 			ImGui::NewLine();
 
-			ImGui::SliderFloat("Model D-XPos", &model_d_pos.x, 0.0f, (float)mode->width - size_c.x, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model D-YPos", &model_d_pos.y, 0.0f, (float)mode->height - size_c.y, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model D-zrot", &model_d_rot.z, 0.0f, 360, "%.3f", 1.0f);
-			ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
-			ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
+			ImGui::SliderFloat("Model D-XPos", &model_d_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-YPos", &model_d_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-zrot", &model_d_rot->z, 0.0f, 360, "%.3f", 1.0f);
+			//ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
+			//ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
 			ImGui::NewLine();
 
 			if (!has_texture)
 			{
-				ImGui::ColorEdit4("Model A Color", &color_a.x, f);
+				ImGui::ColorEdit4("Model A Color", &color_a->x, f);
 				ImGui::SameLine();
-				ImGui::ColorEdit4("Model B Color", &color_b.x, f);
+				ImGui::ColorEdit4("Model B Color", &color_b->x, f);
 				ImGui::SameLine();
-				ImGui::ColorEdit4("Model C Color", &color_c.x, f);
+				ImGui::ColorEdit4("Model C Color", &color_c->x, f);
 				ImGui::NewLine();
 			}
 
@@ -364,7 +366,7 @@
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
 
 			// Draw the sheet
-			renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->index_buffer(), Shape::shader());
+			renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 
 			// Draw the draw list
 			list.draw_all();

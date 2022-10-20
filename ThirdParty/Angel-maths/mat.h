@@ -1,3 +1,9 @@
+// Math functions used in the Angel Shriner's Examples
+// Were downloaded from:
+// http://www.cs.bilkent.edu.tr/~gudukbay/cs465_lectures/Angel_VC11.zip
+// Changes Made: GLfloat type was converted into float
+// Constants were moved from Angel.h to vec.h
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  --- mat.h ---

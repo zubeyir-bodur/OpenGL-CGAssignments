@@ -18,7 +18,7 @@ private:
 	std::vector<unsigned int>* m_indices;
 	VertexArray* m_vertex_array;
 	VertexBuffer* m_vertex_buffer;
-	IndexBuffer* m_index_buffer;
+	IndexBuffer* m_triangles_index_buffer;
 
 	// Static members
 	static Shader* s_shader;
@@ -34,9 +34,9 @@ public:
 
 	void push_back_vertex(const Angel::vec3& model_pos);
 	unsigned int num_vertices();
-	const std::vector<float>& vertices();
+	std::vector<float> vertices();
 	const VertexArray* vertex_array() const { return m_vertex_array; }
-	const IndexBuffer* index_buffer() const { return m_index_buffer; }
+	const IndexBuffer* triangles_index_buffer() const { return m_triangles_index_buffer; }
 
 	static void init_static_members(int width);
 	static void destroy_static_members_allocated_on_the_heap();

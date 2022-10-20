@@ -17,10 +17,10 @@ public:
 	~DrawList();
 
 	void add_shape(ShapeModel* s);
-
+	void remove_shape(ShapeModel* s);
 	void move_shape_to_frontview(ShapeModel* s);
 
-	ShapeModel* frontmost_shape(const Angel::vec3& model_pos);
+	ShapeModel* frontmost_shape(const Angel::vec3& cursor_model_pos);
 
 	unsigned int idx_of(ShapeModel* s);
 

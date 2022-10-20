@@ -41,14 +41,14 @@ Shape::Shape(const std::vector<Angel::vec3>& coords)
 		m_indices->emplace_back(i);
 	}
 	m_indices->emplace_back(1);
-	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
+	m_triangles_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
 }
 
 Shape::~Shape()
 {
 	delete m_vertex_array;
 	delete m_vertex_buffer;
-	delete m_index_buffer;
+	delete m_triangles_index_buffer;
 	delete m_indices;
 	delete m_no_transform_vertex_positions;
 }
@@ -64,7 +64,7 @@ void Shape::push_back_vertex(const Angel::vec3& model_pos)
 	ASSERT(m_no_transform_vertex_positions->size() >= 3);
 	delete m_vertex_buffer;
 	delete m_vertex_array;
-	delete m_index_buffer;
+	delete m_triangles_index_buffer;
 	m_no_transform_vertex_positions->emplace_back(model_pos.x);
 	m_no_transform_vertex_positions->emplace_back(model_pos.y);
 	m_no_transform_vertex_positions->emplace_back(model_pos.z);
@@ -90,7 +90,7 @@ void Shape::push_back_vertex(const Angel::vec3& model_pos)
 	m_vertex_array->add_buffer(*m_vertex_buffer, s_layout);
 	(*m_indices)[m_indices->size()-1] = num_vertices()-1;
 	m_indices->emplace_back(1);
-	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
+	m_triangles_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
 }
 
 unsigned int Shape::num_vertices()
@@ -98,9 +98,9 @@ unsigned int Shape::num_vertices()
 	return m_no_transform_vertex_positions->size() / NUM_COORDINATES;
 }
 
-const std::vector<float>& Shape::vertices()
+std::vector<float> Shape::vertices()
 {
-	return *m_no_transform_vertex_positions;
+	return std::vector<float>(*m_no_transform_vertex_positions);
 }
 
 
@@ -160,13 +160,13 @@ void Shape::init_static_members(int width)
 	s_rectangle->m_indices = quad_indices;
 	s_rectangle->m_vertex_array = rect_va;
 	s_rectangle->m_vertex_buffer = rect_vb;
-	s_rectangle->m_index_buffer = rect_ib;
+	s_rectangle->m_triangles_index_buffer = rect_ib;
 
 	s_eq_triangle->m_no_transform_vertex_positions = equilateral_triangle_positions;
 	s_eq_triangle->m_indices = tri_indices;
 	s_eq_triangle->m_vertex_array = eq_tri_va;
 	s_eq_triangle->m_vertex_buffer = eq_tri_vb;
-	s_eq_triangle->m_index_buffer = eq_tri_ib;
+	s_eq_triangle->m_triangles_index_buffer = eq_tri_ib;
 
 	rect_va->unbind();
 	rect_vb->unbind();
