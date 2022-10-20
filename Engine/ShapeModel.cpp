@@ -56,6 +56,12 @@ ShapeModel::~ShapeModel()
 
 // Polygon test function, taken from :
 // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon
+// The code was changed in the following way:
+//  - Functions were converted into lambdas
+//  - Since the point inclusion in the code was for integers, it was converted to floats
+//  - The code in the link works for statically allocated arrays of Points, which is not compatible
+//       with the API. It was modified so that it works with the Angel::vec3 data type
+//  - Some of the names of the variables were changed so that code is cleaner
 bool ShapeModel::contains(const Angel::vec3& model_pos)
 {
 	struct Point {
@@ -194,9 +200,8 @@ Angel::mat4 ShapeModel::model_matrix()
 {
 
 	return ((Angel::Translate((*m_position))
-		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0))
-		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel
-		//* ::vec3(0, 1, 0))
+		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0)) not necessary  for assignment 1
+		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel::vec3(0, 1, 0)) not necessary  for assignment 1
 		* Angel::RotateZ(((*m_rotation).z))) // required rotation for assignment 1
 		* Angel::Scale(*m_scale))
 		* Angel::Translate(-center_raw());
