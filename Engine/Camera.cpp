@@ -62,7 +62,7 @@ void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double glob
 const Angel::vec3 Camera::camera_pos()
 {
 	Camera& c = get_instance();
-	return c.m_camera_pos;
+	return Angel::vec3(c.m_camera_pos);
 }
 
 Angel::mat4 Camera::view_matrix()

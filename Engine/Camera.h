@@ -11,8 +11,8 @@ private:
 	Camera(const Angel::vec3& pos, float zoom_ratio);
 	~Camera();
 	Camera(const Camera&) = delete;
-	static Camera& get_instance();
 public:
+	static Camera& get_instance();
 	static void init(const Angel::vec3& pos, float zoom_ratio);
 	static void move_vertical(float dy);
 	static void move_horizontal(float dx);

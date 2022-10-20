@@ -162,13 +162,30 @@ int main(int, char**)
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
-
+	Angel::vec3 camera_pos_pressed;
+	float camera_zoom_pressed;
+	auto map_from_global_any = [](double x, double y, Angel::vec3 c_pos, float c_z) -> Angel::vec3
+	{
+		return (c_pos + Angel::vec3((float)x, (float)y, 0.0f)) * (100.0f / c_z);
+	};
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
+		// Old mouse pos & state
 		Angel::vec2 old_mouse_pos(window_input.m_mouse_x, window_input.m_mouse_y);
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
-		window_input.m_scroll_y = 0.0;
+
+		// Needed for selection and drawing while moving the camera
+		const Camera& old_camera = Camera::get_instance();
+		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
+		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
+		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio]( double x, double y) -> Angel::vec3
+		{
+			return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
+		};
+
+		// Reset scroll
+		window_input.m_scroll_y = 0.0; 
 		glfwPollEvents();
 
 		// Update the viewport
@@ -184,7 +201,6 @@ int main(int, char**)
 		// Update cursor
 		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
-		Angel::vec3 old_cam_pos = Camera::camera_pos();
 		if (!input_on_imgui)
 		{
 			// Camera movement - simple
@@ -211,6 +227,8 @@ int main(int, char**)
 			// Update view matrix when necessary
 			view_matrix = Camera::view_matrix();
 		}
+
+		// Process mouse click events
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
@@ -331,6 +349,8 @@ int main(int, char**)
 			drawing_selector_box = false;
 			drawing_drawer_box = false;
 			is_dragging = false;
+			camera_pos_pressed = Angel::vec3(0.0f);
+			camera_zoom_pressed = 0.0f;
 			bounding_box_selector = {};
 			bounding_box_drawer = {};
 
@@ -340,6 +360,8 @@ int main(int, char**)
 		{
 			if (!input_on_imgui)
 			{
+				camera_pos_pressed = Camera::camera_pos();
+				camera_zoom_pressed = Camera::get_zoom_ratio();
 				if (radio_button_cur == (int)RadioButtons::Select)
 				{
 					unsigned int num_selections = cur_selections.size();
@@ -351,8 +373,8 @@ int main(int, char**)
 						// Start drag
 						is_dragging = true;
 						list.move_shape_to_frontview(new_selected);
+						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
 						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-						Angel::vec3 v_old = Camera::map_from_global(old_mouse_pos.x, old_mouse_pos.y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						new_selected->position() += drag_vector;
 					}
@@ -364,8 +386,9 @@ int main(int, char**)
 					{
 						drawing_selector_box = true;
 						selector_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
-						selector_scale.x = ((1.0f / init_shape_length) * (window_input.m_mouse_x - window_input.m_mouse_press_x)) * (100.0f / Camera::get_zoom_ratio());
-						selector_scale.y = ((1.0f / init_shape_length) * (window_input.m_mouse_y - window_input.m_mouse_press_y)) * (100.0f / Camera::get_zoom_ratio());
+						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
+						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
 							selector_scale.x = 1.0f / init_shape_length;
@@ -386,8 +409,9 @@ int main(int, char**)
 					cur_selections.clear();
 					drawing_drawer_box = true;
 					drawer_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
-					drawer_scale.x = ((1.0f / init_shape_length) * (window_input.m_mouse_x - window_input.m_mouse_press_x)) * (100.0f / Camera::get_zoom_ratio());
-					drawer_scale.y = ((1.0f / init_shape_length) * (window_input.m_mouse_y - window_input.m_mouse_press_y)) * (100.0f / Camera::get_zoom_ratio());
+					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
+					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
 						drawer_scale.x = 1.0f / init_shape_length;
@@ -414,16 +438,17 @@ int main(int, char**)
 						ShapeModel* old_selected = cur_selections[0];
 						drawing_selector_box = false;
 						// Continue drag
+						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
 						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-						Angel::vec3 v_old = Camera::map_from_global(old_mouse_pos.x, old_mouse_pos.y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						old_selected->position() += drag_vector;
 					}
 					else
 					{
 						drawing_selector_box = true;
-						selector_scale.x = ((1.0f / init_shape_length) * (window_input.m_mouse_x - window_input.m_mouse_press_x)) * (100.0f / Camera::get_zoom_ratio());
-						selector_scale.y = ((1.0f / init_shape_length) * (window_input.m_mouse_y - window_input.m_mouse_press_y)) * (100.0f / Camera::get_zoom_ratio());
+						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
+						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
 							selector_scale.x = 1.0f / init_shape_length;
@@ -438,8 +463,9 @@ int main(int, char**)
 					|| radio_button_cur == (int)RadioButtons::DrawRect)
 				{
 					drawing_drawer_box = true;
-					drawer_scale.x = ((1.0f / init_shape_length) * (window_input.m_mouse_x - window_input.m_mouse_press_x)) * (100.0f / Camera::get_zoom_ratio());
-					drawer_scale.y = ((1.0f / init_shape_length) * (window_input.m_mouse_y - window_input.m_mouse_press_y)) * (100.0f / Camera::get_zoom_ratio());
+					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
+					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
 						drawer_scale.x = 1.0f / init_shape_length;
