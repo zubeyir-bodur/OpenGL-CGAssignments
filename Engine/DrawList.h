@@ -21,7 +21,7 @@ public:
 	void move_shape_to_frontview(ShapeModel* s);
 
 	ShapeModel* frontmost_shape(const Angel::vec3& cursor_model_pos);
-
+	const std::vector<ShapeModel*> shapes_contained_in(const Angel::vec3& selector_pos, const Angel::vec3& selector_scale);
 	unsigned int idx_of(ShapeModel* s);
 
 	void draw_all();

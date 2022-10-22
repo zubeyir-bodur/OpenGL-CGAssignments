@@ -160,9 +160,9 @@ bool ShapeModel::contains(const Angel::vec3& model_pos)
 		line side = { p1, p2 };
 		if (is_intersect(side, exline)) {
 
-			// If side is intersects exline
+			// If exline is on top of this side
 			if (direction(side.p1, p, side.p2) == 0)
-				return on_line(side, p);
+					return on_line(side, p);
 			count++;
 		}
 		i = (i + 1) % num_vertices;

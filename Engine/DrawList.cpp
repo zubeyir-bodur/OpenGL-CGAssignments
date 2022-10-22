@@ -50,6 +50,48 @@ ShapeModel* DrawList::frontmost_shape(const Angel::vec3& model_pos)
 	return nullptr;
 }
 
+const std::vector<ShapeModel*> DrawList::shapes_contained_in(const Angel::vec3& selector_pos, 
+	const Angel::vec3& selector_scale)
+{
+	std::vector<ShapeModel*> out;
+	out.reserve(m_shape_models.size());
+	auto* tmp_pos = new Angel::vec3(selector_pos);
+	auto* tmp_scale = new Angel::vec3(selector_scale);
+	auto* tmp_rot = new Angel::vec3(0, 0, 0);
+	auto* tmp_col = new Angel::vec4(0, 0, 0, 0);
+	ShapeModel selection_rectangle_sm = ShapeModel(ShapeModel::StaticShape::RECTANGLE, tmp_pos, tmp_rot, tmp_scale, tmp_col);
+	for (unsigned int i = 0; i < m_shape_models.size(); i++)
+	{
+		bool in = false;
+		for (unsigned int j = 0; j < m_shape_models[i]->true_num_vertices(); j++)
+		{
+			Angel::vec3 point_j = m_shape_models[i]->model_coords()[j];
+			// If at least one vertex is inside the region - excluding the borders of this region
+			// Then the shape is inside this region
+			if (selection_rectangle_sm.contains(point_j))
+			{
+				out.emplace_back(m_shape_models[i]);
+				in = true;
+				break;
+			}
+		}
+		if (!in)
+		{
+			// Or, the shape might contain the selection rectangle
+			for (unsigned int j = 0; j < selection_rectangle_sm.true_num_vertices(); j++)
+			{
+				Angel::vec3 point_j = selection_rectangle_sm.model_coords()[j];
+				if (m_shape_models[i]->contains(point_j))
+				{
+					out.emplace_back(m_shape_models[i]);
+					break;
+				}
+			}
+		}
+	}
+	return out;
+}
+
 unsigned int DrawList::idx_of(ShapeModel* s)
 {
 	for (unsigned int i = 0; i < m_shape_models.size(); i++)

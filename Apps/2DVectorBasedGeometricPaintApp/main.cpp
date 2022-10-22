@@ -105,10 +105,10 @@ int main(int, char**)
 
 	// Helper rectangle spec for drawing temporary boxes (selection & drawing)
 	constexpr float global_z_pos_2d = 0.0f;
-	Angel::vec4 rect_0(0.0f, 0.0f, global_z_pos_2d, 0.0f);
-	Angel::vec4 rect_1(init_shape_length, 0.0f, global_z_pos_2d, 0.0f);
-	Angel::vec4 rect_2(init_shape_length, init_shape_length, global_z_pos_2d, 0.0f);
-	Angel::vec4 rect_3(0.0f, init_shape_length, global_z_pos_2d, 0.0f);
+	Angel::vec4 rect_0(0.0f, 0.0f, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_1(init_shape_length, 0.0f, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_2(init_shape_length, init_shape_length, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_3(0.0f, init_shape_length, global_z_pos_2d, 1.0f);
 
 	// View matrix - camera
 	Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
@@ -272,8 +272,8 @@ int main(int, char**)
 							std::min(selector_0.y, selector_2.y),
 							std::max(selector_0.y, selector_2.y)
 					};
-					if (window_input.m_mouse_release_y - window_input.m_mouse_press_y < 1.0f
-						&& window_input.m_mouse_release_x - window_input.m_mouse_press_x < 1.0f)
+					if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
+						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
 						std::cout << "THIS IS A CLICK" << std::endl;
 						ShapeModel* frontmost = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
@@ -299,6 +299,23 @@ int main(int, char**)
 					else
 					{
 						std::cout << "THIS IS A DRAG" << std::endl;
+						Angel::vec3 selector_pos_centered(
+							(bounding_box_selector[0] + bounding_box_selector[1]) / 2.0f,
+							(bounding_box_selector[2] + bounding_box_selector[3]) / 2.0f,
+							0.0f
+						);
+						std::vector<ShapeModel*> multiple_selection = list.shapes_contained_in(selector_pos_centered, selector_scale);
+						for (auto* item : cur_selections)
+						{
+							item->deselect();
+						}
+						cur_selections.clear();
+						for (const auto& item: multiple_selection)
+						{
+							cur_selections.push_back(item);
+							item->select();
+						}
+
 					}
 				}
 
@@ -317,8 +334,8 @@ int main(int, char**)
 				// Create new predefined shape
 				if (drawing_drawer_box)
 				{
-					if (window_input.m_mouse_release_y - window_input.m_mouse_press_y < 1.0f
-						&& window_input.m_mouse_release_x - window_input.m_mouse_press_x < 1.0f)
+					if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
+						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
 						std::cout << "THIS IS MOVEMENT WAS SO SMALL, DIDNT DRAW..." << std::endl;
 					}
@@ -350,14 +367,13 @@ int main(int, char**)
 
 						if (radio_button_cur != (int)RadioButtons::DrawPoly)
 						{
-							auto* shape_pos = new Angel::vec3(drawer_pos + mid_point);
+							auto* shape_pos = new Angel::vec3(mid_point);
 							auto* shape_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-							auto* shape_scale = new Angel::vec3(drawer_scale);
+							auto* shape_scale = new Angel::vec3(std::abs(drawer_scale.x), std::abs(drawer_scale.y), drawer_scale.z);
 							auto* shape_color = new Angel::vec4(color_draw[0],
 								color_draw[1],
 								color_draw[2],
 								color_draw[3]);
-							// Compute translation factor so that transferred pos is the mid point of the bb
 
 							auto* new_shape = new ShapeModel(shape_def, shape_pos, shape_rot, shape_scale, shape_color);
 							list.add_shape(new_shape);
@@ -420,6 +436,10 @@ int main(int, char**)
 			std::cout << "LMB is now Idle" << std::endl;
 			drawing_selector_box = false;
 			drawing_drawer_box = false;
+			selector_pos = { 0, 0, 0 };
+			selector_scale = { 1, 1, 1};
+			drawer_pos = { 0, 0, 0 };
+			drawer_scale = { 1, 1, 1 };
 			is_dragging = false;
 			camera_pos_pressed = Angel::vec3(0.0f);
 			camera_zoom_pressed = 0.0f;
@@ -469,6 +489,7 @@ int main(int, char**)
 						{
 							selector_scale.y = 1.0f / init_shape_length;
 						}
+						selector_scale.z = 1.0f;
 					}
 				}
 				else if (radio_button_cur == (int)RadioButtons::DrawEqTri
@@ -491,6 +512,23 @@ int main(int, char**)
 					if (drawer_scale.y == 0.0f)
 					{
 						drawer_scale.y = 1.0f / init_shape_length;
+					}
+					if (radio_button_cur == (int)RadioButtons::DrawEqTri)
+					{
+						float abs_max = std::max(std::abs(drawer_scale.x), std::abs(drawer_scale.y));
+						float sign_x = 1.0f;
+						float sign_y = 1.0f;
+						if (drawer_scale.x < 0.0f)
+						{
+							sign_x = -1.0f;
+						}
+						if (drawer_scale.y < 0.0f)
+						{
+							sign_y = -1.0f;
+						}
+						drawer_scale.x = abs_max * sign_x;
+						drawer_scale.y = abs_max * sign_y;
+						drawer_scale.z = 1.0f;
 					}
 				}
 			}
@@ -533,6 +571,7 @@ int main(int, char**)
 						{
 							selector_scale.y = 1.0f / init_shape_length;
 						}
+						selector_scale.z = 1.0f;
 					}
 				}
 				else if (radio_button_cur == (int)RadioButtons::DrawEqTri
@@ -552,7 +591,20 @@ int main(int, char**)
 					}
 					if (radio_button_cur == (int)RadioButtons::DrawEqTri)
 					{
-						drawer_scale.x = drawer_scale.y = std::max(drawer_scale.x, drawer_scale.y);
+						float abs_max = std::max(std::abs(drawer_scale.x), std::abs(drawer_scale.y));
+						float sign_x = 1.0f;
+						float sign_y = 1.0f;
+						if (drawer_scale.x < 0.0f)
+						{
+							sign_x = -1.0f;
+						}
+						if (drawer_scale.y < 0.0f)
+						{
+							sign_y = -1.0f;
+						}
+						drawer_scale.x = abs_max * sign_x;
+						drawer_scale.y = abs_max * sign_y;
+						drawer_scale.z = 1.0f;
 					}
 
 				}
