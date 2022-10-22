@@ -8,35 +8,27 @@ VertexBufferLayout Shape::s_layout;
 Shape* Shape::s_eq_triangle = new Shape();
 Shape* Shape::s_rectangle = new Shape();
 
-Shape::Shape(const std::vector<Angel::vec3>& coords)
+Shape::Shape(const std::vector<Angel::vec3>& model_coords_center_translated_to_origin)
 {
-	ASSERT(coords.size() >= 3);
+	ASSERT(model_coords_center_translated_to_origin.size() >= 3);
+
 	m_no_transform_vertex_positions = new std::vector<float>;
-	m_no_transform_vertex_positions->reserve((coords.size() + 1) * NUM_COORDINATES);
-	Angel::vec3 center(0.0f, 0.0f, 0.0f);
-	for (auto& coord : coords)
+	m_no_transform_vertex_positions->reserve((model_coords_center_translated_to_origin.size() + 1) * NUM_COORDINATES);
+	m_no_transform_vertex_positions->emplace_back(0.0f); m_no_transform_vertex_positions->emplace_back(0.0f); m_no_transform_vertex_positions->emplace_back(0.0f);
+
+	for (unsigned int i = NUM_COORDINATES/* 0*/; i < m_no_transform_vertex_positions->capacity(); i++)
 	{
-		center.x += coord.x;
-		center.y += coord.y;
-		center.z += coord.z;
-	}
-	center /= (float)coords.size();
-	m_no_transform_vertex_positions->emplace_back(center.x);
-	m_no_transform_vertex_positions->emplace_back(center.y);
-	m_no_transform_vertex_positions->emplace_back(center.z);
-	for (unsigned int i = NUM_COORDINATES; i < m_no_transform_vertex_positions->capacity(); i++)
-	{
-		m_no_transform_vertex_positions->emplace_back(coords[i / 3 - 1][i % 3]);
+		m_no_transform_vertex_positions->emplace_back(model_coords_center_translated_to_origin[i / 3 - 1][i % 3]);
 	}
 
 	m_vertex_array = new VertexArray;
-	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data()
-		, m_no_transform_vertex_positions->size() * sizeof(float));
+	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data(),
+		m_no_transform_vertex_positions->size() * sizeof(float));
 	m_vertex_array->add_buffer(*m_vertex_buffer, s_layout);
 	
 	m_indices = new std::vector<unsigned int>;
-	m_indices->reserve(coords.size() + 2);
-	for (unsigned int i = 0; i < coords.size() + 1; i++)
+	m_indices->reserve(model_coords_center_translated_to_origin.size() + 2);
+	for (unsigned int i = 0; i < model_coords_center_translated_to_origin.size() + 1; i++)
 	{
 		m_indices->emplace_back(i);
 	}
@@ -56,8 +48,8 @@ Shape::~Shape()
 /// <summary>
 /// This function will be called whenever a vertex is added to the polygon
 /// </summary>
-/// <param name="model_pos"></param>
-void Shape::push_back_vertex(const Angel::vec3& model_pos)
+/// <param name="centered_model_pos"></param>
+Angel::vec3 Shape::push_back_vertex(const Angel::vec3& new_vertex_pos_where_origin_is_old_center, const Angel::vec3& old_center)
 {
 	ASSERT(this != s_eq_triangle);
 	ASSERT(this != s_rectangle);
@@ -65,23 +57,26 @@ void Shape::push_back_vertex(const Angel::vec3& model_pos)
 	delete m_vertex_buffer;
 	delete m_vertex_array;
 	delete m_triangles_index_buffer;
-	m_no_transform_vertex_positions->emplace_back(model_pos.x);
-	m_no_transform_vertex_positions->emplace_back(model_pos.y);
-	m_no_transform_vertex_positions->emplace_back(model_pos.z);
-	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 
-	for (unsigned int i = 0; i < num_vertices(); i+=3)
+	m_no_transform_vertex_positions->emplace_back(new_vertex_pos_where_origin_is_old_center.x);
+	m_no_transform_vertex_positions->emplace_back(new_vertex_pos_where_origin_is_old_center.y);
+	m_no_transform_vertex_positions->emplace_back(new_vertex_pos_where_origin_is_old_center.z);
+
+	// Update the center
+	Angel::vec3 center(0.0f, 0.0f, 0.0f);
+	for (unsigned int i = NUM_COORDINATES; i < num_vertices() * NUM_COORDINATES; i+=3)
 	{
 		center.x += (*m_no_transform_vertex_positions)[i];
 		center.y += (*m_no_transform_vertex_positions)[i+1];
 		center.z += (*m_no_transform_vertex_positions)[i+2];
 	}
-	center /= (float)num_vertices();
+	center /= (float)num_vertices() - 1;
 
-	// Update the center
-	(*m_no_transform_vertex_positions)[0] = center.x;
-	(*m_no_transform_vertex_positions)[1] = center.y;
-	(*m_no_transform_vertex_positions)[2] = center.z;
+	// Move the vertices towards the new center
+	for (unsigned int i = NUM_COORDINATES; i < num_vertices() * NUM_COORDINATES; i++)
+	{
+		(*m_no_transform_vertex_positions)[i] = ((*m_no_transform_vertex_positions)[i] - center[i % 3]);
+	}
 
 	// Recreate the vertex buffer & array
 	m_vertex_array = new VertexArray;
@@ -91,6 +86,9 @@ void Shape::push_back_vertex(const Angel::vec3& model_pos)
 	(*m_indices)[m_indices->size()-1] = num_vertices()-1;
 	m_indices->emplace_back(1);
 	m_triangles_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
+
+	// Return the new center as the position of the model
+	return center + old_center;
 }
 
 unsigned int Shape::num_vertices()

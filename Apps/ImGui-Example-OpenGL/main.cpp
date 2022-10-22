@@ -143,7 +143,7 @@
 			model_b_scale,
 			color_b
 		);
-		ShapeModel model_c(ShapeModel::StaticShape::EQUILATERAL_TRIANGLE,
+		ShapeModel model_c(ShapeModel::StaticShape::ISOSCELES_TRIANGLE,
 			model_c_pos,
 			model_c_rot,
 			model_c_scale,
@@ -162,14 +162,11 @@
 		};
 
 		auto* model_d = new ShapeModel(poly_coords,
-			model_d_pos,
-			model_d_rot,
-			model_d_scale,
 			color_d
 		);
 
 		// Tests for adding a vertex provided that concaveness remains
-		model_d->push_back_vertex(Angel::vec3(-3*init_shape_length/4.0f, 3 * init_shape_length / 8.0f, global_z_pos_2d));
+		model_d->push_back_vertex(Angel::vec3(-3*init_shape_length/3.0f, 3 * init_shape_length / 7.0f, global_z_pos_2d));
 
 		// View matrix - camera
 		Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
@@ -285,14 +282,14 @@
 			}
 
 			// update center positions of models for logging
-			//Angel::vec3 size_a = model_a.shape_size();
-			//Angel::vec3 center_a = model_a.center_position();
-			//Angel::vec3 size_b = model_b.shape_size();
-			//Angel::vec3 center_b = model_b.center_position();
-			//Angel::vec3 size_c = model_c.shape_size();
-			//Angel::vec3 center_c = model_c.center_position();
-			//Angel::vec3 size_d = model_d->shape_size();
-			//Angel::vec3 center_d = model_d->center_position();
+			Angel::vec3 size_a = model_a.shape_size();
+			Angel::vec3 center_a = model_a.center_true();
+			Angel::vec3 size_b = model_b.shape_size();
+			Angel::vec3 center_b = model_b.center_true();
+			Angel::vec3 size_c = model_c.shape_size();
+			Angel::vec3 center_c = model_c.center_true();
+			Angel::vec3 size_d = model_d->shape_size();
+			Angel::vec3 center_d = model_d->center_true();
 
 			// ImGui Components 
 			new_imgui_frame();
@@ -305,30 +302,32 @@
 			ImGui::SliderFloat("Model A-Ypos", &model_a_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 			ImGui::SliderFloat("Model A-zrot", &model_a_rot->z, 0.0f, 360, "%.3f", 1.0f);
 			ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, -2, 2, "%.3f", 1.0f);
-			//ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
-			//ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
-			//ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
+			ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
+			ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
+			ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
 			ImGui::NewLine();
 
 			ImGui::SliderFloat("Model B-XPos", &model_b_pos->x, 0.0f, (float)mode->width , "%.1f", 1.0f);
 			ImGui::SliderFloat("Model B-YPos", &model_b_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 			ImGui::SliderFloat("Model B-zrot", &model_b_rot->z, 0.0f, 360, "%.3f", 1.0f);
-			//ImGui::Text("Size of Model B: %f, %f", size_b.x, size_b.y);
-			//ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
+			ImGui::Text("Size of Model A: %f, %f", size_b.x, size_b.y);
+			ImGui::SliderFloat2("Model A-scale", &model_b_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
+			ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
 			ImGui::NewLine();
 
 			ImGui::SliderFloat("Model C-XPos", &model_c_pos->x, 0.0f, (float)mode->width  ,"%.1f", 1.0f);
 			ImGui::SliderFloat("Model C-YPos", &model_c_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 			ImGui::SliderFloat("Model C-zrot", &model_c_rot->z, 0.0f, 360, "%.3f", 1.0f);
-			//ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
-			//ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
+			ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
+			ImGui::SliderFloat2("Model C-scale", &model_c_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
+			ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
 			ImGui::NewLine();
 
-			ImGui::SliderFloat("Model D-XPos", &model_d_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model D-YPos", &model_d_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
-			ImGui::SliderFloat("Model D-zrot", &model_d_rot->z, 0.0f, 360, "%.3f", 1.0f);
-			//ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
-			//ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
+			ImGui::SliderFloat("Model D-XPos", &model_d->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-YPos", &model_d->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
+			ImGui::SliderFloat("Model D-zrot", &model_d->rotation().z, 0.0f, 360, "%.3f", 1.0f);
+			ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
+			ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
 			ImGui::NewLine();
 
 			if (!has_texture)

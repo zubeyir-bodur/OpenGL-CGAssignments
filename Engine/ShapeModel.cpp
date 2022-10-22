@@ -12,7 +12,7 @@ ShapeModel::ShapeModel(StaticShape def,
 	case ShapeModel::StaticShape::RECTANGLE:
 		m_shape_def = const_cast<Shape*>(Shape::rectangle());
 		break;
-	case ShapeModel::StaticShape::EQUILATERAL_TRIANGLE:
+	case ShapeModel::StaticShape::ISOSCELES_TRIANGLE:
 		m_shape_def = const_cast<Shape*>(Shape::eq_triangle());
 		break;
 	default:
@@ -27,17 +27,29 @@ ShapeModel::ShapeModel(StaticShape def,
 	m_e_def = def;
 }
 
-ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_coords,
-	Angel::vec3* pos,
-	Angel::vec3* rot,
-	Angel::vec3* scale,
+ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 	Angel::vec4* rgba)
 {
 	m_is_poly = true;
-	m_shape_def = new Shape(poly_coords);
-	m_position = pos;
-	m_rotation = rot;
-	m_scale = scale;
+
+	m_position = new Angel::vec3(0.0f, 0.0f, 0.0f);
+	m_rotation = new Angel::vec3(0.0f, 0.0f, 0.0f);
+	m_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
+
+	for (unsigned int i = 0; i < poly_mouse_model_coords.size(); i++)
+	{
+		*m_position += poly_mouse_model_coords[i];
+	}
+	*m_position /= (float)poly_mouse_model_coords.size();
+
+
+	std::vector<Angel::vec3> poly_mouse_model_coords_minus_center;
+	poly_mouse_model_coords_minus_center.reserve(poly_mouse_model_coords.size());
+	for (unsigned int i = 0; i < poly_mouse_model_coords.size(); i++)
+	{
+		poly_mouse_model_coords_minus_center.emplace_back(poly_mouse_model_coords[i] - (*m_position));
+	}
+	m_shape_def = new Shape(poly_mouse_model_coords_minus_center);
 	m_color = rgba;
 	m_e_def = StaticShape::NONE;
 }
@@ -129,8 +141,8 @@ bool ShapeModel::contains(const Angel::vec3& model_pos)
 		return false;
 	};
 
-	unsigned int num_vertices = m_shape_def->num_vertices();
 	auto model_coordinates = model_coords();
+	unsigned int num_vertices = model_coordinates.size();
 
 	// When polygon has less than 3 edge, it is not polygon
 	if (num_vertices < 3)
@@ -165,7 +177,7 @@ unsigned int ShapeModel::true_num_vertices()
 	unsigned int n_vert = m_shape_def->num_vertices();
 	if (m_e_def == StaticShape::NONE)
 	{
-		n_vert -= 2;
+		n_vert -= 1;
 	}
 	return n_vert;
 }
@@ -175,30 +187,32 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 	std::vector<float> raw_vertices = m_shape_def->vertices();
 	if (m_e_def == StaticShape::NONE)
 	{
-		// Exclude the first and the last vertex
+		// Exclude the first vertex, which is the precomputed mid point
 		raw_vertices.erase(raw_vertices.begin(), raw_vertices.begin() + NUM_COORDINATES);
-		raw_vertices.erase(raw_vertices.end() - NUM_COORDINATES, raw_vertices.end());
 	}
 	Angel::mat4 mat_model = model_matrix();
-	std::vector<Angel::vec3> out(m_shape_def->num_vertices());
-	int idx_vertex = 0;
-	for (auto& vertex : out)
+	std::vector<Angel::vec3> out;
+	if (m_e_def == StaticShape::NONE)
 	{
-		float x = raw_vertices[idx_vertex * NUM_COORDINATES];
-		float y = raw_vertices[idx_vertex * NUM_COORDINATES + 1];
-		float z = raw_vertices[idx_vertex * NUM_COORDINATES + 2];
+		out.reserve(m_shape_def->num_vertices() - 1);
+	}
+	else
+	{
+		out.reserve(m_shape_def->num_vertices());
+	}
+	for (unsigned int i = 0; i < out.capacity(); i++)
+	{
+		float x = raw_vertices[i * NUM_COORDINATES];
+		float y = raw_vertices[i * NUM_COORDINATES + 1];
+		float z = raw_vertices[i * NUM_COORDINATES + 2];
 		Angel::vec4 tmp = mat_model * Angel::vec4(x, y, z, 1.0f);
-		vertex.x = tmp.x;
-		vertex.y = tmp.y;
-		vertex.z = tmp.z;
-		idx_vertex++;
+		out.emplace_back(tmp.x, tmp.y, tmp.z);
 	}
 	return out;
 }
 
 Angel::mat4 ShapeModel::model_matrix()
 {
-
 	return ((Angel::Translate((*m_position))
 		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0)) not necessary  for assignment 1
 		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel::vec3(0, 1, 0)) not necessary  for assignment 1
@@ -209,7 +223,7 @@ Angel::mat4 ShapeModel::model_matrix()
 
 void ShapeModel::push_back_vertex(const Angel::vec3& model_pos)
 {
-	m_shape_def->push_back_vertex(model_pos);
+	*m_position = m_shape_def->push_back_vertex(model_pos - (*m_position), (*m_position));
 }
 
 Angel::vec3 ShapeModel::center_raw()
@@ -222,8 +236,20 @@ Angel::vec3 ShapeModel::center_raw()
 		center.y += vert[i + 1];
 		center.z += vert[i + 2];
 	}
-	center /= (float)m_shape_def->num_vertices();
+	if (m_e_def == StaticShape::NONE)
+	{
+		center /= (float)m_shape_def->num_vertices() - 1;
+	}
+	else
+	{
+		center /= (float)m_shape_def->num_vertices();
+	}
 	return center;
+}
+
+Angel::vec3 ShapeModel::center_true()
+{
+	return center_raw() + *m_position;
 }
 
 std::array<float, 6> ShapeModel::shape_bounding_cube()

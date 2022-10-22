@@ -29,10 +29,10 @@ private:
 public:
 	Shape() {}
 	// Convex polygon constructor
-	Shape(const std::vector<Angel::vec3>& coords);
+	Shape(const std::vector<Angel::vec3>& model_coords_center_translated_to_origin);
 	~Shape();
 
-	void push_back_vertex(const Angel::vec3& model_pos);
+	Angel::vec3 push_back_vertex(const Angel::vec3& new_vertex_pos_where_origin_is_old_center, const Angel::vec3& old_center);
 	unsigned int num_vertices();
 	std::vector<float> vertices();
 	const VertexArray* vertex_array() const { return m_vertex_array; }

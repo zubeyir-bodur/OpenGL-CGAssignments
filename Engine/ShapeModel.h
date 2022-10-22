@@ -8,13 +8,14 @@ public:
 	{
 		NONE,
 		RECTANGLE,
-		EQUILATERAL_TRIANGLE
+		ISOSCELES_TRIANGLE
 	};
 private:
 	Shape* m_shape_def;
 	StaticShape m_e_def;
 	bool m_is_poly = false;
 	bool m_is_selected = false;
+
 	// Model dependent members
 	Angel::vec3* m_position; // middle point of the geometric shape
 	Angel::vec3* m_rotation; // in angles
@@ -29,10 +30,7 @@ public:
 		Angel::vec4* rgba);
 
 	// For convex polygons
-	ShapeModel(const std::vector<Angel::vec3>& poly_coords,
-		Angel::vec3* pos,
-		Angel::vec3* rot,
-		Angel::vec3* scale,
+	ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 		Angel::vec4* rgba);
 
 	~ShapeModel();
@@ -52,8 +50,9 @@ public:
 	unsigned int true_num_vertices();
 	std::vector<Angel::vec3> model_coords();
 	Angel::mat4 model_matrix();
-	void push_back_vertex(const Angel::vec3& model_pos);
+	void push_back_vertex(const Angel::vec3& mouse_model_pos);
 	Angel::vec3 center_raw();
+	Angel::vec3 center_true();
 	std::array<float, 6> shape_bounding_cube();
 	Angel::vec3 shape_size();
 };
