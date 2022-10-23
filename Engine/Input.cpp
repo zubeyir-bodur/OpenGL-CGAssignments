@@ -12,6 +12,7 @@ Input::Input(GLFWwindow* app_window)
 	glfwSetScrollCallback(app_window, Input::mouse_scroll_callback);
 	glfwSetCursorPosCallback(app_window, Input::mouse_move_callback);
 	glfwSetMouseButtonCallback(app_window, Input::mouse_button_callback);
+	glfwSetKeyCallback(app_window, Input::keyboard_callback);
 }
 
 Input& Input::get_instance(GLFWwindow* app_window)
@@ -29,13 +30,11 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, in
 		{
 			instance.m_lmb_state = ButtonState::JustPressed;
 			glfwGetCursorPos(window, &instance.m_mouse_press_x, &instance.m_mouse_press_y);
-			std::cout << "LMB pressed at: (" << instance.m_mouse_press_x << ", " << instance.m_mouse_press_y << ")" << std::endl;
 		}
 		else if (action == GLFW_RELEASE)
 		{
 			instance.m_lmb_state = ButtonState::Released;
 			glfwGetCursorPos(window, &instance.m_mouse_release_x, &instance.m_mouse_release_y);
-			std::cout << "LMB released at: (" << instance.m_mouse_release_x << ", " << instance.m_mouse_release_y << ")" << std::endl;
 		}
 		else
 		{
@@ -49,7 +48,6 @@ void Input::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 	Input& instance = Input::get_instance(window);
 	instance.m_mouse_x = xpos;
 	instance.m_mouse_y = ypos;
-	// std::cout << "Mouse moved: (" << instance.m_mouse_x << ", " << instance.m_mouse_y << ")" << std::endl;
 }
 
 void Input::mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -58,4 +56,19 @@ void Input::mouse_scroll_callback(GLFWwindow* window, double xoffset, double yof
 	instance.m_scroll_y = yoffset;
 }
 
+void Input::keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Input& instance  = Input::get_instance(window);
+	if (mods & GLFW_MOD_CONTROL)
+	{
+		if (key == GLFW_KEY_C && action == GLFW_PRESS)
+		{
+			instance.m_copy_just_pressed = true;
+		}
+		if (key == GLFW_KEY_V && action == GLFW_PRESS)
+		{
+			instance.m_paste_just_pressed = true;
+		}
+	}
+}
 

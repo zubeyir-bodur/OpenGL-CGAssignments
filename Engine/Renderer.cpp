@@ -21,12 +21,23 @@ void Renderer::draw_polygon(const VertexArray* vertex_array_obj, const IndexBuff
 	__glCallVoid(glDrawElements(GL_TRIANGLE_FAN, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Renderer::draw_lines(const VertexArray* vertex_array_obj, const IndexBuffer* index_buffer_obj, const Shader* shader_obj) const
+void Renderer::draw_lines(const VertexArray* vertex_array_obj,
+	const IndexBuffer* index_buffer_obj,
+	const Shader* shader_obj,
+	int count,
+	const void* offset) const
 {
 	shader_obj->bind();
 	vertex_array_obj->bind();
 	index_buffer_obj->bind();
-	__glCallVoid(glDrawElements(GL_LINE_STRIP, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
+	if (count == -1 && offset == nullptr)
+	{
+		__glCallVoid(glDrawElements(GL_LINE_STRIP, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
+	}
+	else
+	{
+		__glCallVoid(glDrawElements(GL_LINE_LOOP, (unsigned int)count, GL_UNSIGNED_INT, offset));
+	}
 }
 
 void Renderer::clear(const float* clear_color) const

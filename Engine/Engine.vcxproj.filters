@@ -99,12 +99,15 @@
   <ItemGroup>
     <Filter Include="include">
       <UniqueIdentifier>{23a837a5-873d-419c-865b-9bf3707182dd}</UniqueIdentifier>
+      <Extensions>h</Extensions>
     </Filter>
     <Filter Include="source">
       <UniqueIdentifier>{ba52e3af-66f9-47ad-8ca7-eb730228a09a}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{7e3f70fa-9ffc-4ded-bed8-034279d6c0af}</UniqueIdentifier>
+      <Extensions>glsl</Extensions>
     </Filter>
   </ItemGroup>
 </Project>

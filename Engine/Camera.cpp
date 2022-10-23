@@ -1,4 +1,6 @@
 #include "Camera.h"
+#define MIN_ZOOM 50.0f
+#define MAX_ZOOM 1000.0f
 
 Camera::Camera(){}
 Camera::~Camera(){}
@@ -33,7 +35,7 @@ void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double glob
 	const Angel::vec3& cursor_model_coords = map_from_global(global_cursor_x, global_cursor_y);
 	Camera& c = get_instance();
 	// Camera zooming with mouse wheel
-	if (c.m_zoom_ratio >= 20 && c.m_zoom_ratio <= 1000) // min 20 % max 10x zoom
+	if (c.m_zoom_ratio >= MIN_ZOOM && c.m_zoom_ratio <= MAX_ZOOM) // min 20 % max 10x zoom
 	{
 		if (zoom_percent_delta != 0)
 		{
@@ -41,22 +43,28 @@ void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double glob
 		}
 	}
 	// Avoid exceeding limits
-	if (c.m_zoom_ratio < 20.0)
+	if (c.m_zoom_ratio < MIN_ZOOM)
 	{
-		c.m_zoom_ratio = 20.0;
+		c.m_zoom_ratio = MIN_ZOOM;
 	}
-	if (c.m_zoom_ratio > 1000.0)
+	if (c.m_zoom_ratio > MAX_ZOOM)
 	{
-		c.m_zoom_ratio = 1000.0;
+		c.m_zoom_ratio = MAX_ZOOM;
 	}
 	// Move the camera to the mouse location
-	if (c.m_zoom_ratio >= 20 && c.m_zoom_ratio <= 1000)
+	if (c.m_zoom_ratio >= MIN_ZOOM && c.m_zoom_ratio <= MAX_ZOOM)
 	{
 		if (zoom_percent_delta != 0)
 		{
 			c.m_camera_pos -= (c.m_zoom_ratio / 100.0f) * ((c.m_camera_pos + Angel::vec3((float)global_cursor_x, (float)global_cursor_y, 0.0f)) * (100.0f / c.m_zoom_ratio) - cursor_model_coords);
 		}
 	}
+}
+
+const Angel::vec3 Camera::camera_pos()
+{
+	Camera& c = get_instance();
+	return Angel::vec3(c.m_camera_pos);
 }
 
 Angel::mat4 Camera::view_matrix()
@@ -70,6 +78,12 @@ Angel::vec3 Camera::map_from_global(double x, double y)
 {
 	Camera& c = get_instance();
 	return (c.m_camera_pos + Angel::vec3((float)x, (float)y, 0.0f))* (100.0f / c.m_zoom_ratio);
+}
+
+Angel::vec3 Camera::map_to_global(const Angel::vec3& model)
+{
+	Camera& c = get_instance();
+	return Angel::vec3((-c.m_camera_pos + model) * (c.m_zoom_ratio/ 100.0f));
 }
 
 const float& Camera::get_zoom_ratio()
