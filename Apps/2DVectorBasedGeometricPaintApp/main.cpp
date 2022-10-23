@@ -177,6 +177,7 @@ int main(int, char**)
 	bool drawing_drawer_box = false;
 	bool is_dragging = false;
 	bool drawing_poly_add_vertex_line = false;
+	bool drawing_multiple_selection_box = false;
 	std::array<float, 4> bounding_box_selector{};
 	std::array<float, 4> bounding_box_drawer{};
 	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
@@ -279,6 +280,7 @@ int main(int, char**)
 						ShapeModel* frontmost = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 						if (frontmost != nullptr)
 						{
+							drawing_multiple_selection_box = false;
 							for (auto* item : cur_selections)
 							{
 								item->deselect();
@@ -289,6 +291,7 @@ int main(int, char**)
 						}
 						else
 						{
+							drawing_multiple_selection_box = false;
 							for (auto* item : cur_selections)
 							{
 								item->deselect();
@@ -305,6 +308,7 @@ int main(int, char**)
 							0.0f
 						);
 						std::vector<ShapeModel*> multiple_selection = list.shapes_contained_in(selector_pos_centered, selector_scale);
+						drawing_multiple_selection_box = false;
 						for (auto* item : cur_selections)
 						{
 							item->deselect();
@@ -314,6 +318,16 @@ int main(int, char**)
 						{
 							cur_selections.push_back(item);
 							item->select();
+						}
+
+						// Draw a rectangular area around multiple selections
+						if (cur_selections.size() > 1)
+						{
+							drawing_multiple_selection_box = true;
+						}
+						else
+						{
+							drawing_multiple_selection_box = false;
 						}
 
 					}
@@ -406,6 +420,7 @@ int main(int, char**)
 					polygon_mouse_model_coords.push_back(poly_vertex);
 					if (polygon_mouse_model_coords.size() == 1)
 					{
+						drawing_multiple_selection_box = false;
 						for (auto& item : cur_selections)
 						{
 							item->deselect();
@@ -495,6 +510,7 @@ int main(int, char**)
 				else if (radio_button_cur == (int)RadioButtons::DrawEqTri
 					|| radio_button_cur == (int)RadioButtons::DrawRect)
 				{
+					drawing_multiple_selection_box = false;
 					for (auto* item : cur_selections)
 					{
 						item->deselect();
@@ -756,6 +772,34 @@ int main(int, char**)
 
 		// Draw the draw list
 		list.draw_all();
+
+		if (drawing_multiple_selection_box)
+		{
+			// TODO draw a box around selections if there more than one
+			ASSERT(cur_selections.size() != 1);
+			std::array<float, 6> multiple_selection_bounding_cube = ShapeModel::bounding_cube(cur_selections);
+			Angel::vec3 multiple_selection_pos = {
+				multiple_selection_bounding_cube[0],
+				multiple_selection_bounding_cube[2],
+				global_z_pos_2d
+			};
+			Angel::vec3 multiple_selection_pos_scale = {
+				(-multiple_selection_bounding_cube[0] + multiple_selection_bounding_cube[1]) / init_shape_length,
+				(-multiple_selection_bounding_cube[2] + multiple_selection_bounding_cube[3]) / init_shape_length,
+				1.0f
+			};
+			Angel::mat4 model_mat_multiple_selection_box = Angel::Translate(multiple_selection_pos)
+				* Angel::Scale(multiple_selection_pos_scale);
+			Angel::mat4 MVP_mat_multiple_selection_box = projection_matrix * view_matrix * model_mat_multiple_selection_box;
+			Shape::shader()->bind();
+			Shape::shader()->set_uniform_4f("u_color",
+				drawer_box_col[0],
+				drawer_box_col[1],
+				drawer_box_col[2],
+				drawer_box_col[3]);
+			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_multiple_selection_box);
+			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+		}
 
 		// Draw the selector box
 		if (drawing_selector_box)

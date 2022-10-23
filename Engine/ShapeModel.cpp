@@ -302,3 +302,27 @@ Angel::vec3 ShapeModel::shape_size()
 	};
 }
 
+std::array<float, 6> ShapeModel::bounding_cube(const std::vector<ShapeModel*>& shapes)
+{
+	std::array<float, 6> out_bounding_cube = {INT_MAX, INT_MIN, INT_MAX, INT_MIN, INT_MAX, INT_MIN};
+	for (unsigned int i = 0; i < shapes.size(); i++)
+	{
+		std::array<float, 6> cur_bounding_cube = shapes[i]->shape_bounding_cube();
+		for (unsigned int j = 0; j < out_bounding_cube.size(); j += 2)
+		{
+			if (cur_bounding_cube[j] < out_bounding_cube[j])
+			{
+				out_bounding_cube[j] = cur_bounding_cube[j];
+			}
+		}
+		for (unsigned int j = 1; j < out_bounding_cube.size(); j += 2)
+		{
+			if (cur_bounding_cube[j] > out_bounding_cube[j])
+			{
+				out_bounding_cube[j] = cur_bounding_cube[j];
+			}
+		}
+	}
+	return out_bounding_cube;
+}
+

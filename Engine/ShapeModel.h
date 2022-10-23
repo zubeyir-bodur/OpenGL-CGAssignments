@@ -55,4 +55,6 @@ public:
 	Angel::vec3 center_true();
 	std::array<float, 6> shape_bounding_cube();
 	Angel::vec3 shape_size();
+
+	static std::array<float, 6> bounding_cube(const std::vector<ShapeModel*>& shapes);
 };
