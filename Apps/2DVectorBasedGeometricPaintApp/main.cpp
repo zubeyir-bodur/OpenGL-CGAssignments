@@ -10,6 +10,7 @@
 #include "UndoRedoStack.h"
 #include "Shape.h"
 #include "Camera.h"
+#include "DSerializer.h"
 
 #include <dearimgui/imgui.h>
 #include <tinyfiledialogs/tinyfiledialogs.h>
@@ -102,7 +103,8 @@ int main(int, char**)
 
 	Shape::init_static_members(width);
 	Renderer renderer;
-	Angel::vec3 sheet_pos(0, height / 7.0f, 0.0f);
+	float imgui_height = height / 7.0f;
+	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
 
 	// Helper rectangle spec for drawing temporary boxes (selection & drawing)
 	constexpr float global_z_pos_2d = 0.0f;
@@ -123,7 +125,7 @@ int main(int, char**)
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
+		* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	// Selection initializations
@@ -230,9 +232,9 @@ int main(int, char**)
 
 		if (should_update_sheet)
 		{
-			sheet_pos = Angel::vec3(0, height / 7.0f, 0.0f);
+			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
 			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
+				* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
 			should_update_sheet = false;
 		}
 
@@ -674,7 +676,7 @@ int main(int, char**)
 					}
 					else if (num_selections > 1)
 					{
-						// TO DO Copy Paste?
+						// Optional move operation for multiple shapes
 					}
 					else
 					{
@@ -854,7 +856,7 @@ int main(int, char**)
 		{
 			new_imgui_frame();
 			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_::ImGuiCond_Always);
-			ImGui::SetNextWindowSize(ImVec2((float)width, height / 7.0f), ImGuiCond_::ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2((float)width, imgui_height), ImGuiCond_::ImGuiCond_Always);
 			ImGuiWindowFlags flags_editor =
 				ImGuiWindowFlags_NoDecoration |
 				ImGuiWindowFlags_NoFocusOnAppearing |
@@ -863,6 +865,23 @@ int main(int, char**)
 			{
 				if (ImGui::BeginTabBar("##tabs"))
 				{
+					if (ImGui::BeginTabItem("Help"))
+					{
+						ImGui::Text("Camera Movement - W A S D");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tCamera Zoom - Mouse Wheel");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tCopy Selected Shapes - CTRL + C");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tPaste Copied Shapes - CTRL + V");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tSelect Shape - Left Mouse Button");
+						ImGui::NewLine();
+						ImGui::Text("Drag with left mouse button to select shapes, move currently selected shape or create a predefined shape");
+						ImGui::Text("Click to add vertexes on polygon drawing mode, right click to cancel/finish drawing");
+						ImGui::Text("Open Selection Tab to interact with the currently selected shape. Interacting with multiple shapes at once (except deletion and copy/paste) is nos supported");
+						ImGui::EndTabItem();
+					}
 					if (ImGui::BeginTabItem("Home"))
 					{
 						ImGui::RadioButton("Selection Mode", &radio_button_cur, (int)RadioButtons::Select);
@@ -913,38 +932,58 @@ int main(int, char**)
 							ImGui::PopStyleColor(3);
 						}
 						ImGui::SameLine();
+						char const* scene_filter_wildcard[1] = { "*.drawlist" };
 						if (ImGui::Button("Save"))
 						{
-							char const* lTheSaveFileName;
-							char const* lFilterPatterns[1] = { "*.drawlist" };
+							char const* save_file_path;
 
-							lTheSaveFileName = tinyfd_saveFileDialog(
+							save_file_path = tinyfd_saveFileDialog(
 								"Save Scene",
 								"..\\..\\Data\\scenes\\new_scene.drawlist",
 								1,
-								lFilterPatterns,
+								scene_filter_wildcard,
 								"Scene Files (*.drawlist)");
-
-							// TODO create a new file with the selected file name from user
-							// write the drawlist contents into this file
+							if (save_file_path != NULL)
+							{
+								std::filesystem::path std_save_file_path(save_file_path);
+								DSerializer::serialize_drawlist(list.shape_models(), std_save_file_path);
+							}
+							else
+							{
+								// Show error dialog
+							}
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Load"))
 						{
-							char const* lTheSaveFileName;
-							char const* lFilterPatterns[1] = { "*.drawlist" };
+							char const* open_file_path;
 
-							lTheSaveFileName = tinyfd_openFileDialog(
+							open_file_path = tinyfd_openFileDialog(
 								"Load Scene",
 								"..\\..\\Data\\scenes\\",
 								1,
-								lFilterPatterns,
+								scene_filter_wildcard,
 								"Scene Files (*.drawlist)",
 								false);
 
-							// TODO open the selected file
-							// clear the current drawlist and
-							// load the drawlist contents into the drawlist object from this file
+							if (open_file_path != NULL)
+							{
+								std::filesystem::path std_open_file_path(open_file_path);
+								std::vector<ShapeModel*> loaded_scene = DSerializer::deserialize_drawlist(std_open_file_path);
+								if (loaded_scene.empty())
+								{
+									// Print warning
+								}
+								else
+								{
+									// list.shutdown();
+									// list.shape_models() = std::vector<ShapeModel*>(loaded_scene);
+								}
+							}
+							else
+							{
+								// Show error dialog
+							}
 						}
 						if (radio_button_cur == (int)RadioButtons::DrawEqTri
 							|| radio_button_cur == (int)RadioButtons::DrawRect

@@ -43,6 +43,9 @@
     <ClCompile Include="UndoRedoStack.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="DSerializer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -88,6 +91,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Operation.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DSerializer.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
