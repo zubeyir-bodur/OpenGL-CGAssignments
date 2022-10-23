@@ -142,6 +142,9 @@ int main(int, char**)
 	// Selection State
 	std::vector<ShapeModel*> cur_selections{};
 
+	// Copy & Paste state
+	std::vector<ShapeModel*> clipboard{};
+
 	// DrawList
 	DrawList list(&renderer, projection_matrix, view_matrix);
 
@@ -210,6 +213,11 @@ int main(int, char**)
 
 		// Reset scroll
 		window_input.m_scroll_y = 0.0;
+
+		// Reset copy & paste
+		window_input.m_copy_just_pressed = false;
+		window_input.m_paste_just_pressed = false;
+
 		glfwPollEvents();
 
 		// Update the viewport
@@ -225,6 +233,8 @@ int main(int, char**)
 		// Update cursor
 		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
+
+		// Keyboard Events
 		if (!input_on_imgui)
 		{
 			// Camera movement - simple
@@ -251,8 +261,119 @@ int main(int, char**)
 			// Update view matrix when necessary
 			view_matrix = Camera::view_matrix();
 		}
+		if (window_input.m_copy_just_pressed)
+		{
+			for (auto* ptr: clipboard)
+			{
+				delete ptr;
+			}
+			clipboard.clear();
+			if (!cur_selections.empty())
+			{
+				for (auto selected_item : cur_selections)
+				{
+					ShapeModel* clipboard_item;
+					ShapeModel::StaticShape type = selected_item->shape_def();
+					Angel::vec4* colour = new Angel::vec4(selected_item->color());
+					if (type == ShapeModel::StaticShape::NONE)
+					{
+						std::vector<Angel::vec3> poly_coords = selected_item->model_coords();
+						clipboard_item = new ShapeModel(poly_coords, colour);
+					}
+					else
+					{
+						Angel::vec3* pos = new Angel::vec3(selected_item->position());
+						Angel::vec3* rot = new Angel::vec3(selected_item->rotation());
+						Angel::vec3* scale = new Angel::vec3(selected_item->scale());
+						clipboard_item = new ShapeModel(type, pos, rot, scale, colour);
+					}
+					clipboard.push_back(clipboard_item);
+				}
+				std::cout << "Copied!" << std::endl;
+				std::cout << "Clipboard size: " << std::to_string(clipboard.size()) << std::endl;
+			}
+		}
+		if (window_input.m_paste_just_pressed)
+		{
+			if (!clipboard.empty())
+			{
+				// Clear selections
+				drawing_multiple_selection_box = false;
+				for (auto* item : cur_selections)
+				{
+					item->deselect();
+				}
+				cur_selections.clear();
 
-		// Process mouse click events
+				// Compute the cursor model position
+				Angel::vec3 cursor_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+
+				// Compute the center of clipboard
+				Angel::vec3 center_clipboard;
+				std::array<float, 6> clipboard_bounding_cube = ShapeModel::bounding_cube(clipboard);
+				center_clipboard = {
+					(clipboard_bounding_cube[0] + clipboard_bounding_cube[1]) / 2.0f,
+					(clipboard_bounding_cube[2] + clipboard_bounding_cube[3]) / 2.0f,
+					global_z_pos_2d
+				};
+
+				std::vector<ShapeModel*> pasted_shapes;
+				pasted_shapes.reserve(clipboard.size());
+
+				for (auto* clipboard_item: clipboard)
+				{
+					ShapeModel* pasted_shape;
+					ShapeModel::StaticShape type = clipboard_item->shape_def();
+					Angel::vec4* colour = new Angel::vec4(clipboard_item->color());
+					if (type == ShapeModel::StaticShape::NONE)
+					{
+						std::vector<Angel::vec3> poly_coords = clipboard_item->model_coords();
+						pasted_shape = new ShapeModel(poly_coords, colour);
+					}
+					else
+					{
+						Angel::vec3* pos = new Angel::vec3(clipboard_item->position());
+						Angel::vec3* rot = new Angel::vec3(clipboard_item->rotation());
+						Angel::vec3* scale = new Angel::vec3(clipboard_item->scale());
+						pasted_shape = new ShapeModel(type, pos, rot, scale, colour);
+					}
+					pasted_shapes.push_back(pasted_shape);
+				}
+
+				// Translate the deep clipboard
+				// So that deep copies are translated by
+				// by v = cursor_pos - center_clipboard
+				for (auto* pasted_shape : pasted_shapes)
+				{
+					pasted_shape->position() += cursor_pos - center_clipboard;
+				}
+				
+				// Add deep copy to the draw list
+				for (auto pasted_shape : pasted_shapes)
+				{
+					list.add_shape(pasted_shape);
+				}
+
+				// Select the deep copies & update cur_selections
+				for (auto* item : pasted_shapes)
+				{
+					cur_selections.push_back(item);
+					item->select();
+				}
+				// Draw a rectangular area around if multiple shapes were copied
+				if (cur_selections.size() > 1)
+				{
+					drawing_multiple_selection_box = true;
+				}
+				else
+				{
+					drawing_multiple_selection_box = false;
+				}
+				std::cout << "Pasted!" << std::endl;
+			}
+		}
+
+		// Process LMB events
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
@@ -336,12 +457,36 @@ int main(int, char**)
 				// Process deletion
 				if (radio_button_cur == (int)RadioButtons::Delete)
 				{
-					// TODO
 					ShapeModel* s_press = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
 					ShapeModel* s_release = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 					if (s_press != nullptr && s_release != nullptr && s_release == s_press)
 					{
-						list.remove_shape(s_release);
+						bool in_selections = false;
+						for (auto* selection : cur_selections)
+						{
+							if (selection == s_release)
+							{
+								in_selections = true;
+							}
+						}
+						if (!in_selections || 
+							in_selections && cur_selections.size() < 2)
+						{
+							list.remove_shape(s_release);
+						}
+						else
+						{
+							drawing_multiple_selection_box = false;
+							for (auto& item : cur_selections)
+							{
+								item->deselect();
+							}
+							for (auto& item: cur_selections)
+							{
+								list.remove_shape(item);
+							}
+							cur_selections.clear();
+						}
 					}
 				}
 
@@ -647,7 +792,7 @@ int main(int, char**)
 			}
 		}
 
-		// RMB State
+		// Process RMB events
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
 			if (new_polygon)
@@ -661,97 +806,99 @@ int main(int, char**)
 			new_polygon = nullptr;
 		}
 
-		// ImGui Components 
-		new_imgui_frame();
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_::ImGuiCond_Always);
-		ImGui::SetNextWindowSize(ImVec2((float)width, height / 7.0f), ImGuiCond_::ImGuiCond_Always);
-		ImGuiWindowFlags flags_editor =
-			ImGuiWindowFlags_NoDecoration |
-			ImGuiWindowFlags_NoFocusOnAppearing |
-			ImGuiWindowFlags_NoResize;
-		ImGui::Begin("Editor Pane", nullptr, flags_editor);
+		// Draw GUI components
 		{
-			if (ImGui::BeginTabBar("##tabs"))
+			new_imgui_frame();
+			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_::ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2((float)width, height / 7.0f), ImGuiCond_::ImGuiCond_Always);
+			ImGuiWindowFlags flags_editor =
+				ImGuiWindowFlags_NoDecoration |
+				ImGuiWindowFlags_NoFocusOnAppearing |
+				ImGuiWindowFlags_NoResize;
+			ImGui::Begin("Editor Pane", nullptr, flags_editor);
 			{
-				if (ImGui::BeginTabItem("Home"))
+				if (ImGui::BeginTabBar("##tabs"))
 				{
-					ImGui::RadioButton("Selection Mode", &radio_button_cur, (int)RadioButtons::Select);
-					ImGui::SameLine();
-					ImGui::RadioButton("Deletion Mode", &radio_button_cur, (int)RadioButtons::Delete);
-					ImGui::SameLine();
-					ImGui::RadioButton("Draw Rectangle", &radio_button_cur, (int)RadioButtons::DrawRect);
-					ImGui::SameLine();
-					ImGui::RadioButton("Draw Eq. Triangle", &radio_button_cur, (int)RadioButtons::DrawEqTri);
-					ImGui::SameLine();
-					ImGui::RadioButton("Draw Convex Poly", &radio_button_cur, (int)RadioButtons::DrawPoly);
-					ImGui::SameLine();
-					if (radio_button_cur != (int)RadioButtons::DrawPoly)
+					if (ImGui::BeginTabItem("Home"))
 					{
-						polygon_mouse_model_coords.clear();
-						new_polygon = nullptr;
-						drawing_poly_add_vertex_line = false;
-					}
-					if (ImGui::Button("Undo"))
-					{
-						// TO DO Undo operation
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Redo"))
-					{
-						// TO DO Redo operation
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Save"))
-					{
-						// TO DO Undo operation
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Load"))
-					{
-						// TO DO Redo operation
-					}
-					if (radio_button_cur == (int)RadioButtons::DrawEqTri
-						|| radio_button_cur == (int)RadioButtons::DrawRect
-						|| radio_button_cur == (int)RadioButtons::DrawPoly)
-					{
-						ImGui::ColorEdit4("Drawing Color", &color_draw[0], f);
-					}
-					ImGui::Text("Cursor Coordinates w.r.t Sheet: %f, %f", cursor_model_coords.x - sheet_pos.x, cursor_model_coords.y - sheet_pos.y);
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("Selection"))
-				{
-					unsigned int n_selections = cur_selections.size();
-					if (n_selections == 0)
-					{
-						ImGui::Text("Currently, there is no shape selected");
-					}
-					else if (n_selections == 1)
-					{
-						ImGui::ColorEdit4("Shape Color", &(cur_selections[0]->color()).x, f);
+						ImGui::RadioButton("Selection Mode", &radio_button_cur, (int)RadioButtons::Select);
 						ImGui::SameLine();
-						ImGui::SliderFloat("Rotation Degree", &(cur_selections[0]->rotation()).z, 0.0f, 360, "%.3f", 1.0f);
-						if (ImGui::Button("Rotate 30 Degrees"))
+						ImGui::RadioButton("Deletion Mode", &radio_button_cur, (int)RadioButtons::Delete);
+						ImGui::SameLine();
+						ImGui::RadioButton("Draw Rectangle", &radio_button_cur, (int)RadioButtons::DrawRect);
+						ImGui::SameLine();
+						ImGui::RadioButton("Draw Eq. Triangle", &radio_button_cur, (int)RadioButtons::DrawEqTri);
+						ImGui::SameLine();
+						ImGui::RadioButton("Draw Convex Poly", &radio_button_cur, (int)RadioButtons::DrawPoly);
+						ImGui::SameLine();
+						if (radio_button_cur != (int)RadioButtons::DrawPoly)
 						{
-							(cur_selections[0]->rotation()).z += 30.0f;
+							polygon_mouse_model_coords.clear();
+							new_polygon = nullptr;
+							drawing_poly_add_vertex_line = false;
 						}
-						if (ImGui::Button("Rotate -30 Degrees"))
+						if (ImGui::Button("Undo"))
 						{
-							(cur_selections[0]->rotation()).z -= 30.0f;
+							// TO DO Undo operation
 						}
-						(cur_selections[0]->rotation()).z = (float)(((int)(cur_selections[0]->rotation()).z + 360) % 360);
+						ImGui::SameLine();
+						if (ImGui::Button("Redo"))
+						{
+							// TO DO Redo operation
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Save"))
+						{
+							// TO DO Undo operation
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Load"))
+						{
+							// TO DO Redo operation
+						}
+						if (radio_button_cur == (int)RadioButtons::DrawEqTri
+							|| radio_button_cur == (int)RadioButtons::DrawRect
+							|| radio_button_cur == (int)RadioButtons::DrawPoly)
+						{
+							ImGui::ColorEdit4("Drawing Color", &color_draw[0], f);
+						}
+						ImGui::Text("Cursor Coordinates w.r.t Sheet: %f, %f", cursor_model_coords.x - sheet_pos.x, cursor_model_coords.y - sheet_pos.y);
+						ImGui::EndTabItem();
 					}
-					else
+					if (ImGui::BeginTabItem("Selection"))
 					{
-						ImGui::Text("Multiple shapes were selected...");
+						unsigned int n_selections = cur_selections.size();
+						if (n_selections == 0)
+						{
+							ImGui::Text("Currently, there is no shape selected");
+						}
+						else if (n_selections == 1)
+						{
+							ImGui::ColorEdit4("Shape Color", &(cur_selections[0]->color()).x, f);
+							ImGui::SameLine();
+							ImGui::SliderFloat("Rotation Degree", &(cur_selections[0]->rotation()).z, 0.0f, 360, "%.3f", 1.0f);
+							if (ImGui::Button("Rotate 30 Degrees"))
+							{
+								(cur_selections[0]->rotation()).z += 30.0f;
+							}
+							if (ImGui::Button("Rotate -30 Degrees"))
+							{
+								(cur_selections[0]->rotation()).z -= 30.0f;
+							}
+							(cur_selections[0]->rotation()).z = (float)(((int)(cur_selections[0]->rotation()).z + 360) % 360);
+						}
+						else
+						{
+							ImGui::Text("Multiple shapes were selected...");
+						}
+						ImGui::EndTabItem();
 					}
-					ImGui::EndTabItem();
+					ImGui::EndTabBar();
 				}
-				ImGui::EndTabBar();
 			}
+			ImGui::End();
 		}
-		ImGui::End();
-
+		
 		// Clear background
 		renderer.set_viewport(window);
 		renderer.clear((float*)&clear_color);
@@ -773,6 +920,7 @@ int main(int, char**)
 		// Draw the draw list
 		list.draw_all();
 
+		// Draw box around multiple selections
 		if (drawing_multiple_selection_box)
 		{
 			// TODO draw a box around selections if there more than one
@@ -816,6 +964,8 @@ int main(int, char**)
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_selector_box);
 			renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
+
+		// Draw the drawer box for predefined shapes
 		if (drawing_drawer_box)
 		{
 			Shape::shader()->bind();
@@ -830,9 +980,10 @@ int main(int, char**)
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_drawer_box);
 			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
+
+		// Draw the add vertex line for draw polygon command
 		if (drawing_poly_add_vertex_line)
 		{
-			// TO DO - draw a line from mouse release position towards the current mouse position
 			Shape::shader()->bind();
 			Shape::shader()->set_uniform_4f("u_color",
 				drawer_box_col[0],
@@ -847,17 +998,21 @@ int main(int, char**)
 			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
 
-		// Always draw ImGui on top of the app
+		// Draw ImGui
 		render_imgui();
 
+		// Update the frame buffer
 		glfwSwapBuffers(window);
 	}
+	
+	// Clear the draw list & delete the VB/IB/VA objects for polygons
+	list.shutdown();
 
+	// Clear heap memory for predefined shapes & delete the VB/IB/VA objects for predefined shapes
 	Shape::destroy_static_members_allocated_on_the_heap();
 
-	// Cleanup
+	// Shutdown ImGui & GLFW
 	shutdown_imgui();
-
 	glfwDestroyWindow(window);
 	glfwTerminate();
 

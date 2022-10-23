@@ -12,6 +12,11 @@ DrawList::DrawList(Renderer* r, const Angel::mat4& proj, const Angel::mat4& view
 DrawList::~DrawList()
 {
 	m_renderer = nullptr;
+	//for (auto& ptr : m_shape_models)
+	//{
+	//	delete ptr;
+	//}
+	m_shape_models.clear();
 	// TODO avoid mem-leaks
 }
 
@@ -102,6 +107,15 @@ unsigned int DrawList::idx_of(ShapeModel* s)
 		}
 	}
 	return -1;
+}
+
+void DrawList::shutdown()
+{
+	for (auto& ptr : m_shape_models)
+	{
+		delete ptr;
+	}
+	m_shape_models.clear();
 }
 
 /// <summary>

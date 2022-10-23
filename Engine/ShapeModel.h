@@ -37,6 +37,7 @@ public:
 
 	Angel::vec3& position() { return *m_position; }
 	Angel::vec3& rotation() { return *m_rotation; }
+	Angel::vec3& scale() { return *m_scale; }
 	Angel::vec4& color() { return *m_color; }
 
 	const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }

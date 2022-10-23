@@ -13,6 +13,7 @@ private:
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
 	static void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+	static void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 public:
 	enum class ButtonState
 	{
@@ -28,6 +29,7 @@ public:
 	double m_mouse_press_x, m_mouse_press_y;
 	double m_mouse_release_x, m_mouse_release_y;
 	double m_scroll_y;
+	bool m_copy_just_pressed, m_paste_just_pressed;
 
 	// Singleton constructors and instance function
 	Input(GLFWwindow* app_window);
