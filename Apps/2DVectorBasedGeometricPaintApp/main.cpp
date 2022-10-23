@@ -12,6 +12,7 @@
 #include "Camera.h"
 
 #include <dearimgui/imgui.h>
+#include <tinyfiledialogs/tinyfiledialogs.h>
 #include "Angel-maths/mat.h"
 #include <glew.h>
 #include "Input.h"
@@ -19,6 +20,7 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -913,12 +915,36 @@ int main(int, char**)
 						ImGui::SameLine();
 						if (ImGui::Button("Save"))
 						{
-							// TO DO Save operation
+							char const* lTheSaveFileName;
+							char const* lFilterPatterns[1] = { "*.drawlist" };
+
+							lTheSaveFileName = tinyfd_saveFileDialog(
+								"Save Scene",
+								"..\\..\\Data\\scenes\\new_scene.drawlist",
+								1,
+								lFilterPatterns,
+								"Scene Files (*.drawlist)");
+
+							// TODO create a new file with the selected file name from user
+							// write the drawlist contents into this file
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Load"))
 						{
-							// TO DO Load operation
+							char const* lTheSaveFileName;
+							char const* lFilterPatterns[1] = { "*.drawlist" };
+
+							lTheSaveFileName = tinyfd_openFileDialog(
+								"Load Scene",
+								"..\\..\\Data\\scenes\\",
+								1,
+								lFilterPatterns,
+								"Scene Files (*.drawlist)",
+								false);
+
+							// TODO open the selected file
+							// clear the current drawlist and
+							// load the drawlist contents into the drawlist object from this file
 						}
 						if (radio_button_cur == (int)RadioButtons::DrawEqTri
 							|| radio_button_cur == (int)RadioButtons::DrawRect
