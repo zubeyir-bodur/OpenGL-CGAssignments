@@ -25,12 +25,14 @@ ShapeModel::ShapeModel(StaticShape def,
 	m_scale = scale;
 	m_color = rgba;
 	m_e_def = def;
+	m_is_hidden = false;
 }
 
 ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 	Angel::vec4* rgba)
 {
 	m_is_poly = true;
+	m_is_hidden = false;
 
 	m_position = new Angel::vec3(0.0f, 0.0f, 0.0f);
 	m_rotation = new Angel::vec3(0.0f, 0.0f, 0.0f);

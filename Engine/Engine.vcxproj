@@ -171,7 +171,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="ShapeModel.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="UndoRedoStack.cpp" />
     <ClCompile Include="VertexArray.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexBufferLayout.cpp" />
@@ -183,11 +183,12 @@
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Operation.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="ShapeModel.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="UndoRedoStack.h" />
     <ClInclude Include="VertexArray.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexBufferLayout.h" />
@@ -205,9 +206,6 @@
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\magic_enum\magic_enum.vcxproj">
       <Project>{2051c1a2-1827-4373-95a4-108ae49a58f0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\nothings-stb\nothings-stb.vcxproj">
-      <Project>{a5e98c8b-7ffe-4dc1-9349-644748bcdfb7}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

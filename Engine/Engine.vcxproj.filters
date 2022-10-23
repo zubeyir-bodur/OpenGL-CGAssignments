@@ -31,9 +31,6 @@
     <ClCompile Include="ShapeModel.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="VertexArray.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -41,6 +38,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="VertexBufferLayout.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="UndoRedoStack.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -75,9 +75,6 @@
     <ClInclude Include="ShapeModel.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="VertexArray.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -85,6 +82,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="VertexBufferLayout.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="UndoRedoStack.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Operation.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

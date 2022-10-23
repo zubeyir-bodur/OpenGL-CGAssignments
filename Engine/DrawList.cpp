@@ -109,6 +109,54 @@ unsigned int DrawList::idx_of(ShapeModel* s)
 	return -1;
 }
 
+void DrawList::undo_add_predefined(ShapeModel* s)
+{
+	std::cout << "Undo predefined shape creation" << std::endl;
+	unsigned int idx_of_s = idx_of(s);
+	m_shape_models[idx_of_s]->is_hidden() = true;
+}
+
+void DrawList::redo_add_predefined(ShapeModel* s)
+{
+	std::cout << "Redo predefined shape creation" << std::endl;
+	unsigned int idx_of_s = idx_of(s);
+	m_shape_models[idx_of_s]->is_hidden() = false;
+}
+
+void DrawList::undo_finish_poly(ShapeModel* s)
+{
+	std::cout << "Undo polygon finished" << std::endl;
+	unsigned int idx_of_s = idx_of(s);
+	m_shape_models[idx_of_s]->is_hidden() = true;
+}
+
+void DrawList::redo_finish_poly(ShapeModel* s)
+{
+	std::cout << "Redo polygon finished" << std::endl;
+	unsigned int idx_of_s = idx_of(s);
+	m_shape_models[idx_of_s]->is_hidden() = false;
+}
+
+void DrawList::undo_move(ShapeModel* s, const Angel::vec3& move_amount)
+{
+	s->position() -= move_amount;
+}
+
+void DrawList::redo_move(ShapeModel* s, const Angel::vec3& move_amount)
+{
+	s->position() += move_amount;
+}
+
+void DrawList::undo_rotate(ShapeModel* s, const Angel::vec3& rotate_amount)
+{
+	s->rotation() -= rotate_amount;
+}
+
+void DrawList::redo_rotate(ShapeModel* s, const Angel::vec3& rotate_amount)
+{
+	s->rotation() += rotate_amount;
+}
+
 void DrawList::shutdown()
 {
 	for (auto& ptr : m_shape_models)
@@ -125,54 +173,58 @@ void DrawList::draw_all()
 {
 	for (auto shape : m_shape_models)
 	{
-		Angel::mat4 model_mat = shape->model_matrix();
-		Angel::mat4 MVP_matrix = (* m_proj_mat) * (*m_view_mat) * model_mat;
-
-		// Update locations and colors
-		Shape::shader()->bind();
-		Shape::shader()->set_uniform_4f("u_color",
-			shape->color()[0],
-			shape->color()[1],
-			shape->color()[2],
-			shape->color()[3]);
-		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
-
-		// draw
-		if (!shape->is_poly())
+		if (!shape->is_hidden())
 		{
-			m_renderer->draw_triangles(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
-			// TODO
-			if (shape->is_selected())
+			Angel::mat4 model_mat = shape->model_matrix();
+			Angel::mat4 MVP_matrix = (*m_proj_mat) * (*m_view_mat) * model_mat;
+
+			// Update locations and colors
+			Shape::shader()->bind();
+			Shape::shader()->set_uniform_4f("u_color",
+				shape->color()[0],
+				shape->color()[1],
+				shape->color()[2],
+				shape->color()[3]);
+			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+
+			// draw
+			if (!shape->is_poly())
 			{
-				Shape::shader()->set_uniform_4f("u_color",
-					0.0f,
-					0.0f,
-					0.0f,
-					1.0f);
-				if (shape->shape_def() == ShapeModel::StaticShape::RECTANGLE)
+				m_renderer->draw_triangles(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
+				// TODO
+				if (shape->is_selected())
 				{
-					m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
+					Shape::shader()->set_uniform_4f("u_color",
+						0.0f,
+						0.0f,
+						0.0f,
+						1.0f);
+					if (shape->shape_def() == ShapeModel::StaticShape::RECTANGLE)
+					{
+						m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
+					}
+					else
+					{
+						m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices());
+					}
 				}
-				else
+			}
+			else
+			{
+				m_renderer->draw_polygon(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
+				if (shape->is_selected())
 				{
-					m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices());
+					Shape::shader()->set_uniform_4f("u_color",
+						0.0f,
+						0.0f,
+						0.0f,
+						1.0f);
+					unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
+					m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices(), (const void*)offset);
 				}
 			}
 		}
-		else
-		{
-			m_renderer->draw_polygon(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
-			if (shape->is_selected())
-			{
-				Shape::shader()->set_uniform_4f("u_color",
-					0.0f,
-					0.0f,
-					0.0f,
-					1.0f);
-				unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
-				m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices(),(const void*)offset);
-			}
-		}
+		
 	}
 }
 

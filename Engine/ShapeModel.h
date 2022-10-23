@@ -15,6 +15,7 @@ private:
 	StaticShape m_e_def;
 	bool m_is_poly = false;
 	bool m_is_selected = false;
+	bool m_is_hidden = false;
 
 	// Model dependent members
 	Angel::vec3* m_position; // middle point of the geometric shape
@@ -39,6 +40,7 @@ public:
 	Angel::vec3& rotation() { return *m_rotation; }
 	Angel::vec3& scale() { return *m_scale; }
 	Angel::vec4& color() { return *m_color; }
+	bool& is_hidden() { return m_is_hidden; }
 
 	const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }
 	const IndexBuffer* triangles_index_buffer() { return m_shape_def->triangles_index_buffer(); }
