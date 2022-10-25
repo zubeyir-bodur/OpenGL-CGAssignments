@@ -32,7 +32,7 @@ void Camera::move_horizontal(float dx)
 
 void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double global_cursor_y)
 {
-	const Angel::vec3& cursor_model_coords = map_from_global(global_cursor_x, global_cursor_y);
+	const Angel::vec3& cursor_world_before_zoom = map_from_global(global_cursor_x, global_cursor_y);
 	Camera& c = get_instance();
 	// Camera zooming with mouse wheel
 	if (c.m_zoom_ratio >= MIN_ZOOM && c.m_zoom_ratio <= MAX_ZOOM) // min 20 % max 10x zoom
@@ -56,7 +56,7 @@ void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double glob
 	{
 		if (zoom_percent_delta != 0)
 		{
-			c.m_camera_pos -= (c.m_zoom_ratio / 100.0f) * ((c.m_camera_pos + Angel::vec3((float)global_cursor_x, (float)global_cursor_y, 0.0f)) * (100.0f / c.m_zoom_ratio) - cursor_model_coords);
+			c.m_camera_pos -= (c.m_zoom_ratio / 100.0f) * (map_from_global(global_cursor_x, global_cursor_y) - cursor_world_before_zoom);
 		}
 	}
 }

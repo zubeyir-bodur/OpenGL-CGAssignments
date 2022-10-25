@@ -52,6 +52,7 @@ public:
 	bool contains(const Angel::vec3& model_pos);
 	unsigned int true_num_vertices();
 	std::vector<Angel::vec3> model_coords();
+	std::vector<float> raw_vertices() { return m_shape_def->vertices(); }
 	Angel::mat4 model_matrix();
 	void push_back_vertex(const Angel::vec3& mouse_model_pos);
 	Angel::vec3 center_raw();

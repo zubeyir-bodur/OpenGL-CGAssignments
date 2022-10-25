@@ -496,6 +496,7 @@ int main(int, char**)
 							in_selections && cur_selections.size() < 2)
 						{
 							list.remove_shape(s_release);
+							cur_selections.clear();
 						}
 						else
 						{
@@ -972,17 +973,20 @@ int main(int, char**)
 								std::vector<ShapeModel*> loaded_scene = DSerializer::deserialize_drawlist(std_open_file_path);
 								if (loaded_scene.empty())
 								{
-									// Print warning
+									std::cout << "Warning, loaded scene was empty, load was aborted" << std::endl;
 								}
 								else
 								{
-									// list.shutdown();
-									// list.shape_models() = std::vector<ShapeModel*>(loaded_scene);
+									list.shutdown();
+									for (auto& shape: loaded_scene)
+									{
+										list.add_shape(shape);
+									}
 								}
 							}
 							else
 							{
-								// Show error dialog
+								std::cout << "File does not exist!" << std::endl;
 							}
 						}
 						if (radio_button_cur == (int)RadioButtons::DrawEqTri
