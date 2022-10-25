@@ -61,9 +61,8 @@ void DSerializer::serialize_drawlist(const std::vector<ShapeModel*>& drawlist, c
 			else
 			{
 				std::vector<float> translation_only_coords = shape->raw_vertices();
-				// ignore the 0th(center) and last(1st repeated) vertices
+				// ignore the 0th(center) vertex
 				translation_only_coords.erase(translation_only_coords.begin(), translation_only_coords.begin() + NUM_COORDINATES);
-				translation_only_coords.erase(translation_only_coords.end() - NUM_COORDINATES, translation_only_coords.end());
 				Angel::vec3 pos = shape->position();
 				Angel::vec3 rot = shape->rotation();
 				Angel::vec4 col = shape->color();
