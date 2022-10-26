@@ -1,16 +1,16 @@
 #pragma once
 #include "Angel-maths/mat.h"
 
-class Camera
+class Camera2D
 {
 private:
 	Angel::vec3 m_camera_pos;
 	float m_zoom_ratio;
-	Camera();
-	~Camera();
-	Camera(const Camera&) = delete;
+	Camera2D();
+	~Camera2D();
+	Camera2D(const Camera2D&) = delete;
 public:
-	static Camera& get_instance();
+	static Camera2D& get_instance();
 	static void init(const Angel::vec3& pos, float zoom_ratio);
 	static void move_vertical(float dy);
 	static void move_horizontal(float dx);
