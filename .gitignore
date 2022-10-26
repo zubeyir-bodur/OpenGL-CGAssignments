@@ -3,9 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# README.TXT, as it is only needed for submissions
-README.TXT
-
 # ImGui
 *.ini
 
@@ -367,4 +364,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-*.drawlist
+
