@@ -6,13 +6,14 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 #include "Shader.h"
-#include "Texture.h"
 #include "DrawList.h"
+#include "UndoRedoStack.h"
 #include "Shape.h"
-#include "Camera.h"
+#include "Camera2D.h"
+#include "DSerializer.h"
 
-#include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
+#include <tinyfiledialogs/tinyfiledialogs.h>
 #include "Angel-maths/mat.h"
 #include <glew.h>
 #include "Input.h"
@@ -20,6 +21,7 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -101,7 +103,8 @@ int main(int, char**)
 
 	Shape::init_static_members(width);
 	Renderer renderer;
-	Angel::vec3 sheet_pos(0, height / 7.0f, 0.0f);
+	float imgui_height = height / 7.0f;
+	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
 
 	// Helper rectangle spec for drawing temporary boxes (selection & drawing)
 	constexpr float global_z_pos_2d = 0.0f;
@@ -111,18 +114,18 @@ int main(int, char**)
 	Angel::vec4 rect_3(0.0f, init_shape_length, global_z_pos_2d, 1.0f);
 
 	// View matrix - camera
-	Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
-	auto view_matrix = Camera::view_matrix();
+	Camera2D::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+	auto view_matrix = Camera2D::view_matrix();
 
 	// Orthographic projection is used
 	Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 	// Mouse location
-	auto cursor_model_coords = Camera::map_from_global(0, 0);
+	auto cursor_model_coords = Camera2D::map_from_global(0, 0);
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
+		* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	// Selection initializations
@@ -147,6 +150,9 @@ int main(int, char**)
 
 	// DrawList
 	DrawList list(&renderer, projection_matrix, view_matrix);
+
+	// UndoRedo States
+	UndoRedoStack undo_redo(&list);
 
 	enum class RadioButtons
 	{
@@ -176,6 +182,7 @@ int main(int, char**)
 	Angel::mat4 MVP_polygon_add_vertex_line;
 
 	// Other States
+	bool should_update_sheet = true;
 	bool drawing_selector_box = false;
 	bool drawing_drawer_box = false;
 	bool is_dragging = false;
@@ -183,7 +190,7 @@ int main(int, char**)
 	bool drawing_multiple_selection_box = false;
 	std::array<float, 4> bounding_box_selector{};
 	std::array<float, 4> bounding_box_drawer{};
-	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
+	const float& imgui_zoom_ratio = Camera2D::get_zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -203,7 +210,7 @@ int main(int, char**)
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
 
 		// Needed for selection and drawing while moving the camera
-		const Camera& old_camera = Camera::get_instance();
+		const Camera2D& old_camera = Camera2D::get_instance();
 		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
 		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
 		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
@@ -223,15 +230,19 @@ int main(int, char**)
 		// Update the viewport
 		glfwGetWindowSize(window, &width, &height);
 
-		sheet_pos = Angel::vec3(0, height / 7.0f, 0.0f);
+		if (should_update_sheet)
+		{
+			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
+			model_sheet_matrix = Angel::Translate(sheet_pos)
+				* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
+			should_update_sheet = false;
+		}
 
-		model_sheet_matrix = Angel::Translate(sheet_pos)
-			* Angel::Scale(Angel::vec3(8.0f, (6.0f / 7.0f) * (8.0f * height / width), 1.0f));
-
+		// Update the window projection
 		projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 		// Update cursor
-		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+		cursor_model_coords = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
 		// Keyboard Events
@@ -240,26 +251,26 @@ int main(int, char**)
 			// Camera movement - simple
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			{
-				Camera::move_vertical(-20.0f);
+				Camera2D::move_vertical(-20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 			{
-				Camera::move_horizontal(-20.0f);
+				Camera2D::move_horizontal(-20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			{
-				Camera::move_vertical(20.0f);
+				Camera2D::move_vertical(20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			{
-				Camera::move_horizontal(20.0f);
+				Camera2D::move_horizontal(20.0f);
 			}
 
 			// Camera zooming with mouse wheel
-			Camera::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
+			Camera2D::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
 
 			// Update view matrix when necessary
-			view_matrix = Camera::view_matrix();
+			view_matrix = Camera2D::view_matrix();
 		}
 		if (window_input.m_copy_just_pressed)
 		{
@@ -306,7 +317,7 @@ int main(int, char**)
 				cur_selections.clear();
 
 				// Compute the cursor model position
-				Angel::vec3 cursor_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 cursor_pos = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 
 				// Compute the center of clipboard
 				Angel::vec3 center_clipboard;
@@ -377,10 +388,10 @@ int main(int, char**)
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
+			camera_pos_released = Camera2D::camera_pos();
+			camera_zoom_released = Camera2D::get_zoom_ratio();
 			if (!input_on_imgui)
 			{
-				camera_pos_released = Camera::camera_pos();
-				camera_zoom_released = Camera::get_zoom_ratio();
 				// Update selection
 				if (drawing_selector_box)
 				{
@@ -398,7 +409,7 @@ int main(int, char**)
 						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
 						std::cout << "THIS IS A CLICK" << std::endl;
-						ShapeModel* frontmost = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+						ShapeModel* frontmost = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 						if (frontmost != nullptr)
 						{
 							drawing_multiple_selection_box = false;
@@ -454,13 +465,25 @@ int main(int, char**)
 					}
 				}
 
+				// Finish dragging
+				if (is_dragging)
+				{
+					Angel::vec3 cursor_pressed = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
+					Angel::vec3 cursor_released = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
+					Angel::vec3 drag_vector = cursor_released - cursor_pressed;
+					Operation shape_moved = Operation(Operation::OperationType::MoveShape, cur_selections[0], drag_vector);
+					undo_redo.on_operation_performed(shape_moved);
+					is_dragging = false;
+				}
+
 				// Process deletion
 				if (radio_button_cur == (int)RadioButtons::Delete)
 				{
-					ShapeModel* s_press = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
-					ShapeModel* s_release = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+					ShapeModel* s_press = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
+					ShapeModel* s_release = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 					if (s_press != nullptr && s_release != nullptr && s_release == s_press)
 					{
+						undo_redo.clear_stacks();
 						bool in_selections = false;
 						for (auto* selection : cur_selections)
 						{
@@ -473,6 +496,7 @@ int main(int, char**)
 							in_selections && cur_selections.size() < 2)
 						{
 							list.remove_shape(s_release);
+							cur_selections.clear();
 						}
 						else
 						{
@@ -539,19 +563,23 @@ int main(int, char**)
 							cur_selections.clear();
 							new_shape->select();
 							cur_selections.push_back(new_shape);
+
+							Operation add_predef(Operation::OperationType::AddPredefined, new_shape);
+							undo_redo.on_operation_performed(add_predef);
 						}
 					}
 				}
 
+				// Finish polygon
 				if (radio_button_cur == (int)RadioButtons::DrawPoly)
 				{
 					drawing_poly_add_vertex_line = true;
 					// Add vertex
-					Angel::vec3 poly_vertex = Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y);
+					Angel::vec3 poly_vertex = Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y);
 					polygon_add_vertex_line_pos = Angel::vec3(poly_vertex);
-					polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (Camera::get_zoom_ratio() / 100.0f);
+					polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (Camera2D::get_zoom_ratio() / 100.0f);
 					Angel::vec3 release_pos = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
-					Angel::vec3 current_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 current_pos = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					double dy = current_pos.y - release_pos.y;
 					double dx = current_pos.x - release_pos.x;
 					double line_length = std::sqrt(std::pow(dy, 2.0f) + std::pow(dx, 2.0f));
@@ -588,6 +616,23 @@ int main(int, char**)
 					}
 				}
 			}
+			else
+			{
+				if (radio_button_cur == (int)RadioButtons::DrawPoly)
+				{
+					if (new_polygon)
+					{
+						new_polygon->select();
+						cur_selections.clear();
+						cur_selections.push_back(new_polygon);
+						Operation finish_poly(Operation::OperationType::FinishPoly, new_polygon);
+						undo_redo.on_operation_performed(finish_poly);
+					}
+					polygon_mouse_model_coords.clear();
+					drawing_poly_add_vertex_line = false;
+					new_polygon = nullptr;
+				}
+			}
 
 			// Consume the released state
 			window_input.m_mouse_press_y = -1.0f;
@@ -610,14 +655,14 @@ int main(int, char**)
 		else if (mouse_previous_state == Input::ButtonState::Idle
 			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 		{
+			camera_pos_pressed = Camera2D::camera_pos();
+			camera_zoom_pressed = Camera2D::get_zoom_ratio();
 			if (!input_on_imgui)
 			{
-				camera_pos_pressed = Camera::camera_pos();
-				camera_zoom_pressed = Camera::get_zoom_ratio();
 				if (radio_button_cur == (int)RadioButtons::Select)
 				{
 					unsigned int num_selections = cur_selections.size();
-					ShapeModel* new_selected = list.frontmost_shape(Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
+					ShapeModel* new_selected = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
 					if (num_selections == 1
 						&& cur_selections[0] == new_selected)
 					{
@@ -626,20 +671,20 @@ int main(int, char**)
 						is_dragging = true;
 						list.move_shape_to_frontview(new_selected);
 						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
-						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 v_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						new_selected->position() += drag_vector;
 					}
 					else if (num_selections > 1)
 					{
-						// TO DO Copy Paste?
+						// Optional move operation for multiple shapes
 					}
 					else
 					{
 						drawing_selector_box = true;
-						selector_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
+						selector_pos = Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
@@ -662,9 +707,9 @@ int main(int, char**)
 					}
 					cur_selections.clear();
 					drawing_drawer_box = true;
-					drawer_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
+					drawer_pos = Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
@@ -699,8 +744,8 @@ int main(int, char**)
 			std::cout << "LMB is now BeingPressed" << std::endl;
 			window_input.m_mouse_release_y = -1.0f;
 			window_input.m_mouse_release_x = -1.0f;
-			camera_pos_released = Angel::vec3(0.0f);
-			camera_zoom_released = 0.0f;
+			camera_pos_released = {};
+			camera_zoom_released = {};
 		}
 		else if (mouse_previous_state == Input::ButtonState::BeingPressed)
 		{
@@ -714,7 +759,7 @@ int main(int, char**)
 						drawing_selector_box = false;
 						// Continue drag
 						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
-						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 v_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						old_selected->position() += drag_vector;
 					}
@@ -722,7 +767,7 @@ int main(int, char**)
 					{
 						drawing_selector_box = true;
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
@@ -740,7 +785,7 @@ int main(int, char**)
 				{
 					drawing_drawer_box = true;
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
@@ -777,7 +822,7 @@ int main(int, char**)
 			if (drawing_poly_add_vertex_line)
 			{
 				Angel::vec3 release_pos = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
-				Angel::vec3 current_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 current_pos = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				double dy = current_pos.y - release_pos.y;
 				double dx = current_pos.x - release_pos.x;
 				double line_length = std::sqrt(std::pow(dy, 2.0f) + std::pow(dx, 2.0f));
@@ -787,7 +832,7 @@ int main(int, char**)
 					tetha += M_PI / Angel::DegreesToRadians;
 				}
 				polygon_add_vertex_line_scale.x = (1.0f / init_shape_length) * (line_length);
-				polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (100.0f / Camera::get_zoom_ratio());
+				polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (100.0f / Camera2D::get_zoom_ratio());
 				polygon_add_vertex_line_rotation.z = tetha;
 			}
 		}
@@ -800,6 +845,8 @@ int main(int, char**)
 				new_polygon->select();
 				cur_selections.clear();
 				cur_selections.push_back(new_polygon);
+				Operation finish_poly(Operation::OperationType::FinishPoly, new_polygon);
+				undo_redo.on_operation_performed(finish_poly);
 			}
 			polygon_mouse_model_coords.clear();
 			drawing_poly_add_vertex_line = false;
@@ -807,10 +854,10 @@ int main(int, char**)
 		}
 
 		// Draw GUI components
+		new_imgui_frame();
 		{
-			new_imgui_frame();
 			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_::ImGuiCond_Always);
-			ImGui::SetNextWindowSize(ImVec2((float)width, height / 7.0f), ImGuiCond_::ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2((float)width, imgui_height), ImGuiCond_::ImGuiCond_Always);
 			ImGuiWindowFlags flags_editor =
 				ImGuiWindowFlags_NoDecoration |
 				ImGuiWindowFlags_NoFocusOnAppearing |
@@ -819,6 +866,23 @@ int main(int, char**)
 			{
 				if (ImGui::BeginTabBar("##tabs"))
 				{
+					if (ImGui::BeginTabItem("Help"))
+					{
+						ImGui::Text("Camera Movement - W A S D");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tCamera Zoom - Mouse Wheel");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tCopy Selected Shapes - CTRL + C");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tPaste Copied Shapes - CTRL + V");
+						ImGui::SameLine();
+						ImGui::Text("\t\t\tSelect Shape - Left Mouse Button");
+						ImGui::NewLine();
+						ImGui::Text("Drag with left mouse button to select shapes, move currently selected shape or create a predefined shape");
+						ImGui::Text("Click to add vertexes on polygon drawing mode, right click to cancel/finish drawing");
+						ImGui::Text("Open Selection Tab to interact with the currently selected shape. Interacting with multiple shapes at once (except deletion and copy/paste) is nos supported");
+						ImGui::EndTabItem();
+					}
 					if (ImGui::BeginTabItem("Home"))
 					{
 						ImGui::RadioButton("Selection Mode", &radio_button_cur, (int)RadioButtons::Select);
@@ -837,24 +901,94 @@ int main(int, char**)
 							new_polygon = nullptr;
 							drawing_poly_add_vertex_line = false;
 						}
+						bool is_undo_empty = undo_redo.is_undo_empty();
+						bool is_redo_empty = undo_redo.is_redo_empty();
+						if (is_undo_empty)
+						{
+							ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+						}
 						if (ImGui::Button("Undo"))
 						{
-							// TO DO Undo operation
+							undo_redo.on_undo();
+						}
+						if (is_undo_empty)
+						{
+							ImGui::PopStyleColor(3);
 						}
 						ImGui::SameLine();
+						if (is_redo_empty)
+						{
+							ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+						}
 						if (ImGui::Button("Redo"))
 						{
-							// TO DO Redo operation
+							undo_redo.on_redo();
+						}
+						if (is_redo_empty)
+						{
+							ImGui::PopStyleColor(3);
 						}
 						ImGui::SameLine();
+						char const* scene_filter_wildcard[1] = { "*.drawlist" };
 						if (ImGui::Button("Save"))
 						{
-							// TO DO Undo operation
+							char const* save_file_path;
+
+							save_file_path = tinyfd_saveFileDialog(
+								"Save Scene",
+								"..\\..\\Data\\scenes\\new_scene.drawlist",
+								1,
+								scene_filter_wildcard,
+								"Scene Files (*.drawlist)");
+							if (save_file_path != NULL)
+							{
+								std::filesystem::path std_save_file_path(save_file_path);
+								DSerializer::serialize_drawlist(list.shape_models(), std_save_file_path);
+							}
+							else
+							{
+								std::cout << "Error saving file!" << std::endl;
+							}
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Load"))
 						{
-							// TO DO Redo operation
+							char const* open_file_path;
+
+							open_file_path = tinyfd_openFileDialog(
+								"Load Scene",
+								"..\\..\\Data\\scenes\\",
+								1,
+								scene_filter_wildcard,
+								"Scene Files (*.drawlist)",
+								false);
+
+							if (open_file_path != NULL)
+							{
+								std::filesystem::path std_open_file_path(open_file_path);
+								std::vector<ShapeModel*> loaded_scene = DSerializer::deserialize_drawlist(std_open_file_path);
+								if (loaded_scene.empty())
+								{
+									std::cout << "Warning, loaded scene was empty, load was aborted" << std::endl;
+								}
+								else
+								{
+									list.shutdown();
+									undo_redo.clear_stacks();
+									for (auto& shape: loaded_scene)
+									{
+										list.add_shape(shape);
+									}
+								}
+							}
+							else
+							{
+								std::cout << "File does not exist!" << std::endl;
+							}
 						}
 						if (radio_button_cur == (int)RadioButtons::DrawEqTri
 							|| radio_button_cur == (int)RadioButtons::DrawRect
@@ -880,10 +1014,14 @@ int main(int, char**)
 							if (ImGui::Button("Rotate 30 Degrees"))
 							{
 								(cur_selections[0]->rotation()).z += 30.0f;
+								Operation rotate(Operation::OperationType::RotateShape, cur_selections[0], Angel::vec3(0, 0, 0), Angel::vec3(0, 0, 30));
+								undo_redo.on_operation_performed(rotate);
 							}
 							if (ImGui::Button("Rotate -30 Degrees"))
 							{
 								(cur_selections[0]->rotation()).z -= 30.0f;
+								Operation rotate(Operation::OperationType::RotateShape, cur_selections[0], Angel::vec3(0, 0, 0), Angel::vec3(0, 0, -30));
+								undo_redo.on_operation_performed(rotate);
 							}
 							(cur_selections[0]->rotation()).z = (float)(((int)(cur_selections[0]->rotation()).z + 360) % 360);
 						}
@@ -895,8 +1033,9 @@ int main(int, char**)
 					}
 					ImGui::EndTabBar();
 				}
+				ImGui::End();
 			}
-			ImGui::End();
+			ImGui::EndFrame();
 		}
 		
 		// Clear background
@@ -904,7 +1043,6 @@ int main(int, char**)
 		renderer.clear((float*)&clear_color);
 
 		// Get cursor model coordinates
-		ImGui::EndFrame();
 
 		// Draw sheet
 		Shape::shader()->bind();

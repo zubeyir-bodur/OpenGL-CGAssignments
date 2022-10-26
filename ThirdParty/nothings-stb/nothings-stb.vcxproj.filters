@@ -4,6 +4,6 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="nothings-stb.cpp" />
   </ItemGroup>
 </Project>
