@@ -951,7 +951,7 @@ int main(int, char**)
 							}
 							else
 							{
-								// Show error dialog
+								std::cout << "Error saving file!" << std::endl;
 							}
 						}
 						ImGui::SameLine();
@@ -978,6 +978,7 @@ int main(int, char**)
 								else
 								{
 									list.shutdown();
+									undo_redo.clear_stacks();
 									for (auto& shape: loaded_scene)
 									{
 										list.add_shape(shape);
