@@ -17,7 +17,7 @@ You need to have
 
 minimum installed to run the applications, in addition to the minimum OpenGL version stated above. 
 With a small change in the ErrorManager class, you can run the applications in other compilers,
-such as GC, CLang etc, because that class uses the following MSVC instrinsic statement:
+such as GCC, CLang etc, because that class uses the following MSVC instrinsic statement:
 
 ```c++
 //  In ErrorManager.h
@@ -33,8 +33,42 @@ using Visual Studio 2022 is reccommended.
 
 ## Applications
 
- - 2D Vector-based Geometric Paint Application
- - 
+### 2D Vector-based Geometric Paint Application
+- Features:
+   - Drawing predefined shapes, rectangulars and equilateral triangles
+   - Changing the drawing color using a HSV color picker, as well as support for transparent shapes
+   - 2D selection system, which supports single and multiple selection
+       - Drawing a rectangle box around selected multiple shapes, in addition to highlighting any selected shape by drawing edges
+       of the shape
+   - Moving a selected shape, does not support moving multiple shapes
+   - Removing shapes
+       - Supports removing multiple shapes if there are multiple selections
+       - Clears both the undo and redo stack
+   - Support for drawing convex polygons
+       - Drawing a line whenever a vertex is being added, from the previous created vertex to the current mouse position
+       - Also the polygon is drawn if there are at least 3 vertices
+   - Selection pane, which controls:
+       - Changing the colour of the shape
+       - Rotation of the shape, with buttons and a slider float. Rrotation with the slider float does not support
+       undo/redo
+   - Support for undo/redo for the following operations:
+       - Drawing a predefined shape, or <u>finishing</u> a polygon shape
+       - Moving a shape
+       - Rotating a shape
+   - Interactive 2D Camera:
+       - Zooming, minimum zoom is 50 %, maximum zoom is 1000 %. The values can be changed very easily.
+       - Zooming towards mouse position - the world coordinate the cursor is poingting to won't change while zooming
+       - Camera movement and zoom also works when:
+           - a selection is being made
+           - a predefined shape is being drawn
+           - a vertex is added to a polygon
+           - a shape is being moved
+   - Support for copying selected shapes, and pasting shapes that are copied towards the mouse position
 
+<br>
+
+### Modeling and Animating Randomly Generated Tree Models
+- Features:
+    - To be implemented
 ## Remarks
  Huge shoutout to [TheCherno](https://www.github.com/TheCherno), whom I followed his [OpenGL series](https://www.youtube.com/watch?v=W3gAzLwfIP0&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2) to implement my basic OpenGL framework for the assignments.
