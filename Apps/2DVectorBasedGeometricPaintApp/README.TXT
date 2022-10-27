@@ -11,18 +11,24 @@ Build Instructions:
 
 2 - Open OpenGL-CGAssignments.sln.
 
-3 - Build the solution. Make sure the "Debug" solution configuration is selected, otherwise the
-    solution will not compile. Make sure the solution is being built with "x86" solution platform,
-    otherwise, the application will crash on start.
+3 - Build the solution, in either Debug or Release configuration, and with either x86 or x64
+	platform. Other configurations and platforms come from FreeType project, which were not
+	set up for the rest of the project.
 
-4 - Since all the dependencies are already included with the zip file, it should compile if the 
-    steps 1-3 were done correctly.
+4 - Since all the dependencies are already included with the zip file, it should compile if
+	the Windows SDK is installed properly.
+	
+	There are rare occasions where Visual Studio will choose the wrong directory due to some 
+	bugs on some versions of the SDK. For instance, installing multiple SDK's for Visual 
+	Studio 2017 and Visual Studio might trigger such a bug, and Visual Studio 2017 may search
+	for the ProgramFiles folder instead, where the SDK is not actually located.
+	
+	If that happens, you may choose	the SDK that is recommended by the installed version of 
+	the Visual Studio.
 
 5 - Set 2DVectorBasedGeometricPaintApp as the startup project.
 
-6 - Run the startup project using Debug solution configuration and x86 solution platform.
-
-
+6 - Run the startup project.
 
 Important Notes for the Assignment Regarding Third Party Libraries and References
 
