@@ -5,7 +5,7 @@
 
 void Renderer::draw_triangles(const VertexArray* vertex_array_obj,
 	const IndexBuffer* index_buffer_obj,
-	const Shader* shader_obj) const
+	const Shader* shader_obj)
 {
 	shader_obj->bind();
 	vertex_array_obj->bind();
@@ -13,7 +13,7 @@ void Renderer::draw_triangles(const VertexArray* vertex_array_obj,
 	__glCallVoid(glDrawElements(GL_TRIANGLES, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
 }
 
-void Renderer::draw_polygon(const VertexArray* vertex_array_obj, const IndexBuffer* index_buffer_obj, const Shader* shader_obj) const
+void Renderer::draw_polygon(const VertexArray* vertex_array_obj, const IndexBuffer* index_buffer_obj, const Shader* shader_obj)
 {
 	shader_obj->bind();
 	vertex_array_obj->bind();
@@ -25,7 +25,7 @@ void Renderer::draw_lines(const VertexArray* vertex_array_obj,
 	const IndexBuffer* index_buffer_obj,
 	const Shader* shader_obj,
 	int count,
-	const void* offset) const
+	const void* offset)
 {
 	shader_obj->bind();
 	vertex_array_obj->bind();
@@ -40,7 +40,7 @@ void Renderer::draw_lines(const VertexArray* vertex_array_obj,
 	}
 }
 
-void Renderer::clear(const float* clear_color) const
+void Renderer::clear(const float* clear_color)
 {
 	__glCallVoid(glClearColor(clear_color[0] * clear_color[3],
 		clear_color[1] * clear_color[3],
@@ -49,7 +49,7 @@ void Renderer::clear(const float* clear_color) const
 	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-void Renderer::set_viewport(GLFWwindow* window) const
+void Renderer::set_viewport(GLFWwindow* window)
 {
 	int display_w, display_h;
 	glfwGetFramebufferSize(window, &display_w, &display_h);

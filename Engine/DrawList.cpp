@@ -3,21 +3,19 @@
 #include "Angel-maths/mat.h"
 #include <glew.h>
 
-DrawList::DrawList(Renderer* r, const Angel::mat4& proj, const Angel::mat4& view)
+DrawList::DrawList(const Angel::mat4& proj, const Angel::mat4& view)
 {
-	m_renderer = r;
 	m_proj_mat = const_cast<Angel::mat4*>(&proj);
 	m_view_mat = const_cast<Angel::mat4*>(&view);
 }
+
+/// <summary>
+/// Does not do the garbage collection, it 
+/// should be done with shutdown instead!
+/// </summary>
 DrawList::~DrawList()
 {
-	m_renderer = nullptr;
-	//for (auto& ptr : m_shape_models)
-	//{
-	//	delete ptr;
-	//}
 	m_shape_models.clear();
-	// TODO avoid mem-leaks
 }
 
 void DrawList::add_shape(ShapeModel* s)
@@ -35,6 +33,13 @@ void DrawList::remove_shape(ShapeModel* s)
 	}
 }
 
+/// <summary>
+/// Moves a specific shape to the tail of the draw list,
+/// so that the draw call for that shape is made last. This way,
+/// a 2D shape can be moved to in front of all other shapes, works
+/// with orthogonal projection only.
+/// </summary>
+/// <param name="s"></param>
 void DrawList::move_shape_to_frontview(ShapeModel* s)
 {
 	unsigned int idx = idx_of(s);
@@ -43,11 +48,17 @@ void DrawList::move_shape_to_frontview(ShapeModel* s)
 	m_shape_models.push_back(s);
 }
 
-ShapeModel* DrawList::frontmost_shape(const Angel::vec3& model_pos)
+/// <summary>
+/// Assuming all shapes in the list are 2D, retrieves the 
+/// shape at the given 2D world coordinate
+/// </summary>
+/// <param name="model_pos"></param>
+/// <returns></returns>
+ShapeModel* DrawList::frontmost_shape_2d(const Angel::vec3& model_pos)
 {
 	for (int i = m_shape_models.size() - 1; i >= 0; i--)
 	{
-		if (m_shape_models[i]->contains(model_pos))
+		if (m_shape_models[i]->contains_2d(model_pos))
 		{
 			return m_shape_models[i];
 		}
@@ -55,7 +66,14 @@ ShapeModel* DrawList::frontmost_shape(const Angel::vec3& model_pos)
 	return nullptr;
 }
 
-const std::vector<ShapeModel*> DrawList::shapes_contained_in(const Angel::vec3& selector_pos, 
+/// <summary>
+/// Assuming all shapes in the list are 2D, retrieves the
+/// shapes at the given 2D bounding box</summary>
+/// <param name="selector_pos"></param>
+/// <param name="selector_scale"></param>
+/// <returns></returns>
+const std::vector<ShapeModel*> DrawList::shapes_contained_in_2d(
+	const Angel::vec3& selector_pos, 
 	const Angel::vec3& selector_scale)
 {
 	std::vector<ShapeModel*> out;
@@ -73,7 +91,7 @@ const std::vector<ShapeModel*> DrawList::shapes_contained_in(const Angel::vec3& 
 			Angel::vec3 point_j = m_shape_models[i]->model_coords()[j];
 			// If at least one vertex is inside the region - excluding the borders of this region
 			// Then the shape is inside this region
-			if (selection_rectangle_sm.contains(point_j))
+			if (selection_rectangle_sm.contains_2d(point_j))
 			{
 				out.emplace_back(m_shape_models[i]);
 				in = true;
@@ -86,7 +104,7 @@ const std::vector<ShapeModel*> DrawList::shapes_contained_in(const Angel::vec3& 
 			for (unsigned int j = 0; j < selection_rectangle_sm.true_num_vertices(); j++)
 			{
 				Angel::vec3 point_j = selection_rectangle_sm.model_coords()[j];
-				if (m_shape_models[i]->contains(point_j))
+				if (m_shape_models[i]->contains_2d(point_j))
 				{
 					out.emplace_back(m_shape_models[i]);
 					break;
@@ -157,6 +175,9 @@ void DrawList::redo_rotate(ShapeModel* s, const Angel::vec3& rotate_amount)
 	s->rotation() += rotate_amount;
 }
 
+/// <summary>
+/// Must be called only when there is a valid OpenGL context!
+/// </summary>
 void DrawList::shutdown()
 {
 	for (auto& ptr : m_shape_models)
@@ -167,64 +188,13 @@ void DrawList::shutdown()
 }
 
 /// <summary>
-/// Currently, scaling is not supported together with rotation
+/// Draws all shape models in the list
 /// </summary>
 void DrawList::draw_all()
 {
 	for (auto shape : m_shape_models)
 	{
-		if (!shape->is_hidden())
-		{
-			Angel::mat4 model_mat = shape->model_matrix();
-			Angel::mat4 MVP_matrix = (*m_proj_mat) * (*m_view_mat) * model_mat;
-
-			// Update locations and colors
-			Shape::shader()->bind();
-			Shape::shader()->set_uniform_4f("u_color",
-				shape->color()[0],
-				shape->color()[1],
-				shape->color()[2],
-				shape->color()[3]);
-			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
-
-			// draw
-			if (!shape->is_poly())
-			{
-				m_renderer->draw_triangles(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
-				// TODO
-				if (shape->is_selected())
-				{
-					Shape::shader()->set_uniform_4f("u_color",
-						0.0f,
-						0.0f,
-						0.0f,
-						1.0f);
-					if (shape->shape_def() == ShapeModel::StaticShape::RECTANGLE)
-					{
-						m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
-					}
-					else
-					{
-						m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices());
-					}
-				}
-			}
-			else
-			{
-				m_renderer->draw_polygon(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader());
-				if (shape->is_selected())
-				{
-					Shape::shader()->set_uniform_4f("u_color",
-						0.0f,
-						0.0f,
-						0.0f,
-						1.0f);
-					unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
-					m_renderer->draw_lines(shape->vertex_array(), shape->triangles_index_buffer(), Shape::shader(), shape->true_num_vertices(), (const void*)offset);
-				}
-			}
-		}
-		
+		shape->draw_shape(*m_proj_mat, *m_view_mat);		
 	}
 }
 

@@ -24,8 +24,9 @@ private:
 	static Shader* s_shader;
 	static VertexBufferLayout s_layout;
 	// Predefined shapes
-	static Shape* s_eq_triangle;
-	static Shape* s_rectangle;
+	static Shape* s_unit_eq_triangle;
+	static Shape* s_unit_square;
+	static Shape* s_unit_cube;
 public:
 	Shape() {}
 	// Convex polygon constructor
@@ -35,15 +36,17 @@ public:
 	Angel::vec3 push_back_vertex(
 		const Angel::vec3& new_vertex_pos_where_origin_is_old_center, 
 		const Angel::vec3& old_center);
-	unsigned int num_vertices();
+
 	std::vector<float> vertices();
-	const VertexArray* vertex_array() const				{ return m_vertex_array; }
-	const IndexBuffer* triangles_index_buffer() const	{ return m_triangles_index_buffer; }
+
+	inline unsigned int num_vertices() { return m_no_transform_vertex_positions->size() / NUM_COORDINATES; }
+	inline const VertexArray* vertex_array() const				{ return m_vertex_array; }
+	inline const IndexBuffer* triangles_index_buffer() const	{ return m_triangles_index_buffer; }
 
 	static void init_static_members(int width);
 	static void destroy_static_members_allocated_on_the_heap();
-	static Shader* shader()						{ return s_shader; }
-	static const VertexBufferLayout& layout()	{ return s_layout; }
-	static const Shape* rectangle()				{ return s_rectangle; }
-	static const Shape* eq_triangle()			{ return s_eq_triangle; }
+	inline static Shader* shader()						{ return s_shader; }
+	inline static const VertexBufferLayout& layout()	{ return s_layout; }
+	inline static const Shape* rectangle()				{ return s_unit_square; }
+	inline static const Shape* eq_triangle()			{ return s_unit_eq_triangle; }
 };

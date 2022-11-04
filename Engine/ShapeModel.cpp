@@ -1,5 +1,6 @@
 #include "ShapeModel.h"
 #include "ErrorManager.h"
+#include "Renderer.h"
 
 ShapeModel::ShapeModel(StaticShape def,
 	Angel::vec3* pos,
@@ -76,7 +77,7 @@ ShapeModel::~ShapeModel()
 //  - The code in the link works for statically allocated arrays of Points, which is not compatible
 //       with the API. It was modified so that it works with the Angel::vec3 data type
 //  - Some of the names of the variables were changed so that code is cleaner
-bool ShapeModel::contains(const Angel::vec3& model_pos)
+bool ShapeModel::contains_2d(const Angel::vec3& model_pos)
 {
 	struct Point {
 		float x, y;
@@ -302,6 +303,66 @@ Angel::vec3 ShapeModel::shape_size()
 		(bounding_cube[3] - bounding_cube[2]) * (*m_scale).y,
 		(bounding_cube[5] - bounding_cube[4]) * (*m_scale).z
 	};
+}
+
+/// <summary>
+/// Draws the shape given the projection and view matrices
+/// </summary>
+/// <param name="proj"></param>
+/// <param name="view"></param>
+void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
+{
+	if (!is_hidden())
+	{
+		Angel::mat4 model_mat = model_matrix();
+		Angel::mat4 MVP_matrix = (proj) * (view) * model_mat;
+
+		// Update locations and colors
+		Shape::shader()->bind();
+		Shape::shader()->set_uniform_4f("u_color",
+			color()[0],
+			color()[1],
+			color()[2],
+			color()[3]);
+		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+
+		// draw
+		if (!is_poly())
+		{
+			Renderer::draw_triangles(vertex_array(), triangles_index_buffer(), Shape::shader());
+			// TODO
+			if (is_selected())
+			{
+				Shape::shader()->set_uniform_4f("u_color",
+					0.0f,
+					0.0f,
+					0.0f,
+					1.0f);
+				if (shape_def() == ShapeModel::StaticShape::RECTANGLE)
+				{
+					Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader());
+				}
+				else
+				{
+					Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader(), true_num_vertices());
+				}
+			}
+		}
+		else
+		{
+			Renderer::draw_polygon(vertex_array(), triangles_index_buffer(), Shape::shader());
+			if (is_selected())
+			{
+				Shape::shader()->set_uniform_4f("u_color",
+					0.0f,
+					0.0f,
+					0.0f,
+					1.0f);
+				unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
+				Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader(), true_num_vertices(), (const void*)offset);
+			}
+		}
+	}
 }
 
 std::array<float, 6> ShapeModel::bounding_cube(const std::vector<ShapeModel*>& shapes)

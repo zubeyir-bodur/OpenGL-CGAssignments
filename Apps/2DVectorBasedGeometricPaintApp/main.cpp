@@ -83,7 +83,7 @@ int main(int, char**)
 	init_imgui(window);
 	SetupImGuiStyle();
 
-	float init_shape_length = width / 8.0f;
+	float unit_shape_length = 1.0f;
 
 	// Enable blending for supporting transparent shapes
 	__glCallVoid(glEnable(GL_BLEND));
@@ -102,16 +102,15 @@ int main(int, char**)
 	ImVec4 clear_color = ImVec4(0.3984375f, 0.3984375f, 0.3984375f, 1.0f);
 
 	Shape::init_static_members(width);
-	Renderer renderer;
 	float imgui_height = height / 7.0f;
 	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
 
 	// Helper rectangle spec for drawing temporary boxes (selection & drawing)
 	constexpr float global_z_pos_2d = 0.0f;
 	Angel::vec4 rect_0(0.0f, 0.0f, global_z_pos_2d, 1.0f);
-	Angel::vec4 rect_1(init_shape_length, 0.0f, global_z_pos_2d, 1.0f);
-	Angel::vec4 rect_2(init_shape_length, init_shape_length, global_z_pos_2d, 1.0f);
-	Angel::vec4 rect_3(0.0f, init_shape_length, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_1(unit_shape_length, 0.0f, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_2(unit_shape_length, unit_shape_length, global_z_pos_2d, 1.0f);
+	Angel::vec4 rect_3(0.0f, unit_shape_length, global_z_pos_2d, 1.0f);
 
 	// View matrix - camera
 	Camera2D::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
@@ -125,7 +124,7 @@ int main(int, char**)
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
+		* Angel::Scale(Angel::vec3(width, height, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	// Selection initializations
@@ -149,7 +148,7 @@ int main(int, char**)
 	std::vector<ShapeModel*> clipboard{};
 
 	// DrawList
-	DrawList list(&renderer, projection_matrix, view_matrix);
+	DrawList list(projection_matrix, view_matrix);
 
 	// UndoRedo States
 	UndoRedoStack undo_redo(&list);
@@ -234,7 +233,7 @@ int main(int, char**)
 		{
 			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
 			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
+				* Angel::Scale(Angel::vec3(width, height, 1.0f));
 			should_update_sheet = false;
 		}
 
@@ -409,7 +408,7 @@ int main(int, char**)
 						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
 						std::cout << "THIS IS A CLICK" << std::endl;
-						ShapeModel* frontmost = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+						ShapeModel* frontmost = list.frontmost_shape_2d(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 						if (frontmost != nullptr)
 						{
 							drawing_multiple_selection_box = false;
@@ -439,7 +438,7 @@ int main(int, char**)
 							(bounding_box_selector[2] + bounding_box_selector[3]) / 2.0f,
 							0.0f
 						);
-						std::vector<ShapeModel*> multiple_selection = list.shapes_contained_in(selector_pos_centered, selector_scale);
+						std::vector<ShapeModel*> multiple_selection = list.shapes_contained_in_2d(selector_pos_centered, selector_scale);
 						drawing_multiple_selection_box = false;
 						for (auto* item : cur_selections)
 						{
@@ -479,8 +478,8 @@ int main(int, char**)
 				// Process deletion
 				if (radio_button_cur == (int)RadioButtons::Delete)
 				{
-					ShapeModel* s_press = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
-					ShapeModel* s_release = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+					ShapeModel* s_press = list.frontmost_shape_2d(Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
+					ShapeModel* s_release = list.frontmost_shape_2d(Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 					if (s_press != nullptr && s_release != nullptr && s_release == s_press)
 					{
 						undo_redo.clear_stacks();
@@ -577,7 +576,7 @@ int main(int, char**)
 					// Add vertex
 					Angel::vec3 poly_vertex = Camera2D::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y);
 					polygon_add_vertex_line_pos = Angel::vec3(poly_vertex);
-					polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (Camera2D::get_zoom_ratio() / 100.0f);
+					polygon_add_vertex_line_scale.y = (Camera2D::get_zoom_ratio() / 100.0f);
 					Angel::vec3 release_pos = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
 					Angel::vec3 current_pos = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					double dy = current_pos.y - release_pos.y;
@@ -588,7 +587,7 @@ int main(int, char**)
 					{
 						tetha += M_PI / Angel::DegreesToRadians;
 					}
-					polygon_add_vertex_line_scale.x = (1.0f / init_shape_length) * (line_length);
+					polygon_add_vertex_line_scale.x = (line_length);
 					polygon_add_vertex_line_rotation.z = tetha;
 					polygon_mouse_model_coords.push_back(poly_vertex);
 					if (polygon_mouse_model_coords.size() == 1)
@@ -662,7 +661,7 @@ int main(int, char**)
 				if (radio_button_cur == (int)RadioButtons::Select)
 				{
 					unsigned int num_selections = cur_selections.size();
-					ShapeModel* new_selected = list.frontmost_shape(Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
+					ShapeModel* new_selected = list.frontmost_shape_2d(Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
 					if (num_selections == 1
 						&& cur_selections[0] == new_selected)
 					{
@@ -685,14 +684,14 @@ int main(int, char**)
 						selector_pos = Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 						Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+						selector_scale = (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
-							selector_scale.x = 1.0f / init_shape_length;
+							selector_scale.x = 1.0f;
 						}
 						if (selector_scale.y == 0.0f)
 						{
-							selector_scale.y = 1.0f / init_shape_length;
+							selector_scale.y = 1.0f;
 						}
 						selector_scale.z = 1.0f;
 					}
@@ -710,14 +709,14 @@ int main(int, char**)
 					drawer_pos = Camera2D::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 					Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+					drawer_scale = (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
-						drawer_scale.x = 1.0f / init_shape_length;
+						drawer_scale.x = 1.0f;
 					}
 					if (drawer_scale.y == 0.0f)
 					{
-						drawer_scale.y = 1.0f / init_shape_length;
+						drawer_scale.y = 1.0f;
 					}
 					if (radio_button_cur == (int)RadioButtons::DrawEqTri)
 					{
@@ -768,14 +767,14 @@ int main(int, char**)
 						drawing_selector_box = true;
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 						Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-						selector_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+						selector_scale = (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
-							selector_scale.x = 1.0f / init_shape_length;
+							selector_scale.x = 1.0f;
 						}
 						if (selector_scale.y == 0.0f)
 						{
-							selector_scale.y = 1.0f / init_shape_length;
+							selector_scale.y = 1.0f;
 						}
 						selector_scale.z = 1.0f;
 					}
@@ -786,14 +785,14 @@ int main(int, char**)
 					drawing_drawer_box = true;
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 					Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-					drawer_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+					drawer_scale = (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
-						drawer_scale.x = 1.0f / init_shape_length;
+						drawer_scale.x = 1.0f;
 					}
 					if (drawer_scale.y == 0.0f)
 					{
-						drawer_scale.y = 1.0f / init_shape_length;
+						drawer_scale.y = 1.0f;
 					}
 					if (radio_button_cur == (int)RadioButtons::DrawEqTri)
 					{
@@ -831,8 +830,8 @@ int main(int, char**)
 				{
 					tetha += M_PI / Angel::DegreesToRadians;
 				}
-				polygon_add_vertex_line_scale.x = (1.0f / init_shape_length) * (line_length);
-				polygon_add_vertex_line_scale.y = (1.0f / init_shape_length) * (100.0f / Camera2D::get_zoom_ratio());
+				polygon_add_vertex_line_scale.x = (line_length);
+				polygon_add_vertex_line_scale.y = (100.0f / Camera2D::get_zoom_ratio());
 				polygon_add_vertex_line_rotation.z = tetha;
 			}
 		}
@@ -1039,8 +1038,8 @@ int main(int, char**)
 		}
 		
 		// Clear background
-		renderer.set_viewport(window);
-		renderer.clear((float*)&clear_color);
+		Renderer::set_viewport(window);
+		Renderer::clear((float*)&clear_color);
 
 		// Get cursor model coordinates
 
@@ -1053,7 +1052,7 @@ int main(int, char**)
 			color_sheet[3]);
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
-		renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+		Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 
 		// Draw the draw list
 		list.draw_all();
@@ -1070,8 +1069,8 @@ int main(int, char**)
 				global_z_pos_2d
 			};
 			Angel::vec3 multiple_selection_pos_scale = {
-				(-multiple_selection_bounding_cube[0] + multiple_selection_bounding_cube[1]) / init_shape_length,
-				(-multiple_selection_bounding_cube[2] + multiple_selection_bounding_cube[3]) / init_shape_length,
+				(-multiple_selection_bounding_cube[0] + multiple_selection_bounding_cube[1]),
+				(-multiple_selection_bounding_cube[2] + multiple_selection_bounding_cube[3]),
 				1.0f
 			};
 			Angel::mat4 model_mat_multiple_selection_box = Angel::Translate(multiple_selection_pos)
@@ -1084,7 +1083,7 @@ int main(int, char**)
 				drawer_box_col[2],
 				drawer_box_col[3]);
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_multiple_selection_box);
-			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
 
 		// Draw the selector box
@@ -1100,7 +1099,7 @@ int main(int, char**)
 				* Angel::Scale(selector_scale);
 			MVP_selector_box = projection_matrix * view_matrix * model_selector_box;
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_selector_box);
-			renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
 
 		// Draw the drawer box for predefined shapes
@@ -1116,7 +1115,7 @@ int main(int, char**)
 				* Angel::Scale(drawer_scale);
 			MVP_drawer_box = projection_matrix * view_matrix * model_drawer_box;
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_drawer_box);
-			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
 
 		// Draw the add vertex line for draw polygon command
@@ -1133,7 +1132,7 @@ int main(int, char**)
 				* Angel::Scale(polygon_add_vertex_line_scale);
 			MVP_polygon_add_vertex_line = projection_matrix * view_matrix * model_polygon_add_vertex_line;
 			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_polygon_add_vertex_line);
-			renderer.draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 		}
 
 		// Draw ImGui

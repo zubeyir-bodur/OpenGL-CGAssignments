@@ -8,7 +8,8 @@ public:
 	{
 		NONE,
 		RECTANGLE,
-		ISOSCELES_TRIANGLE
+		ISOSCELES_TRIANGLE,
+		CUBE // TODO
 	};
 private:
 	Shape* m_shape_def;
@@ -30,35 +31,36 @@ public:
 		Angel::vec3* scale,
 		Angel::vec4* rgba);
 
-	// For convex polygons
+	// For convex polygons with varying vertex numbers
 	ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 		Angel::vec4* rgba);
 
 	~ShapeModel();
 
-	Angel::vec3& position() { return *m_position; }
-	Angel::vec3& rotation() { return *m_rotation; }
-	Angel::vec3& scale() { return *m_scale; }
-	Angel::vec4& color() { return *m_color; }
-	bool& is_hidden() { return m_is_hidden; }
+	inline Angel::vec3& position() { return *m_position; }
+	inline Angel::vec3& rotation() { return *m_rotation; }
+	inline Angel::vec3& scale() { return *m_scale; }
+	inline Angel::vec4& color() { return *m_color; }
+	inline bool& is_hidden() { return m_is_hidden; }
+	inline const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }
+	inline const IndexBuffer* triangles_index_buffer() { return m_shape_def->triangles_index_buffer(); }
+	inline void select() { m_is_selected = true; }
+	inline void deselect() { m_is_selected = false; }
+	inline bool is_selected() { return m_is_selected; }
+	inline StaticShape shape_def() { return m_e_def; }
+	inline const float is_poly() { return m_is_poly; }
+	inline std::vector<float> raw_vertices() { return m_shape_def->vertices(); }
 
-	const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }
-	const IndexBuffer* triangles_index_buffer() { return m_shape_def->triangles_index_buffer(); }
-	void select() { m_is_selected = true; }
-	void deselect() { m_is_selected = false; }
-	bool is_selected() { return m_is_selected; }
-	StaticShape shape_def() { return m_e_def; }
-	const float is_poly() { return m_is_poly; }
-	bool contains(const Angel::vec3& model_pos);
+	bool contains_2d(const Angel::vec3& model_pos);
 	unsigned int true_num_vertices();
 	std::vector<Angel::vec3> model_coords();
-	std::vector<float> raw_vertices() { return m_shape_def->vertices(); }
 	Angel::mat4 model_matrix();
 	void push_back_vertex(const Angel::vec3& mouse_model_pos);
 	Angel::vec3 center_raw();
 	Angel::vec3 center_true();
 	std::array<float, 6> shape_bounding_cube();
 	Angel::vec3 shape_size();
+	void draw_shape(const Angel::mat4& proj, const Angel::mat4& view);
 
 	static std::array<float, 6> bounding_cube(const std::vector<ShapeModel*>& shapes);
 };

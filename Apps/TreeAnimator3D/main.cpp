@@ -46,7 +46,7 @@ int main(int, char**)
 	// Create GLFW full screen window
 	GLFWmonitor* main_monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(main_monitor);
-	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Dear ImGui Example For OpenGL and GLFW for testing the Rendering Engine", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "CS 465 - Assignment 2 - Hierarchical Modeling", nullptr, nullptr);
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 	if (!window || !mode)
@@ -118,18 +118,15 @@ int main(int, char**)
 	auto* model_a_pos = new Angel::vec3(0, 0.0f, 0.0f);
 	auto* model_b_pos = new Angel::vec3(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
 	auto* model_c_pos = new Angel::vec3(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
-	auto* model_d_pos = new Angel::vec3(0.0f, 0.0f, 0.0f);
 
 	// rotation - in radians (x, y, z axises respectively)
 	auto* model_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
 	auto* model_b_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
 	auto* model_c_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	auto* model_d_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
 	// scale   
-	auto* model_a_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
-	auto* model_b_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
-	auto* model_c_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
-	auto* model_d_scale = new Angel::vec3(1.0f, 1.0f, 1.0f);
+	auto* model_a_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
+	auto* model_b_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
+	auto* model_c_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
 
 	ShapeModel* model_a = new ShapeModel(ShapeModel::StaticShape::RECTANGLE,
 		model_a_pos,
@@ -180,10 +177,10 @@ int main(int, char**)
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(8.0f, 8.0f * mode->height / (float)mode->width, 1.0f));
+		* Angel::Scale(Angel::vec3(width, height, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
-	DrawList list(&renderer, projection_matrix, view_matrix);
+	DrawList list(projection_matrix, view_matrix);
 	list.add_shape(model_a);
 	list.add_shape(model_b);
 	list.add_shape(model_c);
@@ -234,7 +231,7 @@ int main(int, char**)
 		{
 			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
 			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(8.0f, 8.0f * (height - imgui_height) / width, 1.0f));
+				* Angel::Scale(Angel::vec3(width, height, 1.0f));
 			should_update_sheet = false;
 		}
 
@@ -343,14 +340,14 @@ int main(int, char**)
 				is_dragging = true;
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 				Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-				Angel::vec3 mouse_drag_rect_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
-					mouse_drag_rect_scale.x = 1.0f / init_shape_length;
+					mouse_drag_rect_scale.x = 1.0f;
 				}
 				if (mouse_drag_rect_scale.y == 0.0f)
 				{
-					mouse_drag_rect_scale.y = 1.0f / init_shape_length;
+					mouse_drag_rect_scale.y = 1.0f;
 				}
 				mouse_drag_rect_scale.z = 1.0f;
 			}
@@ -370,14 +367,14 @@ int main(int, char**)
 				// Scene event handling when the mouse is being pressed
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
 				Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-				Angel::vec3 mouse_drag_rect_scale = (1.0f / init_shape_length) * (mouse_model_new - mouse_model_old);
+				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
-					mouse_drag_rect_scale.x = 1.0f / init_shape_length;
+					mouse_drag_rect_scale.x = 1.0f;
 				}
 				if (mouse_drag_rect_scale.y == 0.0f)
 				{
-					mouse_drag_rect_scale.y = 1.0f / init_shape_length;
+					mouse_drag_rect_scale.y = 1.0f;
 				}
 				mouse_drag_rect_scale.z = 1.0f;
 			}
@@ -416,25 +413,24 @@ int main(int, char**)
 				ImGui::SliderFloat("Model A-Xpos", &model_a_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model A-Ypos", &model_a_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model A-zrot", &model_a_rot->z, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, -2, 2, "%.3f", 1.0f);
+				ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
 				ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
-				ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
 				ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
 				ImGui::NewLine();
 
 				ImGui::SliderFloat("Model B-XPos", &model_b_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model B-YPos", &model_b_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model B-zrot", &model_b_rot->z, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat2("Model B-scale", &model_b_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
 				ImGui::Text("Size of Model A: %f, %f", size_b.x, size_b.y);
-				ImGui::SliderFloat2("Model A-scale", &model_b_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
 				ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
 				ImGui::NewLine();
 
 				ImGui::SliderFloat("Model C-XPos", &model_c_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model C-YPos", &model_c_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model C-zrot", &model_c_rot->z, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat2("Model C-scale", &model_c_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
 				ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
-				ImGui::SliderFloat2("Model C-scale", &model_c_scale->x, 1.0f, 10.0f, "%.3f", 1.0f);
 				ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
 				ImGui::NewLine();
 
@@ -452,6 +448,8 @@ int main(int, char**)
 					ImGui::ColorEdit4("Model B Color", &color_b->x, f);
 					ImGui::SameLine();
 					ImGui::ColorEdit4("Model C Color", &color_c->x, f);
+					ImGui::SameLine();
+					ImGui::ColorEdit4("Model D Color", &color_d->x, f);
 					ImGui::NewLine();
 				}
 
@@ -468,8 +466,8 @@ int main(int, char**)
 		}
 
 		// Clear background
-		renderer.set_viewport(window);
-		renderer.clear((float*)&clear_color);
+		Renderer::set_viewport(window);
+		Renderer::clear((float*)&clear_color);
 
 		// Shader for sheet
 		Shape::shader()->bind();
@@ -483,7 +481,7 @@ int main(int, char**)
 		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
 
 		// Draw the sheet
-		renderer.draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+		Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 
 		// Draw the draw list
 		list.draw_all();
