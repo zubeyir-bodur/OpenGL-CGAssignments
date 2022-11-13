@@ -81,7 +81,7 @@ int main(int, char**)
 	init_imgui(window);
 	SetupImGuiStyle();
 	// ImGui state
-	ImVec4 clear_color = ImVec4(0.3984375f, 0.3984375f, 0.3984375f, 1.0f);
+	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 	float init_shape_length = width / 8.0f;
 
 	// Enable blending
@@ -89,102 +89,64 @@ int main(int, char**)
 	__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 	// Line width for GL_LINES
-	__glCallVoid(glLineWidth(5.0f));
-
-	// Specify the color of the triangle
-	float color_sheet[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	__glCallVoid(glLineWidth(3.0f));
 	Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.9f, 0.0f, 1.0f };
-	Angel::vec4* color_b = new Angel::vec4{ 0.9f, 0.6f, 0.0f, 1.0f };
-	Angel::vec4* color_c = new Angel::vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
-	Angel::vec4* color_d = new Angel::vec4{ 0.0f, 0.0f, 1.0f, 1.0f };
 
-	Shape::init_static_members(width);
-	// Texture
-	Texture* texture_obj;
-#define has_texture false
-	auto* shader_texture = new Shader("../../Engine/shaders/textured_triangle.glsl");;
-	if (has_texture)
-	{
-		texture_obj = new Texture("../../Data/textures/eye.png");
-		texture_obj->bind();
-		shader_texture->set_uniform_1i("u_texture", 0);
-	}
-	Renderer renderer;
-	float imgui_height = 0.0f;
-	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
+	// Also initializes the basic shader
+	Shape::init_static_members();
 
-	// Initialize shapes
-	// positions - respect to their initial 0th vertex positions
-	auto* model_a_pos = new Angel::vec3(0, 0.0f, 0.0f);
-	auto* model_b_pos = new Angel::vec3(width / 2.0f - init_shape_length / 2, height / 2.0f - init_shape_length / 2, 0.0f);
-	auto* model_c_pos = new Angel::vec3(width / 4.0f - init_shape_length / 2, height / 4.0f - init_shape_length / 2, 0.0f);
+	// Texture Shader
 
-	// rotation - in radians (x, y, z axises respectively)
+	// Texture Slot 0 - Tree Surface
+	Texture* tree_surface_texture_obj = new Texture("../../Data/textures/tree_surface_4k.png");
+	tree_surface_texture_obj->bind(0);
+
+	// Texture Slot 1 - Leafs
+	Texture* leaf_texture_obj = new Texture("../../Data/textures/leaf.png");
+	leaf_texture_obj->bind(1);
+
+	// Use tree wood unless specified
+	Shape::textured_shader()->bind();
+	Shape::textured_shader()->set_uniform_1i("u_texture", 0);
+
+	// Model a
+	auto* model_a_pos = new Angel::vec3(width/2.0f, height/2.0f, 0.0f);
 	auto* model_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	auto* model_b_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	auto* model_c_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	// scale   
-	auto* model_a_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
-	auto* model_b_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
-	auto* model_c_scale = new Angel::vec3(320.0f, 320.0f, 1.0f);
-
+	auto* model_a_scale = new Angel::vec3(width, height, 1.0f);
 	ShapeModel* model_a = new ShapeModel(ShapeModel::StaticShape::RECTANGLE,
 		model_a_pos,
 		model_a_rot,
 		model_a_scale,
 		color_a
 	);
-	ShapeModel* model_b = new ShapeModel(ShapeModel::StaticShape::RECTANGLE,
-		model_b_pos,
-		model_b_rot,
-		model_b_scale,
-		color_b
-	);
-	ShapeModel* model_c = new ShapeModel(ShapeModel::StaticShape::ISOSCELES_TRIANGLE,
-		model_c_pos,
-		model_c_rot,
-		model_c_scale,
-		color_c
-	);
 
-	// Test for polygon creation
-	constexpr float global_z_pos_2d = 0.0f;
-	std::vector<Angel::vec3> poly_coords{
-	Angel::vec3(-init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 0
-	Angel::vec3(init_shape_length / 2,	init_shape_length / 2,	global_z_pos_2d),	// 1
-	Angel::vec3(init_shape_length,		0.0f,					global_z_pos_2d),	// 2
-	Angel::vec3(init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 3
-	Angel::vec3(-init_shape_length / 2,	-init_shape_length / 2,	global_z_pos_2d),	// 4
-	Angel::vec3(-init_shape_length,		0.0f,					global_z_pos_2d),	// 5
-	};
+	// Cube a
+	Angel::vec3* cube_a_pos, * cube_a_rot, * cube_a_scale;
+	cube_a_pos = new Angel::vec3(width/2.0f, height/2.0f, 0.0f);
+	cube_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+	cube_a_scale = new Angel::vec3(100.0f, 100.0f, 100.0f);
+	ShapeModel* cube_a = new ShapeModel(ShapeModel::StaticShape::CUBE,
+		cube_a_pos, cube_a_rot, cube_a_scale);
 
-	auto* model_d = new ShapeModel(poly_coords,
-		color_d
-	);
-
-	// Tests for adding a vertex provided that concaveness remains
-	model_d->push_back_vertex(Angel::vec3(-3 * init_shape_length / 3.0f, 3 * init_shape_length / 7.0f, global_z_pos_2d));
+	Renderer renderer;
 
 	// View matrix - camera
+	float global_z_pos_2d = 0.0f;
 	Camera2D::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
 	auto view_matrix = Camera2D::view_matrix();
 
 	// Orthographic projection is used
-	Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
+	Angel::mat4 projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 	// Mouse location
 	auto cursor_model_coords = Camera2D::map_from_global(0, 0);
 
-	// Sheet initializations
-	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(width, height, 1.0f));
-	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
+	// TODO initialize platform surface cube
 
 	DrawList list(projection_matrix, view_matrix);
 	list.add_shape(model_a);
-	list.add_shape(model_b);
-	list.add_shape(model_c);
-	list.add_shape(model_d);
+	list.add_shape(cube_a);
+
 	bool is_dragging = false;
 	bool should_update_sheet = true;
 	const float& imgui_zoom_ratio = Camera2D::get_zoom_ratio();
@@ -227,16 +189,8 @@ int main(int, char**)
 		// Update the viewport
 		glfwGetWindowSize(window, &width, &height);
 
-		if (should_update_sheet)
-		{
-			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
-			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(width, height, 1.0f));
-			should_update_sheet = false;
-		}
-
 		// Update the window projection
-		projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
+		projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 		// Update cursor
 		cursor_model_coords = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
@@ -298,7 +252,7 @@ int main(int, char**)
 					{
 						std::cout << "THIS IS A CLICK" << std::endl;
 
-						// Do sth with the click - cursor_released vector is the world coordinate of the click
+						// Do sth. with the click - cursor_released vector is the world coordinate of the click
 
 					}
 					else
@@ -392,16 +346,6 @@ int main(int, char**)
 			// This is equivalent to a (JustPressed | BeingPressed) state
 		}
 
-		// update center positions of models for logging
-		Angel::vec3 size_a = model_a->shape_size();
-		Angel::vec3 center_a = model_a->center_true();
-		Angel::vec3 size_b = model_b->shape_size();
-		Angel::vec3 center_b = model_b->center_true();
-		Angel::vec3 size_c = model_c->shape_size();
-		Angel::vec3 center_c = model_c->center_true();
-		Angel::vec3 size_d = model_d->shape_size();
-		Angel::vec3 center_d = model_d->center_true();
-
 		// ImGui Components 
 		new_imgui_frame();
 		{
@@ -409,49 +353,7 @@ int main(int, char**)
 			ImGui::Begin("Hello, world!");
 			{
 				ImGui::Text("This is some useful text.");
-
-				ImGui::SliderFloat("Model A-Xpos", &model_a_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model A-Ypos", &model_a_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model A-zrot", &model_a_rot->z, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat2("Model A-scale", &model_a_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
-				ImGui::Text("Size of Model A: %f, %f", size_a.x, size_a.y);
-				ImGui::Text("Position of the Center of Model A: %f, %f", center_a.x, center_a.y);
 				ImGui::NewLine();
-
-				ImGui::SliderFloat("Model B-XPos", &model_b_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model B-YPos", &model_b_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model B-zrot", &model_b_rot->z, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat2("Model B-scale", &model_b_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
-				ImGui::Text("Size of Model A: %f, %f", size_b.x, size_b.y);
-				ImGui::Text("Position of the Center of Model B: %f, %f", center_b.x, center_b.y);
-				ImGui::NewLine();
-
-				ImGui::SliderFloat("Model C-XPos", &model_c_pos->x, 0.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model C-YPos", &model_c_pos->y, 0.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model C-zrot", &model_c_rot->z, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat2("Model C-scale", &model_c_scale->x, -init_shape_length, init_shape_length, "%.3f", 1.0f);
-				ImGui::Text("Size of Model C: %f, %f", size_c.x, size_c.y);
-				ImGui::Text("Position of the Center of Model C: %f, %f", center_c.x, center_c.y);
-				ImGui::NewLine();
-
-				ImGui::SliderFloat("Model D-XPos", &model_d->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model D-YPos", &model_d->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model D-zrot", &model_d->rotation().z, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
-				ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
-				ImGui::NewLine();
-
-				if (!has_texture)
-				{
-					ImGui::ColorEdit4("Model A Color", &color_a->x, f);
-					ImGui::SameLine();
-					ImGui::ColorEdit4("Model B Color", &color_b->x, f);
-					ImGui::SameLine();
-					ImGui::ColorEdit4("Model C Color", &color_c->x, f);
-					ImGui::SameLine();
-					ImGui::ColorEdit4("Model D Color", &color_d->x, f);
-					ImGui::NewLine();
-				}
 
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 					1000.0f / ImGui::GetIO().Framerate,
@@ -468,20 +370,6 @@ int main(int, char**)
 		// Clear background
 		Renderer::set_viewport(window);
 		Renderer::clear((float*)&clear_color);
-
-		// Shader for sheet
-		Shape::shader()->bind();
-		Shape::shader()->set_uniform_4f("u_color",
-			color_sheet[0],
-			color_sheet[1],
-			color_sheet[2],
-			color_sheet[3]);
-		view_matrix = Camera2D::view_matrix();
-		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
-		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
-
-		// Draw the sheet
-		Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
 
 		// Draw the draw list
 		list.draw_all();

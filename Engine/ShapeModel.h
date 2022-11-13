@@ -9,7 +9,7 @@ public:
 		NONE,
 		RECTANGLE,
 		ISOSCELES_TRIANGLE,
-		CUBE // TODO
+		CUBE
 	};
 private:
 	Shape* m_shape_def;
@@ -29,7 +29,7 @@ public:
 		Angel::vec3* pos,
 		Angel::vec3* rot,
 		Angel::vec3* scale,
-		Angel::vec4* rgba);
+		Angel::vec4* rgba = nullptr);
 
 	// For convex polygons with varying vertex numbers
 	ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
@@ -43,7 +43,7 @@ public:
 	inline Angel::vec4& color() { return *m_color; }
 	inline bool& is_hidden() { return m_is_hidden; }
 	inline const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }
-	inline const IndexBuffer* triangles_index_buffer() { return m_shape_def->triangles_index_buffer(); }
+	inline const IndexBuffer* index_buffer() { return m_shape_def->index_buffer(); }
 	inline void select() { m_is_selected = true; }
 	inline void deselect() { m_is_selected = false; }
 	inline bool is_selected() { return m_is_selected; }

@@ -98,7 +98,7 @@ int main(int, char**)
 	Angel::vec4* color_c = new Angel::vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
 	Angel::vec4* color_d = new Angel::vec4{ 0.0f, 0.0f, 1.0f, 1.0f };
 
-	Shape::init_static_members(width);
+	Shape::init_static_members();
 	// Texture
 	Texture* texture_obj;
 #define has_texture false
@@ -170,7 +170,7 @@ int main(int, char**)
 	auto view_matrix = Camera2D::view_matrix();
 
 	// Orthographic projection is used
-	Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
+	Angel::mat4 projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 	// Mouse location
 	auto cursor_model_coords = Camera2D::map_from_global(0, 0);
@@ -236,7 +236,7 @@ int main(int, char**)
 		}
 
 		// Update the window projection
-		projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
+		projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 		// Update cursor
 		cursor_model_coords = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
@@ -436,6 +436,8 @@ int main(int, char**)
 
 				ImGui::SliderFloat("Model D-XPos", &model_d->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
 				ImGui::SliderFloat("Model D-YPos", &model_d->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Model D-xrot", &model_d->rotation().x, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Model D-yrot", &model_d->rotation().y, 0.0f, 360, "%.3f", 1.0f);
 				ImGui::SliderFloat("Model D-zrot", &model_d->rotation().z, 0.0f, 360, "%.3f", 1.0f);
 				ImGui::Text("Size of Model D: %f, %f", size_d.x, size_d.y);
 				ImGui::Text("Position of the Center of Model D: %f, %f", center_d.x, center_d.y);
@@ -470,18 +472,18 @@ int main(int, char**)
 		Renderer::clear((float*)&clear_color);
 
 		// Shader for sheet
-		Shape::shader()->bind();
-		Shape::shader()->set_uniform_4f("u_color",
+		Shape::basic_shader()->bind();
+		Shape::basic_shader()->set_uniform_4f("u_color",
 			color_sheet[0],
 			color_sheet[1],
 			color_sheet[2],
 			color_sheet[3]);
 		view_matrix = Camera2D::view_matrix();
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
-		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
+		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
 
 		// Draw the sheet
-		Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+		Renderer::draw_triangles(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 
 		// Draw the draw list
 		list.draw_all();

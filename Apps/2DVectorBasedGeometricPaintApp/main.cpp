@@ -101,7 +101,7 @@ int main(int, char**)
 	float tmp_degree = 0.0f;
 	ImVec4 clear_color = ImVec4(0.3984375f, 0.3984375f, 0.3984375f, 1.0f);
 
-	Shape::init_static_members(width);
+	Shape::init_static_members();
 	float imgui_height = height / 7.0f;
 	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
 
@@ -1044,15 +1044,15 @@ int main(int, char**)
 		// Get cursor model coordinates
 
 		// Draw sheet
-		Shape::shader()->bind();
-		Shape::shader()->set_uniform_4f("u_color",
+		Shape::basic_shader()->bind();
+		Shape::basic_shader()->set_uniform_4f("u_color",
 			color_sheet[0],
 			color_sheet[1],
 			color_sheet[2],
 			color_sheet[3]);
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
-		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
-		Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
+		Renderer::draw_triangles(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 
 		// Draw the draw list
 		list.draw_all();
@@ -1076,21 +1076,21 @@ int main(int, char**)
 			Angel::mat4 model_mat_multiple_selection_box = Angel::Translate(multiple_selection_pos)
 				* Angel::Scale(multiple_selection_pos_scale);
 			Angel::mat4 MVP_mat_multiple_selection_box = projection_matrix * view_matrix * model_mat_multiple_selection_box;
-			Shape::shader()->bind();
-			Shape::shader()->set_uniform_4f("u_color",
+			Shape::basic_shader()->bind();
+			Shape::basic_shader()->set_uniform_4f("u_color",
 				drawer_box_col[0],
 				drawer_box_col[1],
 				drawer_box_col[2],
 				drawer_box_col[3]);
-			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_mat_multiple_selection_box);
-			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_mat_multiple_selection_box);
+			Renderer::draw_lines(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 		}
 
 		// Draw the selector box
 		if (drawing_selector_box)
 		{
-			Shape::shader()->bind();
-			Shape::shader()->set_uniform_4f("u_color",
+			Shape::basic_shader()->bind();
+			Shape::basic_shader()->set_uniform_4f("u_color",
 				selector_box_col[0],
 				selector_box_col[1],
 				selector_box_col[2],
@@ -1098,15 +1098,15 @@ int main(int, char**)
 			model_selector_box = Angel::Translate(selector_pos)
 				* Angel::Scale(selector_scale);
 			MVP_selector_box = projection_matrix * view_matrix * model_selector_box;
-			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_selector_box);
-			Renderer::draw_triangles(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_selector_box);
+			Renderer::draw_triangles(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 		}
 
 		// Draw the drawer box for predefined shapes
 		if (drawing_drawer_box)
 		{
-			Shape::shader()->bind();
-			Shape::shader()->set_uniform_4f("u_color",
+			Shape::basic_shader()->bind();
+			Shape::basic_shader()->set_uniform_4f("u_color",
 				drawer_box_col[0],
 				drawer_box_col[1],
 				drawer_box_col[2],
@@ -1114,15 +1114,15 @@ int main(int, char**)
 			model_drawer_box = Angel::Translate(drawer_pos)
 				* Angel::Scale(drawer_scale);
 			MVP_drawer_box = projection_matrix * view_matrix * model_drawer_box;
-			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_drawer_box);
-			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_drawer_box);
+			Renderer::draw_lines(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 		}
 
 		// Draw the add vertex line for draw polygon command
 		if (drawing_poly_add_vertex_line)
 		{
-			Shape::shader()->bind();
-			Shape::shader()->set_uniform_4f("u_color",
+			Shape::basic_shader()->bind();
+			Shape::basic_shader()->set_uniform_4f("u_color",
 				drawer_box_col[0],
 				drawer_box_col[1],
 				drawer_box_col[2],
@@ -1131,8 +1131,8 @@ int main(int, char**)
 				* Angel::RotateZ(polygon_add_vertex_line_rotation.z)
 				* Angel::Scale(polygon_add_vertex_line_scale);
 			MVP_polygon_add_vertex_line = projection_matrix * view_matrix * model_polygon_add_vertex_line;
-			Shape::shader()->set_uniform_mat4f("u_MVP", MVP_polygon_add_vertex_line);
-			Renderer::draw_lines(Shape::rectangle()->vertex_array(), Shape::rectangle()->triangles_index_buffer(), Shape::shader());
+			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_polygon_add_vertex_line);
+			Renderer::draw_lines(Shape::unit_square()->vertex_array(), Shape::unit_square()->index_buffer(), Shape::basic_shader());
 		}
 
 		// Draw ImGui

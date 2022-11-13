@@ -8,13 +8,18 @@ ShapeModel::ShapeModel(StaticShape def,
 	Angel::vec3* scale,
 	Angel::vec4* rgba)
 {
+	m_shape_def = nullptr;
+	m_color = nullptr;
 	switch (def)
 	{
 	case ShapeModel::StaticShape::RECTANGLE:
-		m_shape_def = const_cast<Shape*>(Shape::rectangle());
+		m_shape_def = const_cast<Shape*>(Shape::unit_square());
 		break;
 	case ShapeModel::StaticShape::ISOSCELES_TRIANGLE:
-		m_shape_def = const_cast<Shape*>(Shape::eq_triangle());
+		m_shape_def = const_cast<Shape*>(Shape::unit_eq_triangle());
+		break;
+	case ShapeModel::StaticShape::CUBE:
+		m_shape_def = const_cast<Shape*>(Shape::unit_cube());
 		break;
 	default:
 		ASSERT(false && "This predefined shape is not implemented!");
@@ -24,7 +29,10 @@ ShapeModel::ShapeModel(StaticShape def,
 	m_position = pos;
 	m_rotation = rot;
 	m_scale = scale;
-	m_color = rgba;
+	if (def != ShapeModel::StaticShape::CUBE)
+	{
+		m_color = rgba;
+	}
 	m_e_def = def;
 	m_is_hidden = false;
 }
@@ -217,8 +225,8 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 Angel::mat4 ShapeModel::model_matrix()
 {
 	return ((Angel::Translate((*m_position))
-		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).x), Angel::vec3(1, 0, 0)) not necessary  for assignment 1
-		//* Angel::rotate(Angel::mat4(1.0f), Angel::radians((*m_rotation).y), Angel::vec3(0, 1, 0)) not necessary  for assignment 1
+		* Angel::RotateX(((*m_rotation).x))
+		* Angel::RotateY(((*m_rotation).y))
 		* Angel::RotateZ(((*m_rotation).z))) // required rotation for assignment 1
 		* Angel::Scale(*m_scale))
 		* Angel::Translate(-center_raw());
@@ -233,7 +241,12 @@ Angel::vec3 ShapeModel::center_raw()
 {
 	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 	std::vector<float> vert = m_shape_def->vertices();
-	for (unsigned int i = 0; i < m_shape_def->num_vertices() * NUM_COORDINATES; i+= NUM_COORDINATES)
+	int stride = NUM_COORDINATES;
+	if (m_e_def == StaticShape::CUBE)
+	{
+		stride += NUM_TEXTURE_COORDINATES;
+	}
+	for (unsigned int i = 0; i < vert.size(); i+= stride)
 	{
 		center.x += vert[i]    ;
 		center.y += vert[i + 1];
@@ -318,48 +331,61 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		Angel::mat4 MVP_matrix = (proj) * (view) * model_mat;
 
 		// Update locations and colors
-		Shape::shader()->bind();
-		Shape::shader()->set_uniform_4f("u_color",
-			color()[0],
-			color()[1],
-			color()[2],
-			color()[3]);
-		Shape::shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+		if (m_e_def !=  StaticShape::CUBE)
+		{
+			Shape::basic_shader()->bind();
+			Shape::basic_shader()->set_uniform_4f("u_color",
+				color()[0],
+				color()[1],
+				color()[2],
+				color()[3]);
+			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+		}
+		else
+		{
+			Shape::textured_shader()->bind();
+			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
+			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+		}
 
 		// draw
-		if (!is_poly())
+		if (!is_poly() && m_e_def != StaticShape::CUBE)
 		{
-			Renderer::draw_triangles(vertex_array(), triangles_index_buffer(), Shape::shader());
-			// TODO
+			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::basic_shader());
 			if (is_selected())
 			{
-				Shape::shader()->set_uniform_4f("u_color",
+				Shape::basic_shader()->set_uniform_4f("u_color",
 					0.0f,
 					0.0f,
 					0.0f,
 					1.0f);
 				if (shape_def() == ShapeModel::StaticShape::RECTANGLE)
 				{
-					Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader());
+					Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader());
 				}
 				else
 				{
-					Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader(), true_num_vertices());
+					Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader(), true_num_vertices());
 				}
 			}
 		}
+		else if (m_e_def == StaticShape::CUBE)
+		{
+			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::textured_shader());
+			// TODO draw lines
+		}
 		else
 		{
-			Renderer::draw_polygon(vertex_array(), triangles_index_buffer(), Shape::shader());
+			Renderer::draw_polygon(vertex_array(), index_buffer(), Shape::basic_shader());
 			if (is_selected())
 			{
-				Shape::shader()->set_uniform_4f("u_color",
+				Shape::basic_shader()->set_uniform_4f("u_color",
 					0.0f,
 					0.0f,
 					0.0f,
 					1.0f);
 				unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
-				Renderer::draw_lines(vertex_array(), triangles_index_buffer(), Shape::shader(), true_num_vertices(), (const void*)offset);
+				Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader(), true_num_vertices(), (const void*)offset);
 			}
 		}
 	}
