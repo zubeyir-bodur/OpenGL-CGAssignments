@@ -244,7 +244,7 @@ Angel::vec3 ShapeModel::center_raw()
 	int stride = NUM_COORDINATES;
 	if (m_e_def == StaticShape::CUBE)
 	{
-		stride += NUM_TEXTURE_COORDINATES;
+		stride += NUM_RGBA; // NUM_TEXTURE_COORDINATES
 	}
 	for (unsigned int i = 0; i < vert.size(); i+= stride)
 	{
@@ -343,9 +343,12 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		}
 		else
 		{
-			Shape::textured_shader()->bind();
-			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
-			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+// 			Shape::textured_shader()->bind();
+// 			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
+// 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+			Shape::colored_shader()->bind();
+			Shape::colored_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+
 		}
 
 		// draw
@@ -371,7 +374,7 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		}
 		else if (m_e_def == StaticShape::CUBE)
 		{
-			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::textured_shader());
+			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::colored_shader());
 			// TODO draw lines
 		}
 		else

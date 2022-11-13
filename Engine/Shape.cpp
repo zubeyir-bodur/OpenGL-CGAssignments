@@ -5,8 +5,10 @@
 // Declare static members
 Shader* Shape::s_basic_shader = nullptr;
 Shader* Shape::s_textured_shader = nullptr;
+Shader* Shape::s_colored_shader = nullptr;
 VertexBufferLayout* Shape::s_basic_layout = nullptr;
 VertexBufferLayout* Shape::s_textured_layout = nullptr;
+VertexBufferLayout* Shape::s_colored_layout = nullptr;
 Shape* Shape::s_unit_eq_triangle = new Shape;
 Shape* Shape::s_unit_square = new Shape;
 Shape* Shape::s_unit_cube = new Shape;
@@ -120,6 +122,14 @@ void Shape::init_static_members()
 	// Textured Shader
 	s_textured_shader = new Shader("../../Engine/shaders/textured_triangle.glsl");
 
+	// Colored Shader
+	s_colored_shader = new Shader("../../Engine/shaders/colored_triangle.glsl");
+
+	// Colored layout
+	s_colored_layout = new VertexBufferLayout();
+	s_colored_layout->push_back_elements<float>(NUM_COORDINATES);
+	s_colored_layout->push_back_elements<float>(NUM_RGBA);
+
 	float unit = 1.0f;
 	constexpr float global_z_pos_2d = 0.0f;
 
@@ -145,29 +155,29 @@ void Shape::init_static_members()
 	auto* cube_indices = new std::vector<unsigned int>;
 	cube_indices->reserve(num_cube_indices);
 	cube_indices->insert(cube_indices->end(), {
+		// Top
+		0, 1, 2,
+		0, 2, 3,
+
 		// Left
-		0,  1,  2,
-		2,  3,	0,
+		5, 4, 6,
+		6, 4, 7,
 
 		// Right
-		4,  5,  6,
-		6,  7,  4,
-
-		// Top
-		8,  9,  10,
-		10, 11, 8,
-
-		// Bottom
-		12, 13, 14,
-		14, 15, 12,
+		8, 9, 10,
+		8, 10, 11,
 
 		// Front
-		16, 17, 18,
-		18, 19, 16,
+		13, 12, 14,
+		15, 14, 12,
 
 		// Back
-		20, 21, 22,
-		22, 23, 20
+		16, 17, 18,
+		16, 18, 19,
+
+		// Bottom
+		21, 20, 22,
+		22, 20, 23
 		});
 
 	// Create VAO, VBO & IBO for a rectangle
@@ -205,45 +215,50 @@ void Shape::init_static_members()
 
 	// Create VAO, VBO & IBO for a
 	auto* cube_positions = new std::vector<float>;
-	cube_positions->reserve(num_cube_vertices * (NUM_COORDINATES + NUM_TEXTURE_COORDINATES));
+	cube_positions->reserve(num_cube_vertices * (NUM_COORDINATES + NUM_RGBA));
 	cube_positions->insert(cube_positions->begin(), {
-		//	  X     Y    Z	    U     V
-			// Left
-			0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 0
-			0.0f, 0.0f, unit, 0.0f, 1.0f, // 1
-			0.0f, unit, unit, 0.0f, 0.0f, // 2
-			0.0f, unit, 0.0f, 1.0f, 0.0f, // 3
-			// Right		 		   
-			unit, 0.0f, 0.0f, 0.0f, 1.0f, // 4
-			unit, 0.0f, unit, 1.0f, 1.0f, // 5
-			unit, unit, unit, 1.0f, 0.0f, // 6
-			unit, unit, 0.0f, 0.0f, 0.0f, // 7
-			// Top			 		   
-			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 8
-			unit, 0.0f, 0.0f, 1.0f, 0.0f, // 9
-			unit, 0.0f, unit, 1.0f, 1.0f, // 10
-			0.0f, 0.0f, unit, 0.0f, 1.0f, // 11
-			// Bottom		 		   
-			0.0f, unit, 0.0f, 0.0f, 0.0f, // 12
-			unit, unit, 0.0f, 1.0f, 0.0f, // 13
-			unit, unit, unit, 1.0f, 1.0f, // 14
-			0.0f, unit, unit, 0.0f, 1.0f, // 15
-			// Front		 		   
-			0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 16
-			unit, 0.0f, 0.0f, 1.0f, 1.0f, // 17
-			unit, unit, 0.0f, 1.0f, 0.0f, // 18
-			0.0f, unit, 0.0f, 0.0f, 0.0f, // 19
-			// Back			 		   
-			0.0f, 0.0f, unit, 0.0f, 1.0f, // 20
-			unit, 0.0f, unit, 1.0f, 1.0f, // 21
-			unit, unit, unit, 1.0f, 0.0f, // 22
-			0.0f, unit, unit, 0.0f, 0.0f, // 23
+		//X     Y		Z	    R    G    B    A
+		// Top
+		-unit,	unit,	-unit,  0.5, 0.5, 0.5, 1.0f,
+		-unit,	unit,	unit,   0.5, 0.5, 0.5, 1.0f,
+		unit,	unit,	unit,   0.5, 0.5, 0.5, 1.0f,
+		unit,	unit,	-unit,  0.5, 0.5, 0.5, 1.0f,
+
+		// Left
+		-unit,	unit,	unit,   0.75, 0.25, 0.5, 1.0f,
+		-unit,	-unit,	unit,   0.75, 0.25, 0.5, 1.0f,
+		-unit,	-unit,	-unit,  0.75, 0.25, 0.5, 1.0f,
+		-unit,	unit,	-unit,  0.75, 0.25, 0.5, 1.0f,
+
+		// Right
+		unit,	unit,	unit,	0.25, 0.25, 0.75, 1.0f,
+		unit,	-unit,	unit,   0.25, 0.25, 0.75, 1.0f,
+		unit,	-unit,	-unit,  0.25, 0.25, 0.75, 1.0f,
+		unit,	unit,	-unit,  0.25, 0.25, 0.75, 1.0f,
+
+		// Front
+		unit,	unit,	unit,	1.0, 0.0, 0.15,	1.0f,
+		unit,	-unit,	unit,   1.0, 0.0, 0.15,	1.0f,
+		-unit,	-unit,	unit,   1.0, 0.0, 0.15,	1.0f,
+		-unit,	unit,	unit,	1.0, 0.0, 0.15,	1.0f,
+
+		// Back
+		unit,	unit,	-unit,	0.0, 1.0, 0.15,	1.0f,
+		unit,	-unit,	-unit,	0.0, 1.0, 0.15,	1.0f,
+		-unit,	-unit,	-unit,	0.0, 1.0, 0.15,	1.0f,
+		-unit,	unit,	-unit,	0.0, 1.0, 0.15,	1.0f,
+
+		// Bottom
+		-unit,	-unit,	-unit,	0.5, 0.5, 1.0,	1.0f,
+		-unit,	-unit,	unit,	0.5, 0.5, 1.0,	1.0f,
+		unit,	-unit,	unit,	0.5, 0.5, 1.0,	1.0f,
+		unit,	-unit,	-unit,	0.5, 0.5, 1.0,	1.0f,
 		});
 
 	auto* cube_va = new VertexArray;
 	auto* cube_vb = new VertexBuffer(cube_positions->data(),
 		cube_positions->size() * sizeof(float));
-	cube_va->add_buffer(*cube_vb, *s_basic_layout);
+	cube_va->add_buffer(*cube_vb, *s_colored_layout);
 	auto* cube_ib = new IndexBuffer(cube_indices->data(), cube_indices->size());
 
 	// Init static unit square
@@ -278,6 +293,7 @@ void Shape::init_static_members()
 	cube_ib->unbind();
 	s_basic_shader->unbind();
 	s_textured_shader->unbind();
+	s_colored_shader->unbind();
 }
 
 void Shape::destroy_static_members_allocated_on_the_heap()

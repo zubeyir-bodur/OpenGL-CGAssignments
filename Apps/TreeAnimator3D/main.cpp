@@ -9,7 +9,7 @@
 #include "Texture.h"
 #include "DrawList.h"
 #include "Shape.h"
-#include "Camera2D.h"
+#include "Camera.h"
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
@@ -84,13 +84,23 @@ int main(int, char**)
 	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 	float init_shape_length = width / 8.0f;
 
+	Renderer renderer;
+
 	// Enable blending
 	__glCallVoid(glEnable(GL_BLEND));
 	__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
+	renderer.clear(&clear_color.x);
+
+	// Enable Depth Test & Face Culling
+	__glCallVoid(glEnable(GL_DEPTH_TEST));
+	__glCallVoid(glEnable(GL_CULL_FACE));
+	__glCallVoid(glFrontFace(GL_CCW));
+	__glCallVoid(glCullFace(GL_BACK));
+
 	// Line width for GL_LINES
 	__glCallVoid(glLineWidth(3.0f));
-	Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.9f, 0.0f, 1.0f };
+	Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.0f, 0.0f, 1.0f };
 
 	// Also initializes the basic shader
 	Shape::init_static_members();
@@ -109,47 +119,33 @@ int main(int, char**)
 	Shape::textured_shader()->bind();
 	Shape::textured_shader()->set_uniform_1i("u_texture", 0);
 
-	// Model a
-	auto* model_a_pos = new Angel::vec3(width/2.0f, height/2.0f, 0.0f);
-	auto* model_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	auto* model_a_scale = new Angel::vec3(width, height, 1.0f);
-	ShapeModel* model_a = new ShapeModel(ShapeModel::StaticShape::RECTANGLE,
-		model_a_pos,
-		model_a_rot,
-		model_a_scale,
-		color_a
-	);
-
 	// Cube a
 	Angel::vec3* cube_a_pos, * cube_a_rot, * cube_a_scale;
-	cube_a_pos = new Angel::vec3(width/2.0f, height/2.0f, 0.0f);
-	cube_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	cube_a_scale = new Angel::vec3(100.0f, 100.0f, 100.0f);
+	cube_a_pos = new Angel::vec3(0.0f, 0.0f, -2000.0f);
+	cube_a_rot = new Angel::vec3(60, 0.0f, 30.0f);
+	cube_a_scale = new Angel::vec3(20.0f, 200.0f, 10.0f);
 	ShapeModel* cube_a = new ShapeModel(ShapeModel::StaticShape::CUBE,
 		cube_a_pos, cube_a_rot, cube_a_scale);
 
-	Renderer renderer;
 
 	// View matrix - camera
-	float global_z_pos_2d = 0.0f;
-	Camera2D::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
-	auto view_matrix = Camera2D::view_matrix();
+	Camera::init(Angel::vec3(0.0f, 0.0f, 0.0f), 100.0f);
+	auto view_matrix = Camera::view_matrix();
 
-	// Orthographic projection is used
-	Angel::mat4 projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
+	// Perspective projection is used
+	Angel::mat4 projection_matrix = Angel::Perspective(10.0f, (float)width/(float)height, 0.0f, 1e+38f);
 
 	// Mouse location
-	auto cursor_model_coords = Camera2D::map_from_global(0, 0);
+	auto cursor_model_coords = Camera::map_from_global(0, 0);
 
 	// TODO initialize platform surface cube
 
 	DrawList list(projection_matrix, view_matrix);
-	list.add_shape(model_a);
 	list.add_shape(cube_a);
 
 	bool is_dragging = false;
 	bool should_update_sheet = true;
-	const float& imgui_zoom_ratio = Camera2D::get_zoom_ratio();
+	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -169,7 +165,7 @@ int main(int, char**)
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
 
 		// Needed for selection and drawing while moving the camera
-		const Camera2D& old_camera = Camera2D::get_instance();
+		const Camera& old_camera = Camera::get_instance();
 		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
 		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
 		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
@@ -190,10 +186,10 @@ int main(int, char**)
 		glfwGetWindowSize(window, &width, &height);
 
 		// Update the window projection
-		projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
+		projection_matrix = Angel::Perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
 
 		// Update cursor
-		cursor_model_coords = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
 		// Keyboard & Mouse Wheel Events
@@ -203,26 +199,32 @@ int main(int, char**)
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					Camera2D::move_vertical(-20.0f);
+					Camera::move_towards(-1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
-					Camera2D::move_horizontal(-20.0f);
+					Camera::move_horizontal(-1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					Camera2D::move_vertical(20.0f);
+					Camera::move_towards(1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					Camera2D::move_horizontal(20.0f);
+					Camera::move_horizontal(1.0f);
+				}
+				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+				{
+					Camera::move_vertical(1.0f);
+				}
+				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+				{
+					Camera::move_vertical(-1.0f);
 				}
 
-				// Camera zooming with mouse wheel
-				Camera2D::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
 
 				// Update view matrix when necessary
-				view_matrix = Camera2D::view_matrix();
+				view_matrix = Camera::view_matrix();
 				// Immediate events coming from callbacks
 				if (window_input.m_copy_just_pressed)
 				{
@@ -239,8 +241,8 @@ int main(int, char**)
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
-			camera_pos_released = Camera2D::camera_pos();
-			camera_zoom_released = Camera2D::get_zoom_ratio();
+			camera_pos_released = Camera::camera_pos();
+			camera_zoom_released = Camera::get_zoom_ratio();
 			if (!input_on_imgui)
 			{
 				// Finish dragging
@@ -286,14 +288,14 @@ int main(int, char**)
 			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 		{
 
-			camera_pos_pressed = Camera2D::camera_pos();
-			camera_zoom_pressed = Camera2D::get_zoom_ratio();
+			camera_pos_pressed = Camera::camera_pos();
+			camera_zoom_pressed = Camera::get_zoom_ratio();
 			if (!input_on_imgui)
 			{
 				// Scene event handling when the LMB is just pressed
 				is_dragging = true;
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
@@ -320,7 +322,7 @@ int main(int, char**)
 			{
 				// Scene event handling when the mouse is being pressed
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera2D::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
@@ -354,6 +356,13 @@ int main(int, char**)
 			{
 				ImGui::Text("This is some useful text.");
 				ImGui::NewLine();
+
+				ImGui::SliderFloat("Model D-XPos", &cube_a->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
+				ImGui::SliderFloat("Model D-YPos", &cube_a->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Model D-zPos", &cube_a->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Model D-xrot", &cube_a->rotation().x, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Model D-yrot", &cube_a->rotation().y, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Model D-zrot", &cube_a->rotation().z, 0.0f, 360, "%.3f", 1.0f);
 
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 					1000.0f / ImGui::GetIO().Framerate,

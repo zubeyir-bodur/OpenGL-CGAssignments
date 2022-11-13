@@ -10,6 +10,7 @@
 
 #define NUM_COORDINATES 3
 #define NUM_TEXTURE_COORDINATES 2
+#define NUM_RGBA 4
 
 class Shape
 {
@@ -24,8 +25,10 @@ private:
 	// Static members
 	static Shader* s_basic_shader;
 	static Shader* s_textured_shader;
+	static Shader* s_colored_shader;
 	static VertexBufferLayout* s_basic_layout;
 	static VertexBufferLayout* s_textured_layout;
+	static VertexBufferLayout* s_colored_layout;
 	// Predefined shapes
 
 	/// <summary>
@@ -81,7 +84,7 @@ private:
 	/// 			   a  Front  a
 	/// 			   |         |
 	///				   19---a---18
-	///  a = 1
+	///  a = 2
 	/// </summary>
 	static Shape* s_unit_cube;
 public:
@@ -96,16 +99,19 @@ public:
 
 	std::vector<float> vertices();
 
-	inline unsigned int num_vertices() { return m_no_transform_vertex_positions->size() / NUM_COORDINATES; }
+	inline unsigned int num_vertices()							{ return m_no_transform_vertex_positions->size() / NUM_COORDINATES; }
 	inline const VertexArray* vertex_array() const				{ return m_vertex_array; }
-	inline const IndexBuffer* index_buffer() const	{ return m_index_buffer; }
+	inline const IndexBuffer* index_buffer() const				{ return m_index_buffer; }
 
 	static void init_static_members();
 	static void destroy_static_members_allocated_on_the_heap();
-	inline static Shader* basic_shader() { return s_basic_shader; }
-	inline static Shader* textured_shader() { return s_textured_shader; }
-	inline static const VertexBufferLayout& layout()	{ return *s_basic_layout; }
-	inline static const Shape* unit_square()				{ return s_unit_square; }
-	inline static const Shape* unit_eq_triangle() { return s_unit_eq_triangle; }
-	inline static const Shape* unit_cube() { return s_unit_cube; }
+	inline static Shader* basic_shader()						{ return s_basic_shader; }
+	inline static Shader* textured_shader()						{ return s_textured_shader; }
+	inline static Shader* colored_shader()						{ return s_colored_shader; }
+	inline static const VertexBufferLayout& basic_layout()		{ return *s_basic_layout; }
+	inline static const VertexBufferLayout& textured_layout()	{ return *s_textured_layout; }
+	inline static const VertexBufferLayout& colored_layout()	{ return *s_colored_layout; }
+	inline static const Shape* unit_square()					{ return s_unit_square; }
+	inline static const Shape* unit_eq_triangle()				{ return s_unit_eq_triangle; }
+	inline static const Shape* unit_cube()						{ return s_unit_cube; }
 };

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Camera2D.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="DrawList.cpp">
@@ -49,12 +49,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="Camera3D.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera2D.h">
+    <ClInclude Include="Camera.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DrawList.h">
@@ -105,15 +102,15 @@
     <ClInclude Include="Texture.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Camera3D.h">
-      <Filter>include</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\textured_triangle.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="shaders\triangle.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\colored_triangle.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

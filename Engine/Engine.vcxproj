@@ -197,8 +197,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera2D.cpp" />
-    <ClCompile Include="Camera3D.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DrawList.cpp" />
     <ClCompile Include="DSerializer.cpp" />
     <ClCompile Include="ErrorManager.cpp" />
@@ -216,8 +215,7 @@
     <ClCompile Include="VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera2D.h" />
-    <ClInclude Include="Camera3D.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DrawList.h" />
     <ClInclude Include="DSerializer.h" />
     <ClInclude Include="ErrorManager.h" />
@@ -236,6 +234,7 @@
     <ClInclude Include="VertexBufferLayout.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\colored_triangle.glsl" />
     <None Include="shaders\triangle.glsl" />
     <None Include="shaders\textured_triangle.glsl" />
   </ItemGroup>
