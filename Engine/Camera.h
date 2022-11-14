@@ -15,6 +15,7 @@ public:
 	static void move_vertical(float dy);
 	static void move_horizontal(float dx);
 	static void move_towards(float dz);
+	static void trackball_rotate(float x, float y);
 	static void zoom(double zoom_percent_delta, double global_cursor_x, double global_cursor_y);
 	static const Angel::vec3 camera_pos();
 	static Angel::mat4 view_matrix();

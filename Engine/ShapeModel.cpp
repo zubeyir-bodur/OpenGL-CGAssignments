@@ -1,6 +1,7 @@
 #include "ShapeModel.h"
 #include "ErrorManager.h"
 #include "Renderer.h"
+#include <glew.h>
 
 ShapeModel::ShapeModel(StaticShape def,
 	Angel::vec3* pos,
@@ -18,18 +19,18 @@ ShapeModel::ShapeModel(StaticShape def,
 	case ShapeModel::StaticShape::ISOSCELES_TRIANGLE:
 		m_shape_def = const_cast<Shape*>(Shape::unit_eq_triangle());
 		break;
-	case ShapeModel::StaticShape::CUBE:
-		m_shape_def = const_cast<Shape*>(Shape::unit_cube());
+	case ShapeModel::StaticShape::COL_CUBE:
+		m_shape_def = const_cast<Shape*>(Shape::colored_unit_cube());
 		break;
 	default:
-		ASSERT(false && "This predefined shape is not implemented!");
+		ASSERT(false && "This predefined shape is not implemented, or wrong constructor is used!");
 		break;
 	}
 	m_is_poly = false;
 	m_position = pos;
 	m_rotation = rot;
 	m_scale = scale;
-	if (def != ShapeModel::StaticShape::CUBE)
+	if (def != ShapeModel::StaticShape::COL_CUBE)
 	{
 		m_color = rgba;
 	}
@@ -63,6 +64,26 @@ ShapeModel::ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 	m_shape_def = new Shape(poly_mouse_model_coords_minus_center);
 	m_color = rgba;
 	m_e_def = StaticShape::NONE;
+}
+
+ShapeModel::ShapeModel(StaticShape def, 
+	Angel::vec3* pos, 
+	Angel::vec3* rot, 
+	Angel::vec3* scale, 
+	int texture_slot,
+	Texture* texture)
+{
+	ASSERT(def == ShapeModel::StaticShape::TEX_CUBE 
+		&& "This predefined shape is not implemented, or wrong constructor is used!");
+	m_shape_def = const_cast<Shape*>(Shape::textured_unit_cube());
+	m_texture = texture;
+	m_is_poly = false;
+	m_position = pos;
+	m_rotation = rot;
+	m_scale = scale;
+	m_texture_slot = texture_slot;
+	m_e_def = def;
+	m_is_hidden = false;
 }
 
 ShapeModel::~ShapeModel()
@@ -242,7 +263,7 @@ Angel::vec3 ShapeModel::center_raw()
 	Angel::vec3 center(0.0f, 0.0f, 0.0f);
 	std::vector<float> vert = m_shape_def->vertices();
 	int stride = NUM_COORDINATES;
-	if (m_e_def == StaticShape::CUBE)
+	if (m_e_def == StaticShape::COL_CUBE)
 	{
 		stride += NUM_RGBA; // NUM_TEXTURE_COORDINATES
 	}
@@ -328,10 +349,12 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 	if (!is_hidden())
 	{
 		Angel::mat4 model_mat = model_matrix();
-		Angel::mat4 MVP_matrix = (proj) * (view) * model_mat;
+		Angel::mat4 MVP_matrix = (proj) * (view)*model_mat;
+		Shape::basic_shader()->bind();
+		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 
 		// Update locations and colors
-		if (m_e_def !=  StaticShape::CUBE)
+		if (m_e_def !=  StaticShape::COL_CUBE && m_e_def != StaticShape::TEX_CUBE)
 		{
 			Shape::basic_shader()->bind();
 			Shape::basic_shader()->set_uniform_4f("u_color",
@@ -339,20 +362,23 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 				color()[1],
 				color()[2],
 				color()[3]);
-			Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+		}
+		else if (m_e_def == StaticShape::COL_CUBE)
+		{
+			Shape::colored_shader()->bind();
+			Shape::colored_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 		}
 		else
 		{
-// 			Shape::textured_shader()->bind();
-// 			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
-// 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
-			Shape::colored_shader()->bind();
-			Shape::colored_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
-
+			Shape::textured_shader()->bind();
+			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
+			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 		}
 
 		// draw
-		if (!is_poly() && m_e_def != StaticShape::CUBE)
+		if (!is_poly() 
+			&& m_e_def != StaticShape::COL_CUBE
+			&& m_e_def != StaticShape::TEX_CUBE)
 		{
 			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::basic_shader());
 			if (is_selected())
@@ -372,10 +398,26 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 				}
 			}
 		}
-		else if (m_e_def == StaticShape::CUBE)
+		else if (m_e_def == StaticShape::COL_CUBE)
 		{
 			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::colored_shader());
-			// TODO draw lines
+			// TODO draw lines - looks stupid
+			//__glCallVoid(glDepthMask(GL_FALSE));
+			//Shape::basic_shader()->bind();
+			//Shape::basic_shader()->set_uniform_4f("u_color",
+			//	0.0f,
+			//	0.0f,
+			//	0.0f,
+			//	1.0f);
+			//Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader());
+			//__glCallVoid(glDepthMask(GL_TRUE));
+		}
+		else if (m_e_def == StaticShape::TEX_CUBE)
+		{
+			m_texture->bind(m_texture_slot);
+			__glCallVoid(glDepthMask(GL_FALSE));
+			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::textured_shader());
+			__glCallVoid(glDepthMask(GL_TRUE));
 		}
 		else
 		{

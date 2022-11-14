@@ -57,36 +57,38 @@ private:
 	static Shape* s_unit_square;
 
 	/// <summary>
-	/// 				20---a---21
+	/// Same orientation with colored & textured cubes
+	/// 				19---a---16
 	/// 				|         |
 	/// 				a   Back  a
 	///					|         |
-	///					23---a---22
+	///					18---a---17
 	///					 
-	///				     11-------10
+	///				     0---------3
 	///				    /   Top   /
-	///				   8---------9
+	///				   1---------2
 	///				   
-	///                  1		   5
+	///                  7		  11
 	///                 /|	      /|
-	///                0 |	     4 |
+	///                4 |	     8 |
 	///                |L|	     |R|
-	///                | 2	     | 6
+	///                | 6	     | 10
 	///                |/ 	     |/ 
-	///                3		 7
+	///                5		 9
 	///               
-	///                  15-------14
+	///                  20-------23
 	///				    / Bottom /
-	///				   12-------13
+	///				   21-------22
 	///				
-	///				   16---a---17
+	///				   15---a---12
 	///				   |         |
 	/// 			   a  Front  a
 	/// 			   |         |
-	///				   19---a---18
-	///  a = 2
+	///				   14---a---13
+	///  a = 1
 	/// </summary>
-	static Shape* s_unit_cube;
+	static Shape* s_colored_unit_cube;
+	static Shape* s_textured_unit_cube;
 public:
 	Shape() {}
 	// Convex polygon constructor
@@ -113,5 +115,6 @@ public:
 	inline static const VertexBufferLayout& colored_layout()	{ return *s_colored_layout; }
 	inline static const Shape* unit_square()					{ return s_unit_square; }
 	inline static const Shape* unit_eq_triangle()				{ return s_unit_eq_triangle; }
-	inline static const Shape* unit_cube()						{ return s_unit_cube; }
+	inline static const Shape* colored_unit_cube()				{ return s_colored_unit_cube; }
+	inline static const Shape* textured_unit_cube()				{ return s_textured_unit_cube; }
 };

@@ -94,12 +94,13 @@ int main(int, char**)
 
 	// Enable Depth Test & Face Culling
 	__glCallVoid(glEnable(GL_DEPTH_TEST));
+	__glCallVoid(glDepthMask(GL_TRUE));
 	__glCallVoid(glEnable(GL_CULL_FACE));
 	__glCallVoid(glFrontFace(GL_CCW));
 	__glCallVoid(glCullFace(GL_BACK));
 
 	// Line width for GL_LINES
-	__glCallVoid(glLineWidth(3.0f));
+	__glCallVoid(glLineWidth(1.0f));
 	Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.0f, 0.0f, 1.0f };
 
 	// Also initializes the basic shader
@@ -116,17 +117,29 @@ int main(int, char**)
 	leaf_texture_obj->bind(1);
 
 	// Use tree wood unless specified
+	tree_surface_texture_obj->bind(0);
 	Shape::textured_shader()->bind();
 	Shape::textured_shader()->set_uniform_1i("u_texture", 0);
 
-	// Cube a
-	Angel::vec3* cube_a_pos, * cube_a_rot, * cube_a_scale;
-	cube_a_pos = new Angel::vec3(0.0f, 0.0f, -2000.0f);
-	cube_a_rot = new Angel::vec3(60, 0.0f, 30.0f);
-	cube_a_scale = new Angel::vec3(20.0f, 200.0f, 10.0f);
-	ShapeModel* cube_a = new ShapeModel(ShapeModel::StaticShape::CUBE,
-		cube_a_pos, cube_a_rot, cube_a_scale);
+	// Platform surface
+	Angel::vec3* platform_surface_pos, * platform_surface_rot, * platform_surface_scale;
+	platform_surface_pos = new Angel::vec3(0.0f, -300.0f, -2000.0f);
+	platform_surface_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+	platform_surface_scale = new Angel::vec3(width, 20.0f, height);
+	ShapeModel* platform_surface = new ShapeModel(ShapeModel::StaticShape::COL_CUBE,
+		platform_surface_pos, platform_surface_rot, platform_surface_scale);
 
+	// A textured cube
+	Angel::vec3* text_a_pos, * text_a_rot, * text_a_scale;
+	text_a_pos = new Angel::vec3(0.0f, 0.0f, -400.0f);
+	text_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
+	text_a_scale = new Angel::vec3(100, 100.0f, 100);
+	ShapeModel* text_a = new ShapeModel(ShapeModel::StaticShape::TEX_CUBE,
+		text_a_pos,
+		text_a_rot,
+		text_a_scale,
+		0, 
+		tree_surface_texture_obj);
 
 	// View matrix - camera
 	Camera::init(Angel::vec3(0.0f, 0.0f, 0.0f), 100.0f);
@@ -138,10 +151,11 @@ int main(int, char**)
 	// Mouse location
 	auto cursor_model_coords = Camera::map_from_global(0, 0);
 
-	// TODO initialize platform surface cube
+
 
 	DrawList list(projection_matrix, view_matrix);
-	list.add_shape(cube_a);
+	list.add_shape(platform_surface);
+	list.add_shape(text_a);
 
 	bool is_dragging = false;
 	bool should_update_sheet = true;
@@ -357,12 +371,25 @@ int main(int, char**)
 				ImGui::Text("This is some useful text.");
 				ImGui::NewLine();
 
-				ImGui::SliderFloat("Model D-XPos", &cube_a->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model D-YPos", &cube_a->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model D-zPos", &cube_a->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Model D-xrot", &cube_a->rotation().x, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat("Model D-yrot", &cube_a->rotation().y, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat("Model D-zrot", &cube_a->rotation().z, 0.0f, 360, "%.3f", 1.0f);
+// 				ImGui::SliderFloat("Platform-XPos", &platform_surface->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
+// 				ImGui::SliderFloat("Platform-YPos", &platform_surface->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
+// 				ImGui::SliderFloat("Platform-zPos", &platform_surface->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
+// 				ImGui::SliderFloat("Platform-xrot", &platform_surface->rotation().x, 0.0f, 360, "%.3f", 1.0f);
+// 				ImGui::SliderFloat("Platform-yrot", &platform_surface->rotation().y, 0.0f, 360, "%.3f", 1.0f);
+// 				ImGui::SliderFloat("Platform-zrot", &platform_surface->rotation().z, 0.0f, 360, "%.3f", 1.0f);
+
+
+				ImGui::NewLine();
+
+				ImGui::SliderFloat("Crate-XPos", &text_a->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-YPos", &text_a->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-zPos", &text_a->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-xrot", &text_a->rotation().x, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-yrot", &text_a->rotation().y, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-zrot", &text_a->rotation().z, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-xscale", &text_a->scale().x, 0.0f, 200, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-yscale", &text_a->scale().y, 0.0f, 200, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 200, "%.3f", 1.0f);
 
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 					1000.0f / ImGui::GetIO().Framerate,

@@ -36,6 +36,11 @@ void Camera::move_towards(float dz)
 	c.m_camera_pos.z += dz;
 }
 
+void Camera::trackball_rotate(float x, float y)
+{
+	// TODO
+}
+
 void Camera::zoom(double zoom_percent_delta, double global_cursor_x, double global_cursor_y)
 {
 	const Angel::vec3& cursor_world_before_zoom = map_from_global(global_cursor_x, global_cursor_y);

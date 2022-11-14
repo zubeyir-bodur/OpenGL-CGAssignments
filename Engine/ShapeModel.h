@@ -1,5 +1,6 @@
 #pragma once
 #include "Shape.h"
+#include "Texture.h"
 
 class ShapeModel
 {
@@ -9,7 +10,8 @@ public:
 		NONE,
 		RECTANGLE,
 		ISOSCELES_TRIANGLE,
-		CUBE
+		COL_CUBE,
+		TEX_CUBE,
 	};
 private:
 	Shape* m_shape_def;
@@ -17,6 +19,8 @@ private:
 	bool m_is_poly = false;
 	bool m_is_selected = false;
 	bool m_is_hidden = false;
+	int m_texture_slot = -1;
+	Texture* m_texture = nullptr;
 
 	// Model dependent members
 	Angel::vec3* m_position; // middle point of the geometric shape
@@ -24,7 +28,8 @@ private:
 	Angel::vec3* m_scale;	 // scaling from the middle point
 	Angel::vec4* m_color;
 public:
-	// For predefined shapes
+	// For predefined unit colored shapes
+	// Colored cube is also supported here
 	ShapeModel(StaticShape def,
 		Angel::vec3* pos,
 		Angel::vec3* rot,
@@ -34,6 +39,14 @@ public:
 	// For convex polygons with varying vertex numbers
 	ShapeModel(const std::vector<Angel::vec3>& poly_mouse_model_coords,
 		Angel::vec4* rgba);
+
+	// For textured shapes, currently only cubes support textures
+	ShapeModel(StaticShape def,
+		Angel::vec3* pos,
+		Angel::vec3* rot,
+		Angel::vec3* scale,
+		int texture_slot,
+		Texture* texture);
 
 	~ShapeModel();
 

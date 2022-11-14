@@ -1,10 +1,22 @@
 #pragma once
 #include <csignal>
 
+#define IS_DEBUG 1
+#ifndef NDEBUG
+#define IS_DEBUG 0	
+#endif 
+
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)
 #else
-#define GENERAL_BREAK() __debugbreak()
+#define GENERAL_BREAK() if (IS_DEBUG) \
+ { \
+	 __debugbreak();\
+ } \
+else \
+{ \
+	raise(3);\
+}
 #endif
 
 #define ASSERT(x) if (!(x)) \
