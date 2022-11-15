@@ -70,6 +70,7 @@ public:
 	Angel::mat4 model_matrix();
 	void push_back_vertex(const Angel::vec3& mouse_model_pos);
 	Angel::vec3 center_raw();
+	Angel::vec3 center_raw_bottom();
 	Angel::vec3 center_true();
 	std::array<float, 6> shape_bounding_cube();
 	Angel::vec3 shape_size();

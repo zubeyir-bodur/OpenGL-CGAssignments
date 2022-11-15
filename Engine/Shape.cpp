@@ -237,10 +237,10 @@ void Shape::init_static_members()
 	col_cube_positions->insert(col_cube_positions->begin(), {
 		//  X			Y			Z			 R    G    B    A
 		// Top
-		-unit_half,	unit_half,	-unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
-		-unit_half,	unit_half,	unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
-		unit_half,	unit_half,	unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
-		unit_half,	unit_half,	-unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
+		-unit_half,	unit_half,	-unit_half,		0.45f, 0.4f, 0.23f, 1.0f, // "Dirt" top for assignment 2
+		-unit_half,	unit_half,	unit_half,		0.45f, 0.4f, 0.23f, 1.0f,
+		unit_half,	unit_half,	unit_half,		0.45f, 0.4f, 0.23f, 1.0f,
+		unit_half,	unit_half,	-unit_half,		0.45f, 0.4f, 0.23f, 1.0f,
 
 		// Left
 		-unit_half,	unit_half,	unit_half,		0.75f, 0.25f, 0.5f, 1.0f,

@@ -25,56 +25,6 @@ namespace Angel
 		};
 	}
 
-	float Determinant(const mat4& a)
-	{
-		return a[0].x * (a[1].y * a[2].z * a[3].w + a[3].y * a[1].z * a[2].w + a[2].y * a[3].z * a[1].w - a[1].y * a[3].z * a[2].w - a[2].y * a[1].z * a[3].w - a[3].y * a[2].z * a[1].w)
-			+ a[0].y * (a[1].z * a[3].w * a[2].x + a[2].z * a[1].w * a[3].x + a[3].z * a[2].w * a[1].x - a[1].z * a[2].w * a[3].x - a[3].z * a[1].w * a[2].x - a[2].z * a[3].w * a[1].x)
-			+ a[0].z * (a[1].w * a[2].x * a[3].y + a[3].w * a[1].x * a[2].y + a[2].w * a[3].x * a[1].y - a[1].w * a[3].x * a[2].y - a[2].w * a[1].x * a[3].y - a[3].w * a[2].x * a[1].y)
-			+ a[0].w * (a[1].x * a[3].y * a[2].z + a[2].x * a[1].y * a[3].z + a[3].x * a[2].y * a[1].z - a[1].x * a[2].y * a[3].z - a[3].x * a[1].y * a[2].z - a[2].x * a[3].y * a[1].z);
-	}
-
-	Angel::mat4 Adjugate(const mat4& a)
-	{
-		return mat4
-		{
-			vec4
-			{
-				a[1].y * a[2].z * a[3].w + a[3].y * a[1].z * a[2].w + a[2].y * a[3].z * a[1].w - a[1].y * a[3].z * a[2].w - a[2].y * a[1].z * a[3].w - a[3].y * a[2].z * a[1].w,
-				a[1].z * a[3].w * a[2].x + a[2].z * a[1].w * a[3].x + a[3].z * a[2].w * a[1].x - a[1].z * a[2].w * a[3].x - a[3].z * a[1].w * a[2].x - a[2].z * a[3].w * a[1].x,
-				a[1].w * a[2].x * a[3].y + a[3].w * a[1].x * a[2].y + a[2].w * a[3].x * a[1].y - a[1].w * a[3].x * a[2].y - a[2].w * a[1].x * a[3].y - a[3].w * a[2].x * a[1].y,
-				a[1].x * a[3].y * a[2].z + a[2].x * a[1].y * a[3].z + a[3].x * a[2].y * a[1].z - a[1].x * a[2].y * a[3].z - a[3].x * a[1].y * a[2].z - a[2].x * a[3].y * a[1].z,
-			},
-			vec4
-			{
-				a[0].y * a[3].z * a[2].w + a[2].y * a[0].z * a[3].w + a[3].y * a[2].z * a[0].w - a[3].y * a[0].z * a[2].w - a[2].y * a[3].z * a[0].w - a[0].y * a[2].z * a[3].w,
-				a[0].z * a[2].w * a[3].x + a[3].z * a[0].w * a[2].x + a[2].z * a[3].w * a[0].x - a[0].z * a[3].w * a[2].x - a[2].z * a[0].w * a[3].x - a[3].z * a[2].w * a[0].x,
-				a[0].w * a[3].x * a[2].y + a[2].w * a[0].x * a[3].y + a[3].w * a[2].x * a[0].y - a[0].w * a[2].x * a[3].y - a[3].w * a[0].x * a[2].y - a[2].w * a[3].x * a[0].y,
-				a[0].x * a[2].y * a[3].z + a[3].x * a[0].y * a[2].z + a[2].x * a[3].y * a[0].z - a[0].x * a[3].y * a[2].z - a[2].x * a[0].y * a[3].z - a[3].x * a[2].y * a[0].z,
-			},
-			vec4
-			{
-				a[0].y * a[1].z * a[3].w + a[3].y * a[0].z * a[1].w + a[1].y * a[3].z * a[0].w - a[0].y * a[3].z * a[1].w - a[1].y * a[0].z * a[3].w - a[3].y * a[1].z * a[0].w,
-				a[0].z * a[3].w * a[1].x + a[1].z * a[0].w * a[3].x + a[3].z * a[1].w * a[0].x - a[0].z * a[1].w * a[3].x - a[3].z * a[0].w * a[1].x - a[1].z * a[3].w * a[0].x,
-				a[0].w * a[1].x * a[3].y + a[3].w * a[0].x * a[1].y + a[1].w * a[3].x * a[0].y - a[0].w * a[3].x * a[1].y - a[1].w * a[0].x * a[3].y - a[3].w * a[1].x * a[0].y,
-				a[0].x * a[3].y * a[1].z + a[1].x * a[0].y * a[3].z + a[3].x * a[1].y * a[0].z - a[0].x * a[1].y * a[3].z - a[3].x * a[0].y * a[1].z - a[1].x * a[3].y * a[0].z
-			},
-			vec4
-			{
-				a[0].y * a[2].z * a[1].w + a[1].y * a[0].z * a[2].w + a[2].y * a[1].z * a[0].w - a[0].y * a[1].z * a[2].w - a[2].y * a[0].z * a[1].w - a[1].y * a[2].z * a[0].w,
-				a[0].z * a[1].w * a[2].x + a[2].z * a[0].w * a[1].x + a[1].z * a[2].w * a[0].x - a[0].z * a[2].w * a[1].x - a[1].z * a[0].w * a[2].x - a[2].z * a[1].w * a[0].x,
-				a[0].w * a[2].x * a[1].y + a[1].w * a[0].x * a[2].y + a[2].w * a[1].x * a[0].y - a[0].w * a[1].x * a[2].y - a[2].w * a[0].x * a[1].y - a[1].w * a[2].x * a[0].y,
-				a[0].x * a[1].y * a[2].z + a[2].x * a[0].y * a[1].z + a[1].x * a[2].y * a[0].z - a[0].x * a[2].y * a[1].z - a[1].x * a[0].y * a[2].z - a[2].x * a[1].y * a[0].z
-			}
-		};
-	}
-
-	Angel::mat4 Inverse(const mat4& m)
-	{
-		mat4 adjugate = Adjugate(m);
-		float det = 1.0f / Determinant(m);
-		return mat4{ adjugate[0] * det, adjugate[1] * det, adjugate[2] * det , adjugate[3] * det };
-	}
-
 	Angel::vec3 XDir(const quat& q)
 	{
 		return vec3

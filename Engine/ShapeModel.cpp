@@ -245,12 +245,25 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 
 Angel::mat4 ShapeModel::model_matrix()
 {
-	return ((Angel::Translate((*m_position))
-		* Angel::RotateX(((*m_rotation).x))
-		* Angel::RotateY(((*m_rotation).y))
-		* Angel::RotateZ(((*m_rotation).z))) // required rotation for assignment 1
-		* Angel::Scale(*m_scale))
-		* Angel::Translate(-center_raw());
+	if (m_e_def == StaticShape::COL_CUBE
+		|| m_e_def == StaticShape::TEX_CUBE)
+	{
+		return ((Angel::Translate((*m_position))
+			* Angel::RotateX(((*m_rotation).x))
+			* Angel::RotateY(((*m_rotation).y))
+			* Angel::RotateZ(((*m_rotation).z)))
+			* Angel::Scale(*m_scale))
+			* Angel::Translate(-center_raw_bottom());
+	}
+	else
+	{
+		return ((Angel::Translate((*m_position))
+			* Angel::RotateX(((*m_rotation).x))
+			* Angel::RotateY(((*m_rotation).y))
+			* Angel::RotateZ(((*m_rotation).z)))
+			* Angel::Scale(*m_scale))
+			* Angel::Translate(-center_raw());
+	}
 }
 
 void ShapeModel::push_back_vertex(const Angel::vec3& model_pos)
@@ -265,7 +278,11 @@ Angel::vec3 ShapeModel::center_raw()
 	int stride = NUM_COORDINATES;
 	if (m_e_def == StaticShape::COL_CUBE)
 	{
-		stride += NUM_RGBA; // NUM_TEXTURE_COORDINATES
+		stride += NUM_RGBA;
+	}
+	else if (m_e_def == StaticShape::TEX_CUBE)
+	{
+		stride += NUM_TEXTURE_COORDINATES;
 	}
 	for (unsigned int i = 0; i < vert.size(); i+= stride)
 	{
@@ -281,6 +298,45 @@ Angel::vec3 ShapeModel::center_raw()
 	{
 		center /= (float)m_shape_def->num_vertices();
 	}
+	return center;
+}
+
+Angel::vec3 ShapeModel::center_raw_bottom()
+{
+	Angel::vec3 center(0.0f, 0.0f, 0.0f);
+	center.y = -0.5f;	// TODO-GENERALIZE
+	std::vector<float> vert = m_shape_def->vertices();
+	int stride = NUM_COORDINATES;
+	if (m_e_def == StaticShape::COL_CUBE)
+	{
+		stride += NUM_RGBA;
+	}
+	else if (m_e_def == StaticShape::TEX_CUBE)
+	{
+		stride += NUM_TEXTURE_COORDINATES;
+	}
+	for (unsigned int i = 0; i < vert.size(); i += stride)
+	{
+		center.x += vert[i];
+		/*center.y += vert[i + 1];*/ // TODO Generalize to choose the bottom surface only
+		center.z += vert[i + 2];
+	}
+	float y_tmp = center.y;
+	if (m_e_def == StaticShape::NONE)
+	{
+		center /= (float)m_shape_def->num_vertices() - 1;
+	}
+	else if (m_e_def != StaticShape::COL_CUBE
+		&& m_e_def != StaticShape::TEX_CUBE)
+	{
+		center /= (float)m_shape_def->num_vertices();
+	}
+	else
+	{
+		float y_tmp = center.y;
+		center /= (vert.size() / stride);
+	}
+	center.y = y_tmp;
 	return center;
 }
 
@@ -370,8 +426,9 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		}
 		else
 		{
+			m_texture->bind();
 			Shape::textured_shader()->bind();
-			Shape::textured_shader()->set_uniform_1i("u_texture", 0);
+			Shape::textured_shader()->set_uniform_1i("u_texture", m_texture_slot);
 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 		}
 
@@ -401,23 +458,11 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		else if (m_e_def == StaticShape::COL_CUBE)
 		{
 			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::colored_shader());
-			// TODO draw lines - looks stupid
-			//__glCallVoid(glDepthMask(GL_FALSE));
-			//Shape::basic_shader()->bind();
-			//Shape::basic_shader()->set_uniform_4f("u_color",
-			//	0.0f,
-			//	0.0f,
-			//	0.0f,
-			//	1.0f);
-			//Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader());
-			//__glCallVoid(glDepthMask(GL_TRUE));
 		}
 		else if (m_e_def == StaticShape::TEX_CUBE)
 		{
 			m_texture->bind(m_texture_slot);
-			__glCallVoid(glDepthMask(GL_FALSE));
 			Renderer::draw_triangles(vertex_array(), index_buffer(), Shape::textured_shader());
-			__glCallVoid(glDepthMask(GL_TRUE));
 		}
 		else
 		{

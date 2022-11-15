@@ -8,6 +8,9 @@ struct vec3;
 
 namespace Angel
 {
+	/// <summary>
+	/// FIX-ME-OPT : Fix camera rotation
+	/// </summary>
 	struct quat
 	{
 		float w, x, y, z;
@@ -18,12 +21,6 @@ namespace Angel
 
 		quat operator * (const quat& b);
 	};
-
-	float Determinant(const mat4& a);
-
-	mat4 Adjugate(const mat4& a);
-
-	mat4 Inverse(const mat4& m);
 
 	vec3 XDir(const quat& q);
 	

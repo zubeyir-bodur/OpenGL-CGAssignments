@@ -119,7 +119,7 @@ int main(int, char**)
 	tree_surface_texture_obj->unbind();
 	// Platform surface
 	Angel::vec3* platform_surface_pos, * platform_surface_rot, * platform_surface_scale;
-	platform_surface_pos = new Angel::vec3(0.0f, -300.0f, -2000.0f);
+	platform_surface_pos = new Angel::vec3(0.0f, -300.0f, 0.0f);
 	platform_surface_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
 	platform_surface_scale = new Angel::vec3((float)width, 20.0f, (float)height);
 	ShapeModel* platform_surface = new ShapeModel(ShapeModel::StaticShape::COL_CUBE,
@@ -127,9 +127,9 @@ int main(int, char**)
 
 	// A textured cube
 	Angel::vec3* text_a_pos, * text_a_rot, * text_a_scale;
-	text_a_pos = new Angel::vec3(0.0f, 0.0f, -400.0f);
+	text_a_pos = new Angel::vec3(0.0f, -280.0f, 0.0f);
 	text_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	text_a_scale = new Angel::vec3(100, 100.0f, 100);
+	text_a_scale = new Angel::vec3(75.0f, 500.0f, 75.0f);
 	ShapeModel* text_a = new ShapeModel(ShapeModel::StaticShape::TEX_CUBE,
 		text_a_pos,
 		text_a_rot,
@@ -138,7 +138,7 @@ int main(int, char**)
 		tree_surface_texture_obj);
 
 	// View matrix - camera
-	PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, 0.0f), 60.0f, (float)width / (float)height);
+	PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, height/2.0f), 60.0f, (float)width / (float)height);
 	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
 	const Angel::mat4& proj_matrix = PerspectiveCamera::proj_matrix();
 
@@ -190,27 +190,27 @@ int main(int, char**)
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					PerspectiveCamera::dolly(-1.0f);
-				}
-				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-				{
-					PerspectiveCamera::truck(-1.0f);
+					PerspectiveCamera::dolly(10.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					PerspectiveCamera::dolly(1.0f);
+					PerspectiveCamera::dolly(-10.0f);
+				}
+				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+				{
+					PerspectiveCamera::truck(-10.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					PerspectiveCamera::truck(1.0f);
+					PerspectiveCamera::truck(10.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 				{
-					PerspectiveCamera::pedestal(-1.0f);
+					PerspectiveCamera::pedestal(-10.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 				{
-					PerspectiveCamera::pedestal(1.0f);
+					PerspectiveCamera::pedestal(10.0f);
 				}
 
 
@@ -287,8 +287,8 @@ int main(int, char**)
 		{
 			if (!input_on_imgui)
 			{
-				PerspectiveCamera::tilt(((float)window_input.m_mouse_x - (float)old_mouse_pos.x) / 10.0f);
-				PerspectiveCamera::pan(((float)window_input.m_mouse_y - (float)old_mouse_pos.y) / 10.0f);
+				PerspectiveCamera::pan(((float)window_input.m_mouse_x - (float)old_mouse_pos.x) / 20.0f);
+				PerspectiveCamera::tilt(((float)window_input.m_mouse_y - (float)old_mouse_pos.y) / 20.0f);
 			}
 		}
 		else if (window_input.m_lmb_state == Input::ButtonState::Idle)
@@ -311,28 +311,29 @@ int main(int, char**)
 			ImGui::Begin("Hello, world!");
 			{
 				ImGui::Text("This is some useful text.");
-				ImGui::NewLine();
-
-// 				ImGui::SliderFloat("Platform-XPos", &platform_surface->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
-// 				ImGui::SliderFloat("Platform-YPos", &platform_surface->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
-// 				ImGui::SliderFloat("Platform-zPos", &platform_surface->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
-// 				ImGui::SliderFloat("Platform-xrot", &platform_surface->rotation().x, 0.0f, 360, "%.3f", 1.0f);
-// 				ImGui::SliderFloat("Platform-yrot", &platform_surface->rotation().y, 0.0f, 360, "%.3f", 1.0f);
-// 				ImGui::SliderFloat("Platform-zrot", &platform_surface->rotation().z, 0.0f, 360, "%.3f", 1.0f);
-
 
 				ImGui::NewLine();
 
-				ImGui::SliderFloat("Crate-XPos", &text_a->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-YPos", &text_a->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-zPos", &text_a->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-XPos", &text_a->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-YPos", &text_a->position().y, -2000.0f, 2000.0f, "%.1f", 1.0f);
+				ImGui::SliderFloat("Crate-zPos", &text_a->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
 				ImGui::SliderFloat("Crate-xrot", &text_a->rotation().x, -180.0f, 180.0f,  "%.3f", 1.0f);
 				ImGui::SliderFloat("Crate-yrot", &text_a->rotation().y, -180.0f, 180.0f,  "%.3f", 1.0f);
 				ImGui::SliderFloat("Crate-zrot", &text_a->rotation().z, -180.0f, 180.0f,  "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-xscale", &text_a->scale().x, 0.0f, 200, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-yscale", &text_a->scale().y, 0.0f, 200, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 200, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-xscale", &text_a->scale().x, 0.0f, 1000, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-yscale", &text_a->scale().y, 0.0f, 1000, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 1000, "%.3f", 1.0f);
 
+				ImGui::NewLine();
+				ImGui::Text("Camera-Pos.x: %f", PerspectiveCamera::position().x);
+				ImGui::Text("Camera-Pos.y: %f", PerspectiveCamera::position().y);
+				ImGui::Text("Camera-Pos.z: %f", PerspectiveCamera::position().z);
+				ImGui::Text("Camera-Rot.w: %f", PerspectiveCamera::rotation().w);
+				ImGui::Text("Camera-Rot.x: %f", PerspectiveCamera::rotation().x);
+				ImGui::Text("Camera-Rot.y: %f", PerspectiveCamera::rotation().y);
+				ImGui::Text("Camera-Rot.z: %f", PerspectiveCamera::rotation().z);
+
+				ImGui::NewLine();
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 					1000.0f / ImGui::GetIO().Framerate,
 					ImGui::GetIO().Framerate);
