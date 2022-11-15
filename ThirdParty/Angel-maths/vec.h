@@ -6,6 +6,7 @@
 
 #ifndef __ANGEL_VEC_H__
 #define __ANGEL_VEC_H__
+#pragma once
 #include <cmath>
 #include <iostream>
 #ifndef M_PI

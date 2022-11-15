@@ -24,6 +24,8 @@ void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBuff
 	{
 		const auto& element = elements[i];
 		__glCallVoid(glEnableVertexAttribArray(m_num_vertices + i));
+#pragma warning(push)
+#pragma warning( disable : 4312 )
 		__glCallVoid(glVertexAttribPointer(m_num_vertices + i,
 			element.count,
 			element.type,		//type
@@ -31,6 +33,7 @@ void VertexArray::add_buffer(const VertexBuffer& vertex_buffer, const VertexBuff
 			layout.stride(),	// stride size, in bytes
 			(const void*)offset	// offset to the first item of the next attribute
 		));
+#pragma warning(pop)
 		offset += element.count * VertexBufferElement::get_size_of_type(element.type);
 	}
 	m_num_vertices += vertex_buffer.size() / layout.stride();

@@ -9,7 +9,7 @@
 #include "DrawList.h"
 #include "UndoRedoStack.h"
 #include "Shape.h"
-#include "Camera.h"
+#include "OrthogtraphicCamera.h"
 #include "DSerializer.h"
 
 #include <dearimgui/imgui.h>
@@ -113,18 +113,18 @@ int main(int, char**)
 	Angel::vec4 rect_3(0.0f, unit_shape_length, global_z_pos_2d, 1.0f);
 
 	// View matrix - camera
-	Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
-	auto view_matrix = Camera::view_matrix();
+	OrthogtraphicCamera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+	auto& view_matrix = OrthogtraphicCamera::view_matrix();
 
 	// Orthographic projection is used
 	Angel::mat4 projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 	// Mouse location
-	auto cursor_model_coords = Camera::map_from_global(0, 0);
+	auto cursor_model_coords = OrthogtraphicCamera::map_from_global(0, 0);
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(width, height, 1.0f));
+		* Angel::Scale(Angel::vec3((float)width, (float)height, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	// Selection initializations
@@ -189,7 +189,7 @@ int main(int, char**)
 	bool drawing_multiple_selection_box = false;
 	std::array<float, 4> bounding_box_selector{};
 	std::array<float, 4> bounding_box_drawer{};
-	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
+	const float& imgui_zoom_ratio = OrthogtraphicCamera::zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -205,13 +205,13 @@ int main(int, char**)
 	while (!glfwWindowShouldClose(window))
 	{
 		// Old mouse pos & state
-		Angel::vec2 old_mouse_pos(window_input.m_mouse_x, window_input.m_mouse_y);
+		Angel::vec2 old_mouse_pos((float)window_input.m_mouse_x, (float)window_input.m_mouse_y);
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
 
 		// Needed for selection and drawing while moving the camera
-		const Camera& old_camera = Camera::get_instance();
-		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
-		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
+		const OrthogtraphicCamera& old_camera = OrthogtraphicCamera::get_instance();
+		const Angel::vec3 old_camera_pos = old_camera.position();
+		const float old_camera_zoom_ratio = old_camera.zoom_ratio();
 		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
 		{
 			return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
@@ -233,7 +233,7 @@ int main(int, char**)
 		{
 			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
 			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(width, height, 1.0f));
+				* Angel::Scale(Angel::vec3((float)width, (float)height, 1.0f));
 			should_update_sheet = false;
 		}
 
@@ -241,7 +241,7 @@ int main(int, char**)
 		projection_matrix = Angel::Ortho2D(0.0f, (float)width, (float)height, 0.0f);
 
 		// Update cursor
-		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+		cursor_model_coords = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
 		// Keyboard Events
@@ -250,26 +250,26 @@ int main(int, char**)
 			// Camera movement - simple
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			{
-				Camera::move_vertical(-20.0f);
+				OrthogtraphicCamera::move_vertical(-20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 			{
-				Camera::move_horizontal(-20.0f);
+				OrthogtraphicCamera::move_horizontal(-20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			{
-				Camera::move_vertical(20.0f);
+				OrthogtraphicCamera::move_vertical(20.0f);
 			}
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			{
-				Camera::move_horizontal(20.0f);
+				OrthogtraphicCamera::move_horizontal(20.0f);
 			}
 
 			// Camera zooming with mouse wheel
-			Camera::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
+			OrthogtraphicCamera::zoom_camera_towards(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
 
 			// Update view matrix when necessary
-			view_matrix = Camera::view_matrix();
+			OrthogtraphicCamera::update();
 		}
 		if (window_input.m_copy_just_pressed)
 		{
@@ -316,7 +316,7 @@ int main(int, char**)
 				cur_selections.clear();
 
 				// Compute the cursor model position
-				Angel::vec3 cursor_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 cursor_pos = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 
 				// Compute the center of clipboard
 				Angel::vec3 center_clipboard;
@@ -387,8 +387,8 @@ int main(int, char**)
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
-			camera_pos_released = Camera::camera_pos();
-			camera_zoom_released = Camera::get_zoom_ratio();
+			camera_pos_released = OrthogtraphicCamera::position();
+			camera_zoom_released = OrthogtraphicCamera::zoom_ratio();
 			if (!input_on_imgui)
 			{
 				// Update selection
@@ -408,7 +408,7 @@ int main(int, char**)
 						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
 						std::cout << "THIS IS A CLICK" << std::endl;
-						ShapeModel* frontmost = list.frontmost_shape_2d(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+						ShapeModel* frontmost = list.frontmost_shape_2d(OrthogtraphicCamera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 						if (frontmost != nullptr)
 						{
 							drawing_multiple_selection_box = false;
@@ -478,8 +478,8 @@ int main(int, char**)
 				// Process deletion
 				if (radio_button_cur == (int)RadioButtons::Delete)
 				{
-					ShapeModel* s_press = list.frontmost_shape_2d(Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
-					ShapeModel* s_release = list.frontmost_shape_2d(Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
+					ShapeModel* s_press = list.frontmost_shape_2d(OrthogtraphicCamera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y));
+					ShapeModel* s_release = list.frontmost_shape_2d(OrthogtraphicCamera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y));
 					if (s_press != nullptr && s_release != nullptr && s_release == s_press)
 					{
 						undo_redo.clear_stacks();
@@ -574,11 +574,11 @@ int main(int, char**)
 				{
 					drawing_poly_add_vertex_line = true;
 					// Add vertex
-					Angel::vec3 poly_vertex = Camera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y);
+					Angel::vec3 poly_vertex = OrthogtraphicCamera::map_from_global(window_input.m_mouse_release_x, window_input.m_mouse_release_y);
 					polygon_add_vertex_line_pos = Angel::vec3(poly_vertex);
-					polygon_add_vertex_line_scale.y = (Camera::get_zoom_ratio() / 100.0f);
+					polygon_add_vertex_line_scale.y = (OrthogtraphicCamera::zoom_ratio() / 100.0f);
 					Angel::vec3 release_pos = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
-					Angel::vec3 current_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 current_pos = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					double dy = current_pos.y - release_pos.y;
 					double dx = current_pos.x - release_pos.x;
 					double line_length = std::sqrt(std::pow(dy, 2.0f) + std::pow(dx, 2.0f));
@@ -587,8 +587,8 @@ int main(int, char**)
 					{
 						tetha += M_PI / Angel::DegreesToRadians;
 					}
-					polygon_add_vertex_line_scale.x = (line_length);
-					polygon_add_vertex_line_rotation.z = tetha;
+					polygon_add_vertex_line_scale.x = (float)(line_length);
+					polygon_add_vertex_line_rotation.z = (float)tetha;
 					polygon_mouse_model_coords.push_back(poly_vertex);
 					if (polygon_mouse_model_coords.size() == 1)
 					{
@@ -654,14 +654,14 @@ int main(int, char**)
 		else if (mouse_previous_state == Input::ButtonState::Idle
 			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 		{
-			camera_pos_pressed = Camera::camera_pos();
-			camera_zoom_pressed = Camera::get_zoom_ratio();
+			camera_pos_pressed = OrthogtraphicCamera::position();
+			camera_zoom_pressed = OrthogtraphicCamera::zoom_ratio();
 			if (!input_on_imgui)
 			{
 				if (radio_button_cur == (int)RadioButtons::Select)
 				{
-					unsigned int num_selections = cur_selections.size();
-					ShapeModel* new_selected = list.frontmost_shape_2d(Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
+					unsigned int num_selections = (uint16_t)cur_selections.size();
+					ShapeModel* new_selected = list.frontmost_shape_2d(OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y));
 					if (num_selections == 1
 						&& cur_selections[0] == new_selected)
 					{
@@ -670,7 +670,7 @@ int main(int, char**)
 						is_dragging = true;
 						list.move_shape_to_frontview(new_selected);
 						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
-						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 v_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						new_selected->position() += drag_vector;
 					}
@@ -681,9 +681,9 @@ int main(int, char**)
 					else
 					{
 						drawing_selector_box = true;
-						selector_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
+						selector_pos = OrthogtraphicCamera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						selector_scale = (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
@@ -706,9 +706,9 @@ int main(int, char**)
 					}
 					cur_selections.clear();
 					drawing_drawer_box = true;
-					drawer_pos = Camera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
+					drawer_pos = OrthogtraphicCamera::map_from_global(window_input.m_mouse_press_x, window_input.m_mouse_press_y);
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					drawer_scale = (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
@@ -758,7 +758,7 @@ int main(int, char**)
 						drawing_selector_box = false;
 						// Continue drag
 						Angel::vec3 v_old = map_from_global_using_old_camera(old_mouse_pos.x, old_mouse_pos.y);
-						Angel::vec3 v_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 v_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						Angel::vec3 drag_vector = v_new - v_old;
 						old_selected->position() += drag_vector;
 					}
@@ -766,7 +766,7 @@ int main(int, char**)
 					{
 						drawing_selector_box = true;
 						Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-						Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+						Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 						selector_scale = (mouse_model_new - mouse_model_old);
 						if (selector_scale.x == 0.0f)
 						{
@@ -784,7 +784,7 @@ int main(int, char**)
 				{
 					drawing_drawer_box = true;
 					Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-					Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+					Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 					drawer_scale = (mouse_model_new - mouse_model_old);
 					if (drawer_scale.x == 0.0f)
 					{
@@ -821,7 +821,7 @@ int main(int, char**)
 			if (drawing_poly_add_vertex_line)
 			{
 				Angel::vec3 release_pos = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
-				Angel::vec3 current_pos = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 current_pos = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				double dy = current_pos.y - release_pos.y;
 				double dx = current_pos.x - release_pos.x;
 				double line_length = std::sqrt(std::pow(dy, 2.0f) + std::pow(dx, 2.0f));
@@ -830,9 +830,9 @@ int main(int, char**)
 				{
 					tetha += M_PI / Angel::DegreesToRadians;
 				}
-				polygon_add_vertex_line_scale.x = (line_length);
-				polygon_add_vertex_line_scale.y = (100.0f / Camera::get_zoom_ratio());
-				polygon_add_vertex_line_rotation.z = tetha;
+				polygon_add_vertex_line_scale.x = (float)(line_length);
+				polygon_add_vertex_line_scale.y = (100.0f / OrthogtraphicCamera::zoom_ratio());
+				polygon_add_vertex_line_rotation.z = (float)tetha;
 			}
 		}
 
@@ -1000,7 +1000,7 @@ int main(int, char**)
 					}
 					if (ImGui::BeginTabItem("Selection"))
 					{
-						unsigned int n_selections = cur_selections.size();
+						unsigned int n_selections = (uint16_t)cur_selections.size();
 						if (n_selections == 0)
 						{
 							ImGui::Text("Currently, there is no shape selected");

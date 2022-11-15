@@ -174,14 +174,14 @@ bool ShapeModel::contains_2d(const Angel::vec3& model_pos)
 	};
 
 	auto model_coordinates = model_coords();
-	unsigned int num_vertices = model_coordinates.size();
+	unsigned int num_vertices = (uint16_t)model_coordinates.size();
 
 	// When polygon has less than 3 edge, it is not polygon
 	if (num_vertices < 3)
 		return false;
 	Point p = { model_pos.x, model_pos.y };
 	// Create a point at infinity, y is same as point p
-	line exline = { p, { INT_MAX, p.y } };
+	line exline = { p, { (float)INT_MAX, p.y } };
 	int count = 0;
 	int i = 0;
 	do {
@@ -429,8 +429,11 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 					0.0f,
 					0.0f,
 					1.0f);
+#pragma warning(push)
+#pragma warning( disable : 4312 )
 				unsigned int offset = sizeof(unsigned int); // Polygon IB has offset of 1 to the actual starting vertex (not the center)
 				Renderer::draw_lines(vertex_array(), index_buffer(), Shape::basic_shader(), true_num_vertices(), (const void*)offset);
+#pragma warning(pop)
 			}
 		}
 	}
@@ -438,7 +441,7 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 
 std::array<float, 6> ShapeModel::bounding_cube(const std::vector<ShapeModel*>& shapes)
 {
-	std::array<float, 6> out_bounding_cube = {INT_MAX, INT_MIN, INT_MAX, INT_MIN, INT_MAX, INT_MIN};
+	std::array<float, 6> out_bounding_cube = {(float)INT_MAX, (float)INT_MIN, (float)INT_MAX, (float)INT_MIN, (float)INT_MAX, (float)INT_MIN};
 	for (unsigned int i = 0; i < shapes.size(); i++)
 	{
 		std::array<float, 6> cur_bounding_cube = shapes[i]->shape_bounding_cube();

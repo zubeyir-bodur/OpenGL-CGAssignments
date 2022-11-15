@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="OrthogtraphicCamera.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="DrawList.cpp">
@@ -49,9 +49,12 @@
     <ClCompile Include="Texture.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="PerspectiveCamera.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="OrthogtraphicCamera.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DrawList.h">
@@ -100,6 +103,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PerspectiveCamera.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

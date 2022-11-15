@@ -9,7 +9,7 @@
 #include "Texture.h"
 #include "DrawList.h"
 #include "Shape.h"
-#include "Camera.h"
+#include "PerspectiveCamera.h"
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
@@ -115,17 +115,13 @@ int main(int, char**)
 	// Texture Slot 1 - Leafs
 	Texture* leaf_texture_obj = new Texture("../../Data/textures/leaf.png");
 	leaf_texture_obj->bind(1);
-
-	// Use tree wood unless specified
-	tree_surface_texture_obj->bind(0);
-	Shape::textured_shader()->bind();
-	Shape::textured_shader()->set_uniform_1i("u_texture", 0);
-
+	tree_surface_texture_obj->unbind();
+	tree_surface_texture_obj->unbind();
 	// Platform surface
 	Angel::vec3* platform_surface_pos, * platform_surface_rot, * platform_surface_scale;
 	platform_surface_pos = new Angel::vec3(0.0f, -300.0f, -2000.0f);
 	platform_surface_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	platform_surface_scale = new Angel::vec3(width, 20.0f, height);
+	platform_surface_scale = new Angel::vec3((float)width, 20.0f, (float)height);
 	ShapeModel* platform_surface = new ShapeModel(ShapeModel::StaticShape::COL_CUBE,
 		platform_surface_pos, platform_surface_rot, platform_surface_scale);
 
@@ -138,54 +134,36 @@ int main(int, char**)
 		text_a_pos,
 		text_a_rot,
 		text_a_scale,
-		0, 
+		0,
 		tree_surface_texture_obj);
 
 	// View matrix - camera
-	Camera::init(Angel::vec3(0.0f, 0.0f, 0.0f), 100.0f);
-	auto view_matrix = Camera::view_matrix();
+	PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, 0.0f), 60.0f, (float)width / (float)height);
+	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
+	const Angel::mat4& proj_matrix = PerspectiveCamera::proj_matrix();
 
-	// Perspective projection is used
-	Angel::mat4 projection_matrix = Angel::Perspective(10.0f, (float)width/(float)height, 0.0f, 1e+38f);
-
-	// Mouse location
-	auto cursor_model_coords = Camera::map_from_global(0, 0);
-
-
-
-	DrawList list(projection_matrix, view_matrix);
+	// Draw List
+	DrawList list(proj_matrix, view_matrix);
 	list.add_shape(platform_surface);
 	list.add_shape(text_a);
 
 	bool is_dragging = false;
 	bool should_update_sheet = true;
-	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
 	Angel::vec3 camera_pos_released;
-	float camera_zoom_released;
 	Angel::vec3 camera_pos_pressed;
-	float camera_zoom_pressed;
-	auto map_from_global_any = [](double x, double y, Angel::vec3 c_pos, float c_z) -> Angel::vec3
-	{
-		return (c_pos + Angel::vec3((float)x, (float)y, 0.0f)) * (100.0f / c_z);
-	};
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Old mouse pos & state
-		Angel::vec2 old_mouse_pos(window_input.m_mouse_x, window_input.m_mouse_y);
+		Angel::vec2 old_mouse_pos((float)window_input.m_mouse_x, (float)window_input.m_mouse_y);
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
 
 		// Needed for selection and drawing while moving the camera
-		const Camera& old_camera = Camera::get_instance();
-		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
-		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
-		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
-		{
-			return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
-		};
+		const PerspectiveCamera& old_camera = PerspectiveCamera::get_instance();
+		const Angel::vec3 old_camera_pos = old_camera.position();
 
 		// Reset scroll
 		window_input.m_scroll_y = 0.0;
@@ -200,10 +178,9 @@ int main(int, char**)
 		glfwGetWindowSize(window, &width, &height);
 
 		// Update the window projection
-		projection_matrix = Angel::Perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
+		PerspectiveCamera::resize((float)width/(float)height);
 
 		// Update cursor
-		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
 		// Keyboard & Mouse Wheel Events
@@ -213,33 +190,30 @@ int main(int, char**)
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					Camera::move_towards(-1.0f);
+					PerspectiveCamera::dolly(-1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
-					Camera::move_horizontal(-1.0f);
+					PerspectiveCamera::truck(-1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					Camera::move_towards(1.0f);
+					PerspectiveCamera::dolly(1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					Camera::move_horizontal(1.0f);
+					PerspectiveCamera::truck(1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 				{
-					Camera::move_vertical(1.0f);
+					PerspectiveCamera::pedestal(-1.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 				{
-					Camera::move_vertical(-1.0f);
+					PerspectiveCamera::pedestal(1.0f);
 				}
 
 
-				// Update view matrix when necessary
-				view_matrix = Camera::view_matrix();
-				// Immediate events coming from callbacks
 				if (window_input.m_copy_just_pressed)
 				{
 					// Copy command sent
@@ -255,14 +229,12 @@ int main(int, char**)
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
-			camera_pos_released = Camera::camera_pos();
-			camera_zoom_released = Camera::get_zoom_ratio();
+			camera_pos_released = PerspectiveCamera::position();
 			if (!input_on_imgui)
 			{
 				// Finish dragging
 				if (is_dragging)
 				{
-					Angel::vec3 cursor_released = map_from_global_any(window_input.m_mouse_release_x, window_input.m_mouse_release_y, camera_pos_released, camera_zoom_released);
 					if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
 						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 					{
@@ -274,13 +246,9 @@ int main(int, char**)
 					else
 					{
 						std::cout << "THIS IS A DRAG" << std::endl;
-
-						Angel::vec3 cursor_pressed = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-						Angel::vec3 drag_vector = cursor_released - cursor_pressed;
-
+						
 						// Do sth. with drag vector here
-						std::cout << "Total drag amount: " << std::to_string(drag_vector.x) << ", "
-							<< std::to_string(drag_vector.y) << ")" << std::endl;
+
 					}
 				}
 			}
@@ -296,30 +264,16 @@ int main(int, char**)
 			std::cout << "LMB is now Idle" << std::endl;
 			is_dragging = false;
 			camera_pos_pressed = Angel::vec3(0.0f);
-			camera_zoom_pressed = 0.0f;
 		}
 		else if (mouse_previous_state == Input::ButtonState::Idle
 			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 		{
 
-			camera_pos_pressed = Camera::camera_pos();
-			camera_zoom_pressed = Camera::get_zoom_ratio();
+			camera_pos_pressed = PerspectiveCamera::position();
 			if (!input_on_imgui)
 			{
 				// Scene event handling when the LMB is just pressed
 				is_dragging = true;
-				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
-				if (mouse_drag_rect_scale.x == 0.0f)
-				{
-					mouse_drag_rect_scale.x = 1.0f;
-				}
-				if (mouse_drag_rect_scale.y == 0.0f)
-				{
-					mouse_drag_rect_scale.y = 1.0f;
-				}
-				mouse_drag_rect_scale.z = 1.0f;
 			}
 
 			// Consume the pressed state
@@ -328,25 +282,13 @@ int main(int, char**)
 			window_input.m_mouse_release_y = -1.0f;
 			window_input.m_mouse_release_x = -1.0f;
 			camera_pos_released = {};
-			camera_zoom_released = {};
 		}
 		else if (mouse_previous_state == Input::ButtonState::BeingPressed)
 		{
 			if (!input_on_imgui)
 			{
-				// Scene event handling when the mouse is being pressed
-				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
-				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
-				if (mouse_drag_rect_scale.x == 0.0f)
-				{
-					mouse_drag_rect_scale.x = 1.0f;
-				}
-				if (mouse_drag_rect_scale.y == 0.0f)
-				{
-					mouse_drag_rect_scale.y = 1.0f;
-				}
-				mouse_drag_rect_scale.z = 1.0f;
+				PerspectiveCamera::tilt(((float)window_input.m_mouse_x - (float)old_mouse_pos.x) / 10.0f);
+				PerspectiveCamera::pan(((float)window_input.m_mouse_y - (float)old_mouse_pos.y) / 10.0f);
 			}
 		}
 		else if (window_input.m_lmb_state == Input::ButtonState::Idle)
@@ -384,9 +326,9 @@ int main(int, char**)
 				ImGui::SliderFloat("Crate-XPos", &text_a->position().x, -500.0f, (float)mode->width, "%.1f", 1.0f);
 				ImGui::SliderFloat("Crate-YPos", &text_a->position().y, -500.0f, (float)mode->height, "%.1f", 1.0f);
 				ImGui::SliderFloat("Crate-zPos", &text_a->position().z, -500.0f, (float)mode->height, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-xrot", &text_a->rotation().x, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-yrot", &text_a->rotation().y, 0.0f, 360, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-zrot", &text_a->rotation().z, 0.0f, 360, "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-xrot", &text_a->rotation().x, -180.0f, 180.0f,  "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-yrot", &text_a->rotation().y, -180.0f, 180.0f,  "%.3f", 1.0f);
+				ImGui::SliderFloat("Crate-zrot", &text_a->rotation().z, -180.0f, 180.0f,  "%.3f", 1.0f);
 				ImGui::SliderFloat("Crate-xscale", &text_a->scale().x, 0.0f, 200, "%.3f", 1.0f);
 				ImGui::SliderFloat("Crate-yscale", &text_a->scale().y, 0.0f, 200, "%.3f", 1.0f);
 				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 200, "%.3f", 1.0f);
@@ -396,12 +338,13 @@ int main(int, char**)
 					ImGui::GetIO().Framerate);
 
 				// Get cursor model coordinates
-				ImGui::Text("Cursor Model Coordinates: %f, %f", cursor_model_coords.x, cursor_model_coords.y);
 				ImGui::End();
 			}
 
 			ImGui::EndFrame();
 		}
+		// Update ViewProj matrix
+		PerspectiveCamera::update();
 
 		// Clear background
 		Renderer::set_viewport(window);

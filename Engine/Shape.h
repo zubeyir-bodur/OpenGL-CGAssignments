@@ -101,7 +101,7 @@ public:
 
 	std::vector<float> vertices();
 
-	inline unsigned int num_vertices()							{ return m_no_transform_vertex_positions->size() / NUM_COORDINATES; }
+	inline unsigned int num_vertices()							{ return (uint16_t)m_no_transform_vertex_positions->size() / NUM_COORDINATES; }
 	inline const VertexArray* vertex_array() const				{ return m_vertex_array; }
 	inline const IndexBuffer* index_buffer() const				{ return m_index_buffer; }
 

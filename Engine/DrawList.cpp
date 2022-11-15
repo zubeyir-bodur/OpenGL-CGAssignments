@@ -56,7 +56,7 @@ void DrawList::move_shape_to_frontview(ShapeModel* s)
 /// <returns></returns>
 ShapeModel* DrawList::frontmost_shape_2d(const Angel::vec3& model_pos)
 {
-	for (int i = m_shape_models.size() - 1; i >= 0; i--)
+	for (int i = (int)m_shape_models.size() - 1; i >= 0; i--)
 	{
 		if (m_shape_models[i]->contains_2d(model_pos))
 		{

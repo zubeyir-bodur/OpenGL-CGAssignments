@@ -1,15 +1,18 @@
 #pragma once
 #include <csignal>
-
+#pragma warning(push)
+#pragma warning( disable : 4005 )
 #define IS_DEBUG 1
 #ifndef NDEBUG
 #define IS_DEBUG 0	
 #endif 
+#pragma warning(pop)
 
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)
 #else
-#define GENERAL_BREAK() if (IS_DEBUG) \
+#define GENERAL_BREAK() (void)0;\
+if (IS_DEBUG) \
  { \
 	 __debugbreak();\
  } \

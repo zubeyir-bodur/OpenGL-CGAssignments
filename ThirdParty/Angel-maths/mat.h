@@ -12,7 +12,7 @@
 
 #ifndef __ANGEL_MAT_H__
 #define __ANGEL_MAT_H__
-
+#pragma once
 #include "vec.h"
 
 namespace Angel {

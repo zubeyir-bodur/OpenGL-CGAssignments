@@ -197,13 +197,14 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="OrthogtraphicCamera.cpp" />
     <ClCompile Include="DrawList.cpp" />
     <ClCompile Include="DSerializer.cpp" />
     <ClCompile Include="ErrorManager.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shape.cpp" />
@@ -215,7 +216,7 @@
     <ClCompile Include="VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="OrthogtraphicCamera.h" />
     <ClInclude Include="DrawList.h" />
     <ClInclude Include="DSerializer.h" />
     <ClInclude Include="ErrorManager.h" />
@@ -223,6 +224,7 @@
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Operation.h" />
+    <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shape.h" />

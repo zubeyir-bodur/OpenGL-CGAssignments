@@ -32,7 +32,7 @@ Shape::Shape(const std::vector<Angel::vec3>& model_coords_center_translated_to_o
 
 	m_vertex_array = new VertexArray;
 	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data(),
-		m_no_transform_vertex_positions->size() * sizeof(float));
+		(uint16_t)m_no_transform_vertex_positions->size() * sizeof(float));
 	m_vertex_array->add_buffer(*m_vertex_buffer, *s_basic_layout);
 	
 	m_indices = new std::vector<unsigned int>;
@@ -42,7 +42,7 @@ Shape::Shape(const std::vector<Angel::vec3>& model_coords_center_translated_to_o
 		m_indices->emplace_back(i);
 	}
 	m_indices->emplace_back(1);
-	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
+	m_index_buffer = new IndexBuffer(m_indices->data(), (uint16_t)m_indices->size());
 }
 
 Shape::~Shape()
@@ -105,11 +105,11 @@ Angel::vec3 Shape::push_back_vertex(const Angel::vec3& new_vertex_pos_where_orig
 	// Recreate the vertex buffer & array
 	m_vertex_array = new VertexArray;
 	m_vertex_buffer = new VertexBuffer(m_no_transform_vertex_positions->data()
-		, m_no_transform_vertex_positions->size() * sizeof(float));
+		, (uint16_t)m_no_transform_vertex_positions->size() * sizeof(float));
 	m_vertex_array->add_buffer(*m_vertex_buffer, *s_basic_layout);
 	(*m_indices)[m_indices->size()-1] = num_vertices()-1;
 	m_indices->emplace_back(1);
-	m_index_buffer = new IndexBuffer(m_indices->data(), m_indices->size());
+	m_index_buffer = new IndexBuffer(m_indices->data(), (uint16_t)m_indices->size());
 
 	// Return the new center as the position of the model
 	return center + old_center;
@@ -210,7 +210,7 @@ void Shape::init_static_members()
 
 	auto* rect_va = new VertexArray;
 	auto* rect_vb = new VertexBuffer(rectangle_positions->data(),
-		rectangle_positions->size() * sizeof(float));
+		(uint16_t)rectangle_positions->size() * sizeof(float));
 	rect_va->add_buffer(*rect_vb, *s_basic_layout);
 	auto* rect_ib = new IndexBuffer(quad_indices->data(), num_indices);
 
@@ -226,7 +226,7 @@ void Shape::init_static_members()
 
 	auto* eq_tri_va = new VertexArray;
 	auto* eq_tri_vb = new VertexBuffer(equilateral_triangle_positions->data(),
-		equilateral_triangle_positions->size() * sizeof(float));
+		(uint16_t)equilateral_triangle_positions->size() * sizeof(float));
 	eq_tri_va->add_buffer(*eq_tri_vb, *s_basic_layout);
 	auto* eq_tri_ib = new IndexBuffer(tri_indices->data(), num_indices / 2);
 
@@ -237,45 +237,45 @@ void Shape::init_static_members()
 	col_cube_positions->insert(col_cube_positions->begin(), {
 		//  X			Y			Z			 R    G    B    A
 		// Top
-		-unit_half,	unit_half,	-unit_half,		0.5, 0.5, 0.5, 1.0f,
-		-unit_half,	unit_half,	unit_half,		0.5, 0.5, 0.5, 1.0f,
-		unit_half,	unit_half,	unit_half,		0.5, 0.5, 0.5, 1.0f,
-		unit_half,	unit_half,	-unit_half,		0.5, 0.5, 0.5, 1.0f,
+		-unit_half,	unit_half,	-unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
+		-unit_half,	unit_half,	unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
+		unit_half,	unit_half,	unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
+		unit_half,	unit_half,	-unit_half,		0.5f, 0.5f, 0.5f, 1.0f,
 
 		// Left
-		-unit_half,	unit_half,	unit_half,		0.75, 0.25, 0.5, 1.0f,
-		-unit_half,	-unit_half,	unit_half,		0.75, 0.25, 0.5, 1.0f,
-		-unit_half,	-unit_half,	-unit_half,		0.75, 0.25, 0.5, 1.0f,
-		-unit_half,	unit_half,	-unit_half,		0.75, 0.25, 0.5, 1.0f,
+		-unit_half,	unit_half,	unit_half,		0.75f, 0.25f, 0.5f, 1.0f,
+		-unit_half,	-unit_half,	unit_half,		0.75f, 0.25f, 0.5f, 1.0f,
+		-unit_half,	-unit_half,	-unit_half,		0.75f, 0.25f, 0.5f, 1.0f,
+		-unit_half,	unit_half,	-unit_half,		0.75f, 0.25f, 0.5f, 1.0f,
 
 		// Right
-		unit_half,	unit_half,	unit_half,		0.25, 0.25, 0.75, 1.0f,
-		unit_half,	-unit_half,	unit_half,		0.25, 0.25, 0.75, 1.0f,
-		unit_half,	-unit_half,	-unit_half,		0.25, 0.25, 0.75, 1.0f,
-		unit_half,	unit_half,	-unit_half,		0.25, 0.25, 0.75, 1.0f,
+		unit_half,	unit_half,	unit_half,		0.25f, 0.25f, 0.75f, 1.0f,
+		unit_half,	-unit_half,	unit_half,		0.25f, 0.25f, 0.75f, 1.0f,
+		unit_half,	-unit_half,	-unit_half,		0.25f, 0.25f, 0.75f, 1.0f,
+		unit_half,	unit_half,	-unit_half,		0.25f, 0.25f, 0.75f, 1.0f,
 
 		// Front
-		unit_half,	unit_half,	unit_half,		1.0, 0.0, 0.15,	1.0f,
-		unit_half,	-unit_half,	unit_half,		1.0, 0.0, 0.15,	1.0f,
-		-unit_half,	-unit_half,	unit_half,		1.0, 0.0, 0.15,	1.0f,
-		-unit_half,	unit_half,	unit_half,		1.0, 0.0, 0.15,	1.0f,
+		unit_half,	unit_half,	unit_half,		1.0f, 0.0f, 0.15f,	1.0f,
+		unit_half,	-unit_half,	unit_half,		1.0f, 0.0f, 0.15f,	1.0f,
+		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f, 0.15f,	1.0f,
+		-unit_half,	unit_half,	unit_half,		1.0f, 0.0f, 0.15f,	1.0f,
 
 		// Back
-		unit_half,	unit_half,	-unit_half,		0.0, 1.0, 0.15,	1.0f,
-		unit_half,	-unit_half,	-unit_half,		0.0, 1.0, 0.15,	1.0f,
-		-unit_half,	-unit_half,	-unit_half,		0.0, 1.0, 0.15,	1.0f,
-		-unit_half,	unit_half,	-unit_half,		0.0, 1.0, 0.15,	1.0f,
+		unit_half,	unit_half,	-unit_half,		0.0f, 1.0f, 0.15f,	1.0f,
+		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f, 0.15f,	1.0f,
+		-unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f, 0.15f,	1.0f,
+		-unit_half,	unit_half,	-unit_half,		0.0f, 1.0f, 0.15f,	1.0f,
 
 		// Bottom
-		-unit_half,	-unit_half,	-unit_half,		0.5, 0.5, 1.0,	1.0f,
-		-unit_half,	-unit_half,	unit_half,		0.5, 0.5, 1.0,	1.0f,
-		unit_half,	-unit_half,	unit_half,		0.5, 0.5, 1.0,	1.0f,
-		unit_half,	-unit_half,	-unit_half,		0.5, 0.5, 1.0,	1.0f,
+		-unit_half,	-unit_half,	-unit_half,		0.5f, 0.5f, 1.0f,	1.0f,
+		-unit_half,	-unit_half,	unit_half,		0.5f, 0.5f, 1.0f,	1.0f,
+		unit_half,	-unit_half,	unit_half,		0.5f, 0.5f, 1.0f,	1.0f,
+		unit_half,	-unit_half,	-unit_half,		0.5f, 0.5f, 1.0f,	1.0f,
 		});
 
 	auto* col_cube_va = new VertexArray;
 	auto* col_cube_vb = new VertexBuffer(col_cube_positions->data(),
-		col_cube_positions->size() * sizeof(float));
+		(uint16_t)col_cube_positions->size() * sizeof(float));
 	col_cube_va->add_buffer(*col_cube_vb, *s_colored_layout);
 
 	// Create VAO, VBO & IBO for a textured cube
@@ -323,11 +323,11 @@ void Shape::init_static_members()
 
 	auto* tex_cube_va = new VertexArray;
 	auto* tex_cube_vb = new VertexBuffer(tex_cube_positions->data(),
-		tex_cube_positions->size() * sizeof(float));
+		(uint16_t)tex_cube_positions->size() * sizeof(float));
 	tex_cube_va->add_buffer(*tex_cube_vb, *s_textured_layout);
 	
 	// One IBO for both unit cubes
-	auto* cube_ib = new IndexBuffer(cube_indices->data(), cube_indices->size());
+	auto* cube_ib = new IndexBuffer(cube_indices->data(), (uint16_t)cube_indices->size());
 
 	// Init static unit square
 	s_unit_square->m_no_transform_vertex_positions = rectangle_positions;

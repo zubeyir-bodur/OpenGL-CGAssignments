@@ -9,7 +9,7 @@
 #include "Texture.h"
 #include "DrawList.h"
 #include "Shape.h"
-#include "Camera.h"
+#include "OrthogtraphicCamera.h"
 
 #include <nothings-stb/stb_image.h>
 #include <dearimgui/imgui.h>
@@ -109,7 +109,6 @@ int main(int, char**)
 		texture_obj->bind();
 		shader_texture->set_uniform_1i("u_texture", 0);
 	}
-	Renderer renderer;
 	float imgui_height = 0.0f;
 	Angel::vec3 sheet_pos(0, imgui_height, 0.0f);
 
@@ -166,18 +165,18 @@ int main(int, char**)
 	model_d->push_back_vertex(Angel::vec3(-3 * init_shape_length / 3.0f, 3 * init_shape_length / 7.0f, global_z_pos_2d));
 
 	// View matrix - camera
-	Camera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
-	auto view_matrix = Camera::view_matrix();
+	OrthogtraphicCamera::init(Angel::vec3(0.0f, 0.0f, global_z_pos_2d), 100.0f);
+	auto& view_matrix = OrthogtraphicCamera::view_matrix();
 
 	// Orthographic projection is used
 	Angel::mat4 projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 	// Mouse location
-	auto cursor_model_coords = Camera::map_from_global(0, 0);
+	auto cursor_model_coords = OrthogtraphicCamera::map_from_global(0, 0);
 
 	// Sheet initializations
 	Angel::mat4 model_sheet_matrix = Angel::Translate(sheet_pos)
-		* Angel::Scale(Angel::vec3(width, height, 1.0f));
+		* Angel::Scale(Angel::vec3((float)width, (float)height, 1.0f));
 	Angel::mat4 MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 
 	DrawList list(projection_matrix, view_matrix);
@@ -187,7 +186,7 @@ int main(int, char**)
 	list.add_shape(model_d);
 	bool is_dragging = false;
 	bool should_update_sheet = true;
-	const float& imgui_zoom_ratio = Camera::get_zoom_ratio();
+	const float& imgui_zoom_ratio = OrthogtraphicCamera::zoom_ratio();
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
@@ -203,13 +202,13 @@ int main(int, char**)
 	while (!glfwWindowShouldClose(window))
 	{
 		// Old mouse pos & state
-		Angel::vec2 old_mouse_pos(window_input.m_mouse_x, window_input.m_mouse_y);
+		Angel::vec2 old_mouse_pos((float)window_input.m_mouse_x, (float)window_input.m_mouse_y);
 		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
 
 		// Needed for selection and drawing while moving the camera
-		const Camera& old_camera = Camera::get_instance();
-		const Angel::vec3 old_camera_pos = old_camera.camera_pos();
-		const float old_camera_zoom_ratio = old_camera.get_zoom_ratio();
+		const OrthogtraphicCamera& old_camera = OrthogtraphicCamera::get_instance();
+		const Angel::vec3 old_camera_pos = old_camera.position();
+		const float old_camera_zoom_ratio = old_camera.zoom_ratio();
 		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
 		{
 			return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
@@ -231,7 +230,7 @@ int main(int, char**)
 		{
 			sheet_pos = Angel::vec3(0, imgui_height, 0.0f);
 			model_sheet_matrix = Angel::Translate(sheet_pos)
-				* Angel::Scale(Angel::vec3(width, height, 1.0f));
+				* Angel::Scale(Angel::vec3((float)width, (float)height, 1.0f));
 			should_update_sheet = false;
 		}
 
@@ -239,7 +238,7 @@ int main(int, char**)
 		projection_matrix = Angel::Ortho(0.0f, (float)width, (float)height, 0.0f, -1000.0f, 1000.0f);
 
 		// Update cursor
-		cursor_model_coords = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+		cursor_model_coords = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
 		// Keyboard & Mouse Wheel Events
@@ -249,26 +248,26 @@ int main(int, char**)
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					Camera::move_vertical(-20.0f);
+					OrthogtraphicCamera::move_vertical(-20.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
-					Camera::move_horizontal(-20.0f);
+					OrthogtraphicCamera::move_horizontal(-20.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					Camera::move_vertical(20.0f);
+					OrthogtraphicCamera::move_vertical(20.0f);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					Camera::move_horizontal(20.0f);
+					OrthogtraphicCamera::move_horizontal(20.0f);
 				}
 
 				// Camera zooming with mouse wheel
-				Camera::zoom(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
+				OrthogtraphicCamera::zoom_camera_towards(window_input.m_scroll_y, window_input.m_mouse_x, window_input.m_mouse_y);
 
 				// Update view matrix when necessary
-				view_matrix = Camera::view_matrix();
+				OrthogtraphicCamera::update();
 				// Immediate events coming from callbacks
 				if (window_input.m_copy_just_pressed)
 				{
@@ -285,8 +284,8 @@ int main(int, char**)
 		if (mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
-			camera_pos_released = Camera::camera_pos();
-			camera_zoom_released = Camera::get_zoom_ratio();
+			camera_pos_released = OrthogtraphicCamera::position();
+			camera_zoom_released = OrthogtraphicCamera::zoom_ratio();
 			if (!input_on_imgui)
 			{
 				// Finish dragging
@@ -332,14 +331,14 @@ int main(int, char**)
 			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 		{
 
-			camera_pos_pressed = Camera::camera_pos();
-			camera_zoom_pressed = Camera::get_zoom_ratio();
+			camera_pos_pressed = OrthogtraphicCamera::position();
+			camera_zoom_pressed = OrthogtraphicCamera::zoom_ratio();
 			if (!input_on_imgui)
 			{
 				// Scene event handling when the LMB is just pressed
 				is_dragging = true;
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
@@ -366,7 +365,7 @@ int main(int, char**)
 			{
 				// Scene event handling when the mouse is being pressed
 				Angel::vec3 mouse_model_old = map_from_global_any(window_input.m_mouse_press_x, window_input.m_mouse_press_y, camera_pos_pressed, camera_zoom_pressed);
-				Angel::vec3 mouse_model_new = Camera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
+				Angel::vec3 mouse_model_new = OrthogtraphicCamera::map_from_global(window_input.m_mouse_x, window_input.m_mouse_y);
 				Angel::vec3 mouse_drag_rect_scale = (1.0f) * (mouse_model_new - mouse_model_old);
 				if (mouse_drag_rect_scale.x == 0.0f)
 				{
@@ -478,7 +477,7 @@ int main(int, char**)
 			color_sheet[1],
 			color_sheet[2],
 			color_sheet[3]);
-		view_matrix = Camera::view_matrix();
+		OrthogtraphicCamera::update();
 		MVP_mat_sheet = projection_matrix * view_matrix * model_sheet_matrix;
 		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_mat_sheet);
 
