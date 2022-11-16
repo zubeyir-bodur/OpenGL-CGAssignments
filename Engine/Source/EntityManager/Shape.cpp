@@ -128,7 +128,7 @@ void Shape::init_static_members()
 	s_basic_layout->push_back_elements<float>(NUM_COORDINATES);
 
 	// Basic shader
-	s_basic_shader = new Shader("../../Engine/shaders/triangle.glsl");
+	s_basic_shader = new Shader("../../Engine/Shaders/triangle.glsl");
 
 	// Layout for textured shader
 	s_textured_layout = new VertexBufferLayout();
@@ -136,10 +136,10 @@ void Shape::init_static_members()
 	s_textured_layout->push_back_elements<float>(NUM_TEXTURE_COORDINATES);
 
 	// Textured Shader
-	s_textured_shader = new Shader("../../Engine/shaders/textured_triangle.glsl");
+	s_textured_shader = new Shader("../../Engine/Shaders/textured_triangle.glsl");
 
 	// Colored Shader
-	s_colored_shader = new Shader("../../Engine/shaders/colored_triangle.glsl");
+	s_colored_shader = new Shader("../../Engine/Shaders/colored_triangle.glsl");
 
 	// Colored layout
 	s_colored_layout = new VertexBufferLayout();

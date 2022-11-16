@@ -108,7 +108,7 @@ int main(int, char**)
 	// Texture
 	Texture* texture_obj;
 #define has_texture false
-	auto* shader_texture = new Shader("../../Engine/shaders/textured_triangle.glsl");;
+	auto* shader_texture = new Shader("../../Engine/Shaders/textured_triangle.glsl");;
 	if (has_texture)
 	{
 		texture_obj = new Texture("../../Data/textures/eye.png");

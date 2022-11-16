@@ -202,6 +202,8 @@
     <ClCompile Include="Source\EntityManager\DSerializer.cpp" />
     <ClCompile Include="Source\Core\ErrorManager.cpp" />
     <ClCompile Include="Source\Core\ImGuiManager.cpp" />
+    <ClCompile Include="Source\EntityManager\SelectionSystem3D.cpp" />
+    <ClCompile Include="Source\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="Source\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="Source\Platform\Input.cpp" />
     <ClCompile Include="Source\Camera\PerspectiveCamera.cpp" />
@@ -216,6 +218,7 @@
     <ClCompile Include="Source\Renderer\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Renderer\FrameBuffer.h" />
     <ClInclude Include="Include\Camera\OrthogtraphicCamera.h" />
     <ClInclude Include="Include\EntityManager\DrawList.h" />
     <ClInclude Include="Include\EntityManager\DSerializer.h" />

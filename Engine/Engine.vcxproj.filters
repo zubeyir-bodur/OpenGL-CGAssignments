@@ -52,6 +52,12 @@
     <ClCompile Include="Source\EntityManager\DrawList.cpp">
       <Filter>Source\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\FrameBuffer.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EntityManager\SelectionSystem3D.cpp">
+      <Filter>Source\EntityManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Renderer\VertexBufferLayout.h">
@@ -110,6 +116,9 @@
     </ClInclude>
     <ClInclude Include="Include\EntityManager\UndoRedoStack.h">
       <Filter>Include\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\FrameBuffer.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
