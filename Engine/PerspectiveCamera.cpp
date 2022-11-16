@@ -83,29 +83,29 @@ const float& PerspectiveCamera::roll()
 	return c.m_roll;
 }
 
-void PerspectiveCamera::move(const float& dt, const MovementDirection direction)
+void PerspectiveCamera::move(const float& dt_seconds, const MovementDirection direction)
 {
 	PerspectiveCamera& c = instance();
 	//Update m_position vector
 	switch (direction)
 	{
 	case MovementDirection::FORWARD:
-		c.m_camera_position += c.m_camera_front * c.m_movement_speed * dt;
+		c.m_camera_position += c.m_camera_front * c.m_movement_speed * dt_seconds;
 		break;
 	case MovementDirection::BACKWARD:
-		c.m_camera_position -= c.m_camera_front * c.m_movement_speed * dt;
+		c.m_camera_position -= c.m_camera_front * c.m_movement_speed * dt_seconds;
 		break;
 	case MovementDirection::LEFT:
-		c.m_camera_position -= c.m_camera_right * c.m_movement_speed * dt;
+		c.m_camera_position -= c.m_camera_right * c.m_movement_speed * dt_seconds;
 		break;
 	case MovementDirection::RIGHT:
-		c.m_camera_position += c.m_camera_right * c.m_movement_speed * dt;
+		c.m_camera_position += c.m_camera_right * c.m_movement_speed * dt_seconds;
 		break;
 	case MovementDirection::UP:
-		c.m_camera_position += c.m_world_up * c.m_movement_speed * dt; // Elevates the camera in the specified world up direction
+		c.m_camera_position += c.m_world_up * c.m_movement_speed * dt_seconds; // Elevates the camera in the specified world up direction
 		break;
 	case MovementDirection::DOWN:
-		c.m_camera_position -= c.m_world_up * c.m_movement_speed * dt;
+		c.m_camera_position -= c.m_world_up * c.m_movement_speed * dt_seconds;
 		break;
 	default:
 		break;
@@ -113,12 +113,12 @@ void PerspectiveCamera::move(const float& dt, const MovementDirection direction)
 	c.update(); // Compute the multiplications iff there is a change
 }
 
-void PerspectiveCamera::rotate(const float& dt, const double& offset_x, const double& offset_y)
+void PerspectiveCamera::rotate(const float& dt_seconds, const double& offset_x, const double& offset_y)
 {
 	PerspectiveCamera& c = instance();
 	//Update m_pitch and m_yaw
-	c.m_pitch -= static_cast<float>(offset_y) * c.m_rotation_sensitivity * dt;
-	c.m_yaw += static_cast<float>(offset_x) * c.m_rotation_sensitivity * dt;
+	c.m_pitch -= static_cast<float>(offset_y) * c.m_rotation_sensitivity/* * dt_seconds*/; // Bug-fix for fast camera rotation when FPS is low
+	c.m_yaw += static_cast<float>(offset_x) * c.m_rotation_sensitivity/* * dt_seconds*/;
 
 	// FIX-ME-OPT: use proper quaternions to fix the gimball lock
 	if (c.m_pitch > 89.999f && c.m_pitch <= 90.0f)

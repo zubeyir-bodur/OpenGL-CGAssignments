@@ -10,7 +10,7 @@ private:
 	Angel::mat4 m_proj_matrix = Angel::mat4(1.f);
 
 	float m_movement_speed = 750.0f;
-	float m_rotation_sensitivity = 10.0f;
+	float m_rotation_sensitivity = 0.1f;
 	float m_fovy;
 	int m_viewport_width;
 	int m_viewport_height;
@@ -47,8 +47,8 @@ public:
 	static const float& roll();
 
 	//Functions
-	static void move(const float& dt, const MovementDirection direction);
-	static void rotate(const float& dt, const double& offset_x, const double& offset_y);
+	static void move(const float& dt_seconds, const MovementDirection direction);
+	static void rotate(const float& dt_seconds, const double& offset_x, const double& offset_y);
 	static void on_viewport_resize(int width, int height);
 
 };

@@ -57,7 +57,7 @@ int main(int, char**)
 	}
 	glfwMakeContextCurrent(window);
 	glfwMaximizeWindow(window);
-	glfwSwapInterval(1); // Enable vsync
+	glfwSwapInterval(0); // Enable vsync
 
 	// Init GLEW
 	if (glewInit() != GLEW_OK)
@@ -155,13 +155,15 @@ int main(int, char**)
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
 	
 	// Delta time recording
-	float delta_time_seconds = 0;
+	auto last_frame_time = 0.0f;
 
 	// Rendering & Event Loop
 	while (!glfwWindowShouldClose(window))
 	{
+		auto time = glfwGetTime();
 		// Compute time between frames
-		delta_time_seconds = (1.0f /(ImGui::GetIO().Framerate));
+		float delta_time_seconds = time - last_frame_time;
+		last_frame_time = time;
 
 		// Old mouse pos & state
 		Angel::vec2 old_mouse_pos((float)window_input.m_mouse_x, (float)window_input.m_mouse_y);
