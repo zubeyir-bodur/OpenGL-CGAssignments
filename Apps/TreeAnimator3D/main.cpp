@@ -140,9 +140,9 @@ int main(int, char**)
 
 	// View matrix - camera
 	// PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, height/2.0f), 60.0f, (float)width / (float)height);
-	Camera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f}, 60.0f, width, height);
-	const Angel::mat4& view_matrix = Camera::view_matrix();
-	const Angel::mat4& proj_matrix = Camera::projection_matrix();
+	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f}, 60.0f, width, height);
+	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
+	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
 
 	// Draw List
 	DrawList list(proj_matrix, view_matrix);
@@ -174,7 +174,7 @@ int main(int, char**)
 		glfwGetWindowSize(window, &width, &height);
 
 		// Update the window projection
-		Camera::on_viewport_resize(width, height);
+		PerspectiveCamera::on_viewport_resize(width, height);
 
 		// Update cursor
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
@@ -187,32 +187,32 @@ int main(int, char**)
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::dolly(10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::FORWARD);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::FORWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::dolly(-10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::BACKWARD);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::BACKWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::truck(-10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::LEFT);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::LEFT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::truck(10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::RIGHT);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::RIGHT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::pedestal(-10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::DOWN);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::DOWN);
 				}
 				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 				{
 					/*PerspectiveCamera::pedestal(10.0f);*/
-					Camera::move(delta_time_seconds, Camera::MovementDirection::UP);
+					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::UP);
 				}
 			}
 		}
@@ -342,7 +342,7 @@ int main(int, char**)
 			{
 				if (!input_on_imgui)
 				{
-					Camera::rotate(delta_time_seconds,
+					PerspectiveCamera::rotate(delta_time_seconds,
 						window_input.m_mouse_x - old_mouse_pos.x,
 						window_input.m_mouse_y - old_mouse_pos.y);
 				}
@@ -375,12 +375,12 @@ int main(int, char**)
 				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 1000, "%.3f", 1.0f);
 
 				ImGui::NewLine();
-				ImGui::Text("Camera-Pos.x: %f", Camera::position().x);
-				ImGui::Text("Camera-Pos.y: %f", Camera::position().y);
-				ImGui::Text("Camera-Pos.z: %f", Camera::position().z);
-				ImGui::Text("Pitch: %f", Camera::pitch());
-				ImGui::Text("Yaw: %f", Camera::yaw());
-				ImGui::Text("Roll: %f", Camera::roll());
+				ImGui::Text("Camera-Pos.x: %f", PerspectiveCamera::position().x);
+				ImGui::Text("Camera-Pos.y: %f", PerspectiveCamera::position().y);
+				ImGui::Text("Camera-Pos.z: %f", PerspectiveCamera::position().z);
+				ImGui::Text("Pitch: %f", PerspectiveCamera::pitch());
+				ImGui::Text("Yaw: %f", PerspectiveCamera::yaw());
+				ImGui::Text("Roll: %f", PerspectiveCamera::roll());
 
 				ImGui::NewLine();
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
