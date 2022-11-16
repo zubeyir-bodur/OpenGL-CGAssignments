@@ -24,6 +24,7 @@ public:
 	};
 
 	ButtonState m_lmb_state;
+	ButtonState m_rmb_state;
 
 	double m_mouse_x, m_mouse_y;
 	double m_mouse_press_x, m_mouse_press_y;

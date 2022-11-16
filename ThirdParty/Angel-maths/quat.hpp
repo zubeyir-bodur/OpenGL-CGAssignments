@@ -9,7 +9,7 @@ struct vec3;
 namespace Angel
 {
 	/// <summary>
-	/// FIX-ME-OPT : Fix camera rotation
+	/// Quat implementation just in case
 	/// </summary>
 	struct quat
 	{
@@ -22,14 +22,16 @@ namespace Angel
 		quat operator * (const quat& b);
 	};
 
-	vec3 XDir(const quat& q);
+	vec3 x_dir(const quat& q);
 	
-	vec3 YDir(const quat& q);
+	vec3 y_dir(const quat& q);
 	
-	vec3 ZDir(const quat& q);
+	vec3 z_dir(const quat& q);
 
-	mat4 Rotate(const quat& q);
+	mat4 rotate(const quat& q);
 
-	quat Quat(const vec3& axis, const float theta_deg);
+	quat quat_from_axis_angle(const vec3& axis, const float theta_deg);
+
+	float radians(float theta);
 }
 #endif;

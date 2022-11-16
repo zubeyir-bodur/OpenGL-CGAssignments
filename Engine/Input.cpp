@@ -9,6 +9,7 @@ Input::Input(GLFWwindow* app_window)
 	m_mouse_x = -1.0;
 	m_mouse_y = -1.0;
 	m_lmb_state = ButtonState::Idle;
+	m_rmb_state = ButtonState::Idle;
 	glfwSetScrollCallback(app_window, Input::mouse_scroll_callback);
 	glfwSetCursorPosCallback(app_window, Input::mouse_move_callback);
 	glfwSetMouseButtonCallback(app_window, Input::mouse_button_callback);
@@ -41,6 +42,23 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, in
 			instance.m_lmb_state = ButtonState::Idle;
 		}
 	}
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		if (action == GLFW_PRESS)
+		{
+			instance.m_rmb_state = ButtonState::JustPressed;
+			glfwGetCursorPos(window, &instance.m_mouse_press_x, &instance.m_mouse_press_y);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			instance.m_rmb_state = ButtonState::Released;
+			glfwGetCursorPos(window, &instance.m_mouse_release_x, &instance.m_mouse_release_y);
+		}
+		else
+		{
+			instance.m_rmb_state = ButtonState::Idle;
+		}
+	}
 }
 
 void Input::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
@@ -58,7 +76,7 @@ void Input::mouse_scroll_callback(GLFWwindow* window, double xoffset, double yof
 
 void Input::keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	Input& instance  = Input::get_instance(window);
+	Input& instance = Input::get_instance(window);
 	if (mods & GLFW_MOD_CONTROL)
 	{
 		if (key == GLFW_KEY_C && action == GLFW_PRESS)

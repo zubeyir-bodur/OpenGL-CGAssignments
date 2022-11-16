@@ -24,6 +24,7 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+#include <chrono>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -138,9 +139,10 @@ int main(int, char**)
 		tree_surface_texture_obj);
 
 	// View matrix - camera
-	PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, height/2.0f), 60.0f, (float)width / (float)height);
-	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
-	const Angel::mat4& proj_matrix = PerspectiveCamera::proj_matrix();
+	// PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, height/2.0f), 60.0f, (float)width / (float)height);
+	Camera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f}, 60.0f, width, height);
+	const Angel::mat4& view_matrix = Camera::view_matrix();
+	const Angel::mat4& proj_matrix = Camera::projection_matrix();
 
 	// Draw List
 	DrawList list(proj_matrix, view_matrix);
@@ -148,29 +150,23 @@ int main(int, char**)
 	list.add_shape(text_a);
 
 	bool is_dragging = false;
-	bool should_update_sheet = true;
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
-	Angel::vec3 camera_pos_released;
-	Angel::vec3 camera_pos_pressed;
-	// Main loop
+	
+	// Delta time recording
+	float delta_time_seconds = 0;
+
+	// Rendering & Event Loop
 	while (!glfwWindowShouldClose(window))
 	{
+		// Compute time between frames
+		delta_time_seconds = (1.0f /(ImGui::GetIO().Framerate));
+
 		// Old mouse pos & state
 		Angel::vec2 old_mouse_pos((float)window_input.m_mouse_x, (float)window_input.m_mouse_y);
-		Input::ButtonState mouse_previous_state = window_input.m_lmb_state;
-
-		// Needed for selection and drawing while moving the camera
-		const PerspectiveCamera& old_camera = PerspectiveCamera::get_instance();
-		const Angel::vec3 old_camera_pos = old_camera.position();
-
-		// Reset scroll
-		window_input.m_scroll_y = 0.0;
-
-		// Reset copy & paste
-		window_input.m_copy_just_pressed = false;
-		window_input.m_paste_just_pressed = false;
+		Input::ButtonState left_mouse_previous_state = window_input.m_lmb_state;
+		Input::ButtonState right_mouse_previous_state = window_input.m_rmb_state;
 
 		glfwPollEvents();
 
@@ -178,132 +174,186 @@ int main(int, char**)
 		glfwGetWindowSize(window, &width, &height);
 
 		// Update the window projection
-		PerspectiveCamera::resize((float)width/(float)height);
+		Camera::on_viewport_resize(width, height);
 
 		// Update cursor
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
 
-		// Keyboard & Mouse Wheel Events
+		// Keyboard States
 		{
 			if (!input_on_imgui)
 			{
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					PerspectiveCamera::dolly(10.0f);
+					/*PerspectiveCamera::dolly(10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::FORWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					PerspectiveCamera::dolly(-10.0f);
+					/*PerspectiveCamera::dolly(-10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::BACKWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
-					PerspectiveCamera::truck(-10.0f);
+					/*PerspectiveCamera::truck(-10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::LEFT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					PerspectiveCamera::truck(10.0f);
+					/*PerspectiveCamera::truck(10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::RIGHT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 				{
-					PerspectiveCamera::pedestal(-10.0f);
+					/*PerspectiveCamera::pedestal(-10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::DOWN);
 				}
 				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 				{
-					PerspectiveCamera::pedestal(10.0f);
-				}
-
-
-				if (window_input.m_copy_just_pressed)
-				{
-					// Copy command sent
-				}
-				if (window_input.m_paste_just_pressed)
-				{
-					// Paste command sent
+					/*PerspectiveCamera::pedestal(10.0f);*/
+					Camera::move(delta_time_seconds, Camera::MovementDirection::UP);
 				}
 			}
 		}
 
 		// LMB States
-		if (mouse_previous_state == Input::ButtonState::BeingPressed
-			&& window_input.m_lmb_state == Input::ButtonState::Released)
 		{
-			camera_pos_released = PerspectiveCamera::position();
-			if (!input_on_imgui)
+			if (left_mouse_previous_state == Input::ButtonState::BeingPressed
+			&& window_input.m_lmb_state == Input::ButtonState::Released)
 			{
-				// Finish dragging
-				if (is_dragging)
+				if (!input_on_imgui)
 				{
-					if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
-						&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
+					// Finish dragging
+					if (is_dragging)
 					{
-						std::cout << "THIS IS A CLICK" << std::endl;
+						if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
+							&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
+						{
+							std::cout << "THIS IS A CLICK" << std::endl;
 
-						// Do sth. with the click - cursor_released vector is the world coordinate of the click
+							// Do sth. with the click - cursor_released vector is the world coordinate of the click
 
-					}
-					else
-					{
-						std::cout << "THIS IS A DRAG" << std::endl;
-						
-						// Do sth. with drag vector here
+						}
+						else
+						{
+							std::cout << "THIS IS A DRAG" << std::endl;
 
+							// Do sth. with drag vector here
+
+						}
 					}
 				}
+				else
+				{
+					// Application specific state consumptions when ImGui has focus in mouse release
+				}
+
+				// Consume the released state
+				window_input.m_mouse_press_y = -1.0f;
+				window_input.m_mouse_press_x = -1.0f;
+				window_input.m_lmb_state = Input::ButtonState::Idle;
+				std::cout << "LMB is now Idle" << std::endl;
+				is_dragging = false;
 			}
-			else
+			else if (left_mouse_previous_state == Input::ButtonState::Idle
+				&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
 			{
-				// Application specific state consumptions when ImGui has focus in mouse release
+				if (!input_on_imgui)
+				{
+					// Scene event handling when the LMB is just pressed
+					is_dragging = true;
+				}
+
+				// Consume the pressed state
+				window_input.m_lmb_state = Input::ButtonState::BeingPressed;
+				std::cout << "LMB is now BeingPressed" << std::endl;
+				window_input.m_mouse_release_y = -1.0f;
+				window_input.m_mouse_release_x = -1.0f;
 			}
-
-			// Consume the released state
-			window_input.m_mouse_press_y = -1.0f;
-			window_input.m_mouse_press_x = -1.0f;
-			window_input.m_lmb_state = Input::ButtonState::Idle;
-			std::cout << "LMB is now Idle" << std::endl;
-			is_dragging = false;
-			camera_pos_pressed = Angel::vec3(0.0f);
-		}
-		else if (mouse_previous_state == Input::ButtonState::Idle
-			&& window_input.m_lmb_state == Input::ButtonState::JustPressed)
-		{
-
-			camera_pos_pressed = PerspectiveCamera::position();
-			if (!input_on_imgui)
+			else if (left_mouse_previous_state == Input::ButtonState::BeingPressed)
 			{
-				// Scene event handling when the LMB is just pressed
-				is_dragging = true;
+				if (!input_on_imgui)
+				{
+				}
 			}
-
-			// Consume the pressed state
-			window_input.m_lmb_state = Input::ButtonState::BeingPressed;
-			std::cout << "LMB is now BeingPressed" << std::endl;
-			window_input.m_mouse_release_y = -1.0f;
-			window_input.m_mouse_release_x = -1.0f;
-			camera_pos_released = {};
-		}
-		else if (mouse_previous_state == Input::ButtonState::BeingPressed)
-		{
-			if (!input_on_imgui)
+			else if (window_input.m_lmb_state == Input::ButtonState::Idle)
 			{
-				PerspectiveCamera::pan(((float)window_input.m_mouse_x - (float)old_mouse_pos.x) / 20.0f);
-				PerspectiveCamera::tilt(((float)window_input.m_mouse_y - (float)old_mouse_pos.y) / 20.0f);
+				// Optional mouse  event handling in idle state, e.g. drawing a line from
+				// a point chosen before towards the current mouse coordinate
 			}
 		}
-		else if (window_input.m_lmb_state == Input::ButtonState::Idle)
-		{
-			// Optional mouse  event handling in idle state, e.g. drawing a line from
-			// a point chosen before towards the current mouse coordinate
-		}
-
+		
 		// RMB States
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
-			// Event handling as long as RMB is pressed
-			// This is equivalent to a (JustPressed | BeingPressed) state
-		}
+			if (right_mouse_previous_state == Input::ButtonState::BeingPressed
+				&& window_input.m_rmb_state == Input::ButtonState::Released)
+			{
+				if (!input_on_imgui)
+				{
+					// Finish dragging
+					if (is_dragging)
+					{
+						if (std::abs(window_input.m_mouse_release_y - window_input.m_mouse_press_y) < 1.0f
+							&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
+						{
+							std::cout << "THIS IS A CLICK" << std::endl;
 
+							// Do sth. with the click - cursor_released vector is the world coordinate of the click
+
+						}
+						else
+						{
+							std::cout << "THIS IS A DRAG" << std::endl;
+
+							// Do sth. with drag vector here
+
+						}
+					}
+				}
+				else
+				{
+					// Application specific state consumptions when ImGui has focus in mouse release
+				}
+
+				// Consume the released state
+				window_input.m_mouse_press_y = -1.0f;
+				window_input.m_mouse_press_x = -1.0f;
+				window_input.m_rmb_state = Input::ButtonState::Idle;
+				std::cout << "RMB is now Idle" << std::endl;
+				is_dragging = false;
+			}
+			else if (right_mouse_previous_state == Input::ButtonState::Idle
+				&& window_input.m_rmb_state == Input::ButtonState::JustPressed)
+			{
+				if (!input_on_imgui)
+				{
+					// Scene event handling when the LMB is just pressed
+					is_dragging = true;
+				}
+
+				// Consume the pressed state
+				window_input.m_rmb_state = Input::ButtonState::BeingPressed;
+				std::cout << "RMB is now BeingPressed" << std::endl;
+				window_input.m_mouse_release_y = -1.0f;
+				window_input.m_mouse_release_x = -1.0f;
+			}
+			else if (right_mouse_previous_state == Input::ButtonState::BeingPressed)
+			{
+				if (!input_on_imgui)
+				{
+					Camera::rotate(delta_time_seconds,
+						window_input.m_mouse_x - old_mouse_pos.x,
+						window_input.m_mouse_y - old_mouse_pos.y);
+				}
+			}
+			else if (window_input.m_rmb_state == Input::ButtonState::Idle)
+			{
+				// Optional mouse  event handling in idle state, e.g. drawing a line from
+				// a point chosen before towards the current mouse coordinate
+			}
+		}
+		
 		// ImGui Components 
 		new_imgui_frame();
 		{
@@ -325,13 +375,12 @@ int main(int, char**)
 				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 1000, "%.3f", 1.0f);
 
 				ImGui::NewLine();
-				ImGui::Text("Camera-Pos.x: %f", PerspectiveCamera::position().x);
-				ImGui::Text("Camera-Pos.y: %f", PerspectiveCamera::position().y);
-				ImGui::Text("Camera-Pos.z: %f", PerspectiveCamera::position().z);
-				ImGui::Text("Camera-Rot.w: %f", PerspectiveCamera::rotation().w);
-				ImGui::Text("Camera-Rot.x: %f", PerspectiveCamera::rotation().x);
-				ImGui::Text("Camera-Rot.y: %f", PerspectiveCamera::rotation().y);
-				ImGui::Text("Camera-Rot.z: %f", PerspectiveCamera::rotation().z);
+				ImGui::Text("Camera-Pos.x: %f", Camera::position().x);
+				ImGui::Text("Camera-Pos.y: %f", Camera::position().y);
+				ImGui::Text("Camera-Pos.z: %f", Camera::position().z);
+				ImGui::Text("Pitch: %f", Camera::pitch());
+				ImGui::Text("Yaw: %f", Camera::yaw());
+				ImGui::Text("Roll: %f", Camera::roll());
 
 				ImGui::NewLine();
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
@@ -344,8 +393,6 @@ int main(int, char**)
 
 			ImGui::EndFrame();
 		}
-		// Update ViewProj matrix
-		PerspectiveCamera::update();
 
 		// Clear background
 		Renderer::set_viewport(window);

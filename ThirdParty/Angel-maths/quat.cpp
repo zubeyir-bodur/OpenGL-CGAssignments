@@ -25,7 +25,7 @@ namespace Angel
 		};
 	}
 
-	Angel::vec3 XDir(const quat& q)
+	Angel::vec3 x_dir(const quat& q)
 	{
 		return vec3
 		{
@@ -35,7 +35,7 @@ namespace Angel
 		};
 	}
 
-	Angel::vec3 YDir(const quat& q)
+	Angel::vec3 y_dir(const quat& q)
 	{
 		return vec3
 		{
@@ -45,7 +45,7 @@ namespace Angel
 		};
 	}
 
-	Angel::vec3 ZDir(const quat& q)
+	Angel::vec3 z_dir(const quat& q)
 	{
 		return vec3
 		{
@@ -55,12 +55,12 @@ namespace Angel
 		};
 	}
 
-	Angel::mat4 Rotate(const quat& q)
+	Angel::mat4 rotate(const quat& q)
 	{
 		mat4 rotation;
-		const vec3 x = XDir(q);
-		const vec3 y = YDir(q);
-		const vec3 z = ZDir(q);
+		const vec3 x = x_dir(q);
+		const vec3 y = y_dir(q);
+		const vec3 z = z_dir(q);
 		rotation[0] = { x.x, y.x, z.x, 0 };
 		rotation[1] = { x.y, y.y, z.y, 0 };
 		rotation[2] = { x.z, y.z, z.z, 0 };
@@ -68,10 +68,15 @@ namespace Angel
 		return rotation;
 	}
 
-	Angel::quat Quat(const vec3& axis, const float theta_deg)
+	Angel::quat quat_from_axis_angle(const vec3& axis, const float theta_deg)
 	{
 		const vec3 xyz = axis * sinf(theta_deg * DegreesToRadians / 2.0f);
 		return{ cosf(theta_deg * DegreesToRadians / 2.0f), xyz.x, xyz.y, xyz.z };
+	}
+
+	float radians(float theta)
+	{
+		return theta * DegreesToRadians;
 	}
 
 }
