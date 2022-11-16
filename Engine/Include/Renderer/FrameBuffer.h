@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/ErrorManager.h"
+#include <cstdint>
 
 // forward declare function
 namespace std {
@@ -26,5 +27,6 @@ public:
 	void bind();
 	void unbind();
 	std::array<uint8_t, 4> read_pixel(int pixel_x, int pixel_y);
+	std::array<int, 2> viewport_size();
 
 };

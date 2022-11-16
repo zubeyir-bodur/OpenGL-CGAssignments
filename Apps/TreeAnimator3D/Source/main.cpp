@@ -99,7 +99,7 @@ int main(int, char**)
 
 	renderer.clear(&clear_color.x);
 
-	// Enable Depth Test & Face Culling
+	// Enable Depth Test & Back-Face Culling
 	__glCallVoid(glEnable(GL_DEPTH_TEST));
 	__glCallVoid(glDepthMask(GL_TRUE));
 	__glCallVoid(glEnable(GL_CULL_FACE));

@@ -11,6 +11,7 @@ FrameBuffer::FrameBuffer(int width, int height)
 	__glCallVoid(glGenTextures(1, &m_fb_texture_id));
 	__glCallVoid(glBindTexture(GL_TEXTURE_2D, m_fb_texture_id));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
@@ -42,10 +43,10 @@ void FrameBuffer::on_update(const std::function<void(void)>& draw_function)
 	bind();
 	__glCallVoid(glViewport(0, 0, m_viewport_width, m_viewport_height));
 
-	__glCallVoid(glEnable(GL_CULL_FACE));
-	__glCallVoid(glEnable(GL_DEPTH_TEST));
+	/*__glCallVoid(glEnable(GL_CULL_FACE));
+	__glCallVoid(glEnable(GL_DEPTH_TEST));*/
 
-	// Clear the canvas AND the depth buffer
+	// Clear the currently bound frame buffer, which has a color buffer and a depth buffer attached
 	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 	// Draw whatever needs to be drawn to this frame buffer
@@ -104,4 +105,9 @@ std::array<uint8_t, 4> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
 		data[2],
 		data[3]
 	};
+}
+
+std::array<int, 2> FrameBuffer::viewport_size()
+{
+	return { m_viewport_width, m_viewport_height };
 }

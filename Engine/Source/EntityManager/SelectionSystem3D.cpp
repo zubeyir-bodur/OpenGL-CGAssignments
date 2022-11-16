@@ -1,5 +1,8 @@
+#include "Core/ErrorManager.h"
+
 #include "EntityManager/SelectionSystem3D.h"
 #include <functional>
+#include <glew.h>
 
 SelectionSystem3D::SelectionSystem3D(DrawList* draw_list, int width, int height)
 {
@@ -45,6 +48,12 @@ void SelectionSystem3D::on_update()
 			}
 			
 		});
+	// Do the work for unbinding the frame buffer, depth buffer & texture here
+	m_entity_picker_fb->unbind();
+	auto viewport_size = m_entity_picker_fb->viewport_size();
+	__glCallVoid(glViewport(0, 0, viewport_size[0], viewport_size[1]));
+	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
 }
 
 void SelectionSystem3D::on_screen_resize(int new_width, int new_height)
