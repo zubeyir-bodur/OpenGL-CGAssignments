@@ -1,137 +1,173 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="OrthogtraphicCamera.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\Texture.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="DrawList.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\Shader.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorManager.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\VertexArray.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\VertexBuffer.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\VertexBufferLayout.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\IndexBuffer.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Renderer\Renderer.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Platform\Input.cpp">
+      <Filter>Source\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Core\ImGuiManager.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="ShapeModel.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Core\ErrorManager.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="VertexArray.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Camera\PerspectiveCamera.cpp">
+      <Filter>Source\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="VertexBuffer.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\Camera\OrthogtraphicCamera.cpp">
+      <Filter>Source\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="VertexBufferLayout.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\EntityManager\UndoRedoStack.cpp">
+      <Filter>Source\EntityManager</Filter>
     </ClCompile>
-    <ClCompile Include="UndoRedoStack.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\EntityManager\ShapeModel.cpp">
+      <Filter>Source\EntityManager</Filter>
     </ClCompile>
-    <ClCompile Include="DSerializer.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\EntityManager\Shape.cpp">
+      <Filter>Source\EntityManager</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\EntityManager\DSerializer.cpp">
+      <Filter>Source\EntityManager</Filter>
     </ClCompile>
-    <ClCompile Include="PerspectiveCamera.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\EntityManager\DrawList.cpp">
+      <Filter>Source\EntityManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OrthogtraphicCamera.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\VertexBufferLayout.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="DrawList.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\VertexBuffer.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="ErrorManager.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\VertexArray.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="ImGuiManager.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\Texture.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\Shader.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\Renderer.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Renderer\IndexBuffer.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Platform\Input.h">
+      <Filter>Include\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Core\ImGuiManager.h">
+      <Filter>Include\Core</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeModel.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Core\ErrorManager.h">
+      <Filter>Include\Core</Filter>
     </ClInclude>
-    <ClInclude Include="VertexArray.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Camera\OrthogtraphicCamera.h">
+      <Filter>Include\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\Camera\PerspectiveCamera.h">
+      <Filter>Include\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBufferLayout.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\DrawList.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="UndoRedoStack.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\DSerializer.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="Operation.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\Operation.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="DSerializer.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\SelectionSystem3D.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\Shape.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
-    <ClInclude Include="PerspectiveCamera.h">
-      <Filter>include</Filter>
+    <ClInclude Include="Include\EntityManager\ShapeModel.h">
+      <Filter>Include\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\EntityManager\UndoRedoStack.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\textured_triangle.glsl">
-      <Filter>shaders</Filter>
+    <None Include="Shaders\textured_triangle.glsl">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\triangle.glsl">
-      <Filter>shaders</Filter>
+    <None Include="Shaders\triangle.glsl">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\colored_triangle.glsl">
-      <Filter>shaders</Filter>
+    <None Include="Shaders\colored_triangle.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\pickable_triangle.glsl">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="include">
+    <Filter Include="Include">
       <UniqueIdentifier>{23a837a5-873d-419c-865b-9bf3707182dd}</UniqueIdentifier>
       <Extensions>h</Extensions>
     </Filter>
-    <Filter Include="source">
+    <Filter Include="Source">
       <UniqueIdentifier>{ba52e3af-66f9-47ad-8ca7-eb730228a09a}</UniqueIdentifier>
       <Extensions>cpp</Extensions>
     </Filter>
-    <Filter Include="shaders">
+    <Filter Include="Shaders">
       <UniqueIdentifier>{7e3f70fa-9ffc-4ded-bed8-034279d6c0af}</UniqueIdentifier>
       <Extensions>glsl</Extensions>
+    </Filter>
+    <Filter Include="Include\Core">
+      <UniqueIdentifier>{f90ceedc-1dec-4f17-aa63-b2d1356eaac3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Camera">
+      <UniqueIdentifier>{146d4487-def4-40d4-abf1-c02120441d29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Renderer">
+      <UniqueIdentifier>{d95260a9-328d-40aa-bcaa-35cbc74677be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\EntityManager">
+      <UniqueIdentifier>{48ebbaa9-5792-4b24-b8e3-ce5535ea7a70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Platform">
+      <UniqueIdentifier>{6553db0f-19bf-4c95-b011-9451debbdc15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{efd12b39-3c5a-4b8c-aac4-e076cd0fa8ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Camera">
+      <UniqueIdentifier>{43f393cd-12be-44b9-a91c-3fd14bc0237a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\EntityManager">
+      <UniqueIdentifier>{0d483fac-7ca1-4167-aeb3-3da9c8203123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{0d1757a2-3fb0-4753-a1d4-5f82a3de4b9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer">
+      <UniqueIdentifier>{1d3ba5b5-ce56-48bf-885d-21e52049250d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

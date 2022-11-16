@@ -92,7 +92,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir)Engine\Include;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,7 +123,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir)Engine\Include;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,7 +153,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir)Engine\Include;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -178,7 +178,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)ThirdParty;$(SolutionDir)Engine\Include;$(SolutionDir);$(SolutionDir)ThirdParty\GLFW\include;$(SolutionDir)ThirdParty\GLEW\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -197,48 +197,50 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="OrthogtraphicCamera.cpp" />
-    <ClCompile Include="DrawList.cpp" />
-    <ClCompile Include="DSerializer.cpp" />
-    <ClCompile Include="ErrorManager.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="IndexBuffer.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="PerspectiveCamera.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Shape.cpp" />
-    <ClCompile Include="ShapeModel.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UndoRedoStack.cpp" />
-    <ClCompile Include="VertexArray.cpp" />
-    <ClCompile Include="VertexBuffer.cpp" />
-    <ClCompile Include="VertexBufferLayout.cpp" />
+    <ClCompile Include="Source\Camera\OrthogtraphicCamera.cpp" />
+    <ClCompile Include="Source\EntityManager\DrawList.cpp" />
+    <ClCompile Include="Source\EntityManager\DSerializer.cpp" />
+    <ClCompile Include="Source\Core\ErrorManager.cpp" />
+    <ClCompile Include="Source\Core\ImGuiManager.cpp" />
+    <ClCompile Include="Source\Renderer\IndexBuffer.cpp" />
+    <ClCompile Include="Source\Platform\Input.cpp" />
+    <ClCompile Include="Source\Camera\PerspectiveCamera.cpp" />
+    <ClCompile Include="Source\Renderer\Renderer.cpp" />
+    <ClCompile Include="Source\Renderer\Shader.cpp" />
+    <ClCompile Include="Source\EntityManager\Shape.cpp" />
+    <ClCompile Include="Source\EntityManager\ShapeModel.cpp" />
+    <ClCompile Include="Source\Renderer\Texture.cpp" />
+    <ClCompile Include="Source\EntityManager\UndoRedoStack.cpp" />
+    <ClCompile Include="Source\Renderer\VertexArray.cpp" />
+    <ClCompile Include="Source\Renderer\VertexBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OrthogtraphicCamera.h" />
-    <ClInclude Include="DrawList.h" />
-    <ClInclude Include="DSerializer.h" />
-    <ClInclude Include="ErrorManager.h" />
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="IndexBuffer.h" />
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="Operation.h" />
-    <ClInclude Include="PerspectiveCamera.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Shape.h" />
-    <ClInclude Include="ShapeModel.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="UndoRedoStack.h" />
-    <ClInclude Include="VertexArray.h" />
-    <ClInclude Include="VertexBuffer.h" />
-    <ClInclude Include="VertexBufferLayout.h" />
+    <ClInclude Include="Include\Camera\OrthogtraphicCamera.h" />
+    <ClInclude Include="Include\EntityManager\DrawList.h" />
+    <ClInclude Include="Include\EntityManager\DSerializer.h" />
+    <ClInclude Include="Include\Core\ErrorManager.h" />
+    <ClInclude Include="Include\Core\ImGuiManager.h" />
+    <ClInclude Include="Include\Renderer\IndexBuffer.h" />
+    <ClInclude Include="Include\Platform\Input.h" />
+    <ClInclude Include="Include\EntityManager\Operation.h" />
+    <ClInclude Include="Include\Camera\PerspectiveCamera.h" />
+    <ClInclude Include="Include\Renderer\Renderer.h" />
+    <ClInclude Include="Include\EntityManager\SelectionSystem3D.h" />
+    <ClInclude Include="Include\Renderer\Shader.h" />
+    <ClInclude Include="Include\EntityManager\Shape.h" />
+    <ClInclude Include="Include\EntityManager\ShapeModel.h" />
+    <ClInclude Include="Include\Renderer\Texture.h" />
+    <ClInclude Include="Include\EntityManager\UndoRedoStack.h" />
+    <ClInclude Include="Include\Renderer\VertexArray.h" />
+    <ClInclude Include="Include\Renderer\VertexBuffer.h" />
+    <ClInclude Include="Include\Renderer\VertexBufferLayout.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\colored_triangle.glsl" />
-    <None Include="shaders\triangle.glsl" />
-    <None Include="shaders\textured_triangle.glsl" />
+    <None Include="Shaders\colored_triangle.glsl" />
+    <None Include="Shaders\pickable_triangle.glsl" />
+    <None Include="Shaders\triangle.glsl" />
+    <None Include="Shaders\textured_triangle.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Angel-maths\Angel-maths.vcxproj">

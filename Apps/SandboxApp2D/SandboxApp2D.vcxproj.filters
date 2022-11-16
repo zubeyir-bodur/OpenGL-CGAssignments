@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="include">
+    <Filter Include="Include">
       <UniqueIdentifier>{54cb2661-6294-4c26-9f33-1267ba661d8e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source">
+    <Filter Include="Source">
       <UniqueIdentifier>{9cee56d4-e7f5-43ef-a480-7cc78b4e533b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
