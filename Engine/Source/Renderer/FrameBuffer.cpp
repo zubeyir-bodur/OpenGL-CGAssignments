@@ -14,9 +14,9 @@ FrameBuffer::FrameBuffer(int width, int height)
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI,
+	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8UI,
 		m_viewport_width, m_viewport_height, 0,
-		GL_RGB_INTEGER, GL_UNSIGNED_INT, nullptr));
+		GL_RGB_INTEGER, GL_UNSIGNED_BYTE, nullptr));
 
 	// Create Depth render buffer for FB
 	__glCallVoid(glGenRenderbuffers(1, &m_fb_depth_buffer_id));
@@ -67,9 +67,9 @@ void FrameBuffer::on_screen_resize(int new_width, int new_height)
 	// Level = 0, Border = 0, RGB32 - 32 bit opaque color range
 	// But the data is mull
 	// This way, an empty texture will be reinitialized to our bound texture
-	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI,
+	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8UI,
 		m_viewport_width, m_viewport_height, 0,
-		GL_RGB_INTEGER, GL_UNSIGNED_INT, nullptr));
+		GL_RGB_INTEGER, GL_UNSIGNED_BYTE, nullptr));
 
 	__glCallVoid(glBindRenderbuffer(GL_RENDERBUFFER, m_fb_depth_buffer_id));
 	__glCallVoid(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_viewport_width, m_viewport_height));
@@ -90,11 +90,11 @@ void FrameBuffer::unbind()
 	__glCallVoid(glBindRenderbuffer(GL_RENDERBUFFER, 0));
 }
 
-std::array<uint32_t, 3> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
+std::array<uint8_t, 3> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
 {
 	bind();
 	__glCallVoid(glReadBuffer(GL_COLOR_ATTACHMENT0));
-	uint32_t data[3] = { 0, 0, 0 };
+	uint8_t data[3] = { 0, 0, 0 };
 	if (m_viewport_height != 0 && m_viewport_width != 0)
 	{
 		__glCallVoid(glReadPixels(
@@ -103,7 +103,7 @@ std::array<uint32_t, 3> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
 			1,					// width
 			1,					// height
 			GL_RGB_INTEGER,		// format
-			GL_UNSIGNED_INT,	// type
+			GL_UNSIGNED_BYTE,	// type
 			(void*)data));		// typed array to hold result
 		__glCallVoid(glReadBuffer(GL_NONE));
 	}

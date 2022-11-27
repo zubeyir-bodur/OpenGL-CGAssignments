@@ -32,7 +32,7 @@ unsigned int SelectionSystem3D::on_update(int window_x, int window_y)
 			unsigned int index = 1;
 			for (auto shape_model : list)
 			{
-				std::array<uint32_t, 3> u_shape_model_id = map_drawlist_idx_to_rgb(index);
+				std::array<uint8_t, 3> u_shape_model_id = map_drawlist_idx_to_rgb(index);
 				m_picker_shader->set_uniform_3ui("u_shape_model_id", 
 					u_shape_model_id[0],
 					u_shape_model_id[1],
@@ -68,7 +68,7 @@ void SelectionSystem3D::on_screen_resize(int new_width, int new_height)
 
 unsigned int SelectionSystem3D::get_entity_idx_at(int window_x, int window_y)
 {
-	std::array<uint32_t, 3> pixel = m_entity_picker_fb->read_pixel(window_x, window_y);
+	std::array<uint8_t, 3> pixel = m_entity_picker_fb->read_pixel(window_x, window_y);
 	return map_rgb_to_drawlist_idx(pixel);
 }
 
@@ -77,11 +77,11 @@ unsigned int SelectionSystem3D::get_entity_idx_at(int window_x, int window_y)
 /// </summary>
 /// <param name="index">1 indexed index of the entity of the drawlist</param>
 /// <returns>fragment color of the entity id to be drawn in the FB</returns>
-std::array<uint32_t, 3> SelectionSystem3D::map_drawlist_idx_to_rgb(uint32_t index)
+std::array<uint8_t, 3> SelectionSystem3D::map_drawlist_idx_to_rgb(unsigned int index)
 {
-	uint32_t r = static_cast<uint32_t>((index >>  0) & 255);
-	uint32_t g = static_cast<uint32_t>((index >>  8) & 255);
-	uint32_t b = static_cast<uint32_t>((index >> 16) & 255);
+	uint8_t r = static_cast<uint8_t>((index >>  0) & 255);
+	uint8_t g = static_cast<uint8_t>((index >>  8) & 255);
+	uint8_t b = static_cast<uint8_t>((index >> 16) & 255);
 	return {r, g, b};
 }
 
@@ -90,10 +90,10 @@ std::array<uint32_t, 3> SelectionSystem3D::map_drawlist_idx_to_rgb(uint32_t inde
 /// </summary>
 /// <param name="rgba">fragment color of the entity id to be drawn in the FB</param>
 /// <returns>1 indexed index of the entity of the draw list</returns>
-uint32_t SelectionSystem3D::map_rgb_to_drawlist_idx(const std::array<uint32_t, 3>& rgba)
+unsigned int SelectionSystem3D::map_rgb_to_drawlist_idx(const std::array<uint8_t, 3>& rgb)
 {
-	uint32_t r = rgba[0] <<  0;
-	uint32_t g = rgba[1] <<  8;
-	uint32_t b = rgba[2] << 16;
+	unsigned int r = rgb[0] <<  0;
+	unsigned int g = rgb[1] <<  8;
+	unsigned int b = rgb[2] << 16;
 	return r + g + b;
 }
