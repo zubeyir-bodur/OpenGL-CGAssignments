@@ -14,6 +14,9 @@ FrameBuffer::FrameBuffer(int width, int height)
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI,
+		m_viewport_width, m_viewport_height, 0,
+		GL_RGB_INTEGER, GL_UNSIGNED_INT, nullptr));
 
 	// Create Depth render buffer for FB
 	__glCallVoid(glGenRenderbuffers(1, &m_fb_depth_buffer_id));
@@ -41,17 +44,18 @@ FrameBuffer::~FrameBuffer()
 void FrameBuffer::on_update(const std::function<void(void)>& draw_function)
 {
 	bind();
-	__glCallVoid(glViewport(0, 0, m_viewport_width, m_viewport_height));
+	if (m_viewport_height != 0 && m_viewport_width != 0)
+	{
+		__glCallVoid(glViewport(0, 0, m_viewport_width, m_viewport_height));
 
-	/*__glCallVoid(glEnable(GL_CULL_FACE));
-	__glCallVoid(glEnable(GL_DEPTH_TEST));*/
+		// Clear the currently bound frame buffer, which has a color buffer and a depth buffer attached
+		__glCallVoid(glClearColor(0.0, 0.0, 0.0, 0.0f));
+		__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-	// Clear the currently bound frame buffer, which has a color buffer and a depth buffer attached
-	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-	// Draw whatever needs to be drawn to this frame buffer
-	// Which is specified in the lambda
-	draw_function();
+		// Draw whatever needs to be drawn to this frame buffer
+		// Which is specified in the lambda
+		draw_function();
+	}
 }
 
 void FrameBuffer::on_screen_resize(int new_width, int new_height)
@@ -60,12 +64,12 @@ void FrameBuffer::on_screen_resize(int new_width, int new_height)
 	m_viewport_height = new_height;
 	__glCallVoid(glBindTexture(GL_TEXTURE_2D, m_fb_texture_id));
 
-	// Level = 0, Border = 0, RGBA8 - same as the Texture class
+	// Level = 0, Border = 0, RGB32 - 32 bit opaque color range
 	// But the data is mull
 	// This way, an empty texture will be reinitialized to our bound texture
-	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI,
 		m_viewport_width, m_viewport_height, 0,
-		GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+		GL_RGB_INTEGER, GL_UNSIGNED_INT, nullptr));
 
 	__glCallVoid(glBindRenderbuffer(GL_RENDERBUFFER, m_fb_depth_buffer_id));
 	__glCallVoid(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_viewport_width, m_viewport_height));
@@ -86,28 +90,36 @@ void FrameBuffer::unbind()
 	__glCallVoid(glBindRenderbuffer(GL_RENDERBUFFER, 0));
 }
 
-std::array<uint8_t, 4> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
+std::array<uint32_t, 3> FrameBuffer::read_pixel(int pixel_x, int pixel_y)
 {
 	bind();
-	uint8_t* data = nullptr;
-	__glCallVoid(glReadPixels(
-		pixel_x,			// x
-		pixel_y,			// y
-		1,					// width
-		1,					// height
-		GL_RGBA,			// format
-		GL_UNSIGNED_BYTE,	// type
-		(void*)data));		// typed array to hold result
-	return 
+	__glCallVoid(glReadBuffer(GL_COLOR_ATTACHMENT0));
+	uint32_t data[3] = { 0, 0, 0 };
+	if (m_viewport_height != 0 && m_viewport_width != 0)
+	{
+		__glCallVoid(glReadPixels(
+			pixel_x,			// x
+			pixel_y,			// y
+			1,					// width
+			1,					// height
+			GL_RGB_INTEGER,		// format
+			GL_UNSIGNED_INT,	// type
+			(void*)data));		// typed array to hold result
+		__glCallVoid(glReadBuffer(GL_NONE));
+	}
+	return
 	{
 		data[0],
 		data[1],
-		data[2],
-		data[3]
+		data[2]
 	};
 }
 
 std::array<int, 2> FrameBuffer::viewport_size()
 {
-	return { m_viewport_width, m_viewport_height };
+	return 
+	{ 
+		m_viewport_width,
+		m_viewport_height 
+	};
 }

@@ -9,13 +9,6 @@ private:
 	DrawList* m_draw_list = nullptr;
 	Shader* m_picker_shader = nullptr;
 	FrameBuffer* m_entity_picker_fb = nullptr;
-public:
-	SelectionSystem3D() = default;
-	SelectionSystem3D(DrawList* draw_list, int width, int height);
-	~SelectionSystem3D();
-
-	void on_update();
-	void on_screen_resize(int new_width, int new_height);
 
 	/// <summary>
 	/// Warning : A valid ShapeModel's index starts from 1
@@ -23,6 +16,15 @@ public:
 	/// </summary>
 	/// <param name="index"></param>
 	/// <returns></returns>
-	static std::array<uint8_t, 4> map_drawlist_idx_to_rgba(unsigned int index);
-	static unsigned int map_rgba_to_drawlist_idx(const std::array<uint8_t, 4>& rgba);
+	static std::array<uint32_t, 3> map_drawlist_idx_to_rgb(uint32_t index);
+	static uint32_t map_rgb_to_drawlist_idx(const std::array<uint32_t, 3>& rgba);
+	unsigned int get_entity_idx_at(int window_x, int window_y);
+public:
+	SelectionSystem3D() = default;
+	SelectionSystem3D(DrawList* draw_list, int width, int height);
+	~SelectionSystem3D();
+
+	uint32_t on_update(int window_x, int window_y);
+	void on_screen_resize(int new_width, int new_height);
+
 };

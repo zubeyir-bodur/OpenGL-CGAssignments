@@ -49,6 +49,12 @@ void Renderer::clear(const float* clear_color)
 	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 }
 
+void Renderer::clear()
+{
+	__glCallVoid(glClearColor(0.f, 0.f, 0.f, 0.f));
+	__glCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+}
+
 void Renderer::set_viewport(GLFWwindow* window)
 {
 	int display_w, display_h;

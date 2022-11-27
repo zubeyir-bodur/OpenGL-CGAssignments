@@ -21,6 +21,8 @@ public:
 		const Shader* shader_obj, int count = -1, const void* offset = nullptr);
 
 	static void clear(const float* clear_color);
+	static void clear();
+
 	static void set_viewport(GLFWwindow* window);
 
 };

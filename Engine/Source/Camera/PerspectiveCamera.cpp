@@ -121,21 +121,29 @@ void PerspectiveCamera::rotate(const float& dt_seconds, const double& offset_x, 
 	c.m_yaw += static_cast<float>(offset_x) * c.m_rotation_sensitivity/* * dt_seconds*/;
 
 	// FIX-ME-OPT: use proper quaternions to fix the gimball lock
-	if (c.m_pitch > 89.999f && c.m_pitch <= 90.0f)
+	//if (c.m_pitch > 89.999f && c.m_pitch <= 90.0f)
+	//{
+	//	c.m_pitch = 90.001f;
+	//}
+	//else if (c.m_pitch < -89.999f && c.m_pitch >= -90.0f)
+	//{
+	//	c.m_pitch = -90.001f;
+	//}
+	// 	if (c.m_pitch >= 360.0f)
+	// 	{
+	// 		c.m_pitch = 0.0f;
+	// 	}
+	// 	else if (c.m_pitch <= -360.0f)
+	// 	{
+	// 		c.m_pitch = 0.0f;
+	// 	}
+	if (c.m_pitch >= 89.0f)
 	{
-		c.m_pitch = 90.001f;
+		c.m_pitch = 89.0f;
 	}
-	else if (c.m_pitch < -89.999f && c.m_pitch >= -90.0f)
+	else if (c.m_pitch <= -89.0f)
 	{
-		c.m_pitch = -90.001f;
-	}
-	if (c.m_pitch >= 360.0f)
-	{
-		c.m_pitch = 0.0f;
-	}
-	else if (c.m_pitch <= -360.0f)
-	{
-		c.m_pitch = 0.0f;
+		c.m_pitch = -89.0f;
 	}
 	// Prevent yaw from accumulating
 	if (c.m_yaw > 360.f || c.m_yaw < -360.f)

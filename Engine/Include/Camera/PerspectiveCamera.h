@@ -23,9 +23,9 @@ private:
 	Angel::vec3 m_camera_right = {};	// Right direction relative to the camera rotation
 	Angel::vec3 m_camera_up;			// Up direction relative to the camera rotation
 
-	float m_pitch = 0.0f;
-	float m_yaw = -90.0f;
-	float m_roll = 0.0f;
+	float m_pitch = 0.0f; // the angle between world up and camera front projected to y axis
+	float m_yaw = -90.0f; // the complement of the angle between world right and camera front projected to z axis
+	float m_roll = 0.0f;  // the angle between world up and camera up
 
 	PerspectiveCamera() {}
 	~PerspectiveCamera() {}

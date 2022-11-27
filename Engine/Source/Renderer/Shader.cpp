@@ -34,6 +34,11 @@ void Shader::set_uniform_1i(const std::string& name, int value)
 	__glCallVoid(glUniform1i(uniform_location(name), value));
 }
 
+void Shader::set_uniform_3ui(const std::string& name, unsigned int v0, unsigned int v1, unsigned int v2)
+{
+	__glCallVoid(glUniform3ui(uniform_location(name), v0, v1, v2));
+}
+
 void Shader::set_uniform_4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
 	__glCallVoid(glUniform4f(uniform_location(name), v0, v1, v2, v3));

@@ -404,8 +404,7 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 {
 	if (!is_hidden())
 	{
-		Angel::mat4 model_mat = model_matrix();
-		Angel::mat4 MVP_matrix = (proj) * (view)*model_mat;
+		Angel::mat4 MVP_matrix = proj * view * model_matrix();
 		Shape::basic_shader()->bind();
 		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 

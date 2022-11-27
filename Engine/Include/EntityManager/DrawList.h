@@ -33,6 +33,9 @@ public:
 	void undo_rotate(ShapeModel* s, const Angel::vec3& rotate_amount);
 	void redo_rotate(ShapeModel* s, const Angel::vec3& rotate_amount);
 	
+	inline const Angel::mat4& projection_matrix() { return *m_proj_mat; }
+	inline const Angel::mat4& view_matrix() { return *m_view_mat; }
+
 	void shutdown();
 	void draw_all();
 };

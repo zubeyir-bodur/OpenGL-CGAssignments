@@ -12,6 +12,7 @@
 #include "EntityManager/UndoRedoStack.h"
 #include "EntityManager/Shape.h"
 #include "EntityManager/DSerializer.h"
+#include "EntityManager/SelectionSystem3D.h"
 
 #include "Camera/PerspectiveCamera.h"
 
@@ -26,11 +27,11 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <chrono>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
-#include <chrono>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -88,7 +89,6 @@ int main(int, char**)
 	init_imgui(window);
 	SetupImGuiStyle();
 	// ImGui state
-	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 	float init_shape_length = width / 8.0f;
 
 	Renderer renderer;
@@ -97,7 +97,7 @@ int main(int, char**)
 	__glCallVoid(glEnable(GL_BLEND));
 	__glCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-	renderer.clear(&clear_color.x);
+	renderer.clear();
 
 	// Enable Depth Test & Back-Face Culling
 	__glCallVoid(glEnable(GL_DEPTH_TEST));
@@ -108,12 +108,9 @@ int main(int, char**)
 
 	// Line width for GL_LINES
 	__glCallVoid(glLineWidth(1.0f));
-	Angel::vec4* color_a = new Angel::vec4{ 0.6f, 0.0f, 0.0f, 1.0f };
 
 	// Also initializes the basic shader
 	Shape::init_static_members();
-
-	// Texture Shader
 
 	// Texture Slot 0 - Tree Surface
 	Texture* tree_surface_texture_obj = new Texture("../../Data/textures/tree_surface_4k.png");
@@ -124,6 +121,14 @@ int main(int, char**)
 	leaf_texture_obj->bind(1);
 	tree_surface_texture_obj->unbind();
 	tree_surface_texture_obj->unbind();
+
+	// View matrix - camera
+	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
+	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
+	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
+
+	// Draw List
+	DrawList list(proj_matrix, view_matrix);
 	// Platform surface
 	Angel::vec3* platform_surface_pos, * platform_surface_rot, * platform_surface_scale;
 	platform_surface_pos = new Angel::vec3(0.0f, -300.0f, 0.0f);
@@ -131,6 +136,7 @@ int main(int, char**)
 	platform_surface_scale = new Angel::vec3((float)width, 20.0f, (float)height);
 	ShapeModel* platform_surface = new ShapeModel(ShapeModel::StaticShape::COL_CUBE,
 		platform_surface_pos, platform_surface_rot, platform_surface_scale);
+	list.add_shape(platform_surface);
 
 	// A textured cube
 	Angel::vec3* text_a_pos, * text_a_rot, * text_a_scale;
@@ -143,17 +149,11 @@ int main(int, char**)
 		text_a_scale,
 		0,
 		tree_surface_texture_obj);
-
-	// View matrix - camera
-	// PerspectiveCamera::init(Angel::vec3(0.0f, 0.0f, height/2.0f), 60.0f, (float)width / (float)height);
-	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f}, 60.0f, width, height);
-	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
-	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
-
-	// Draw List
-	DrawList list(proj_matrix, view_matrix);
-	list.add_shape(platform_surface);
 	list.add_shape(text_a);
+
+	// Selection System
+	SelectionSystem3D* selection_system = new SelectionSystem3D(&list, width, height);
+	int hovered_shape_index = -1;
 
 	bool is_dragging = false;
 	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
@@ -179,10 +179,14 @@ int main(int, char**)
 		glfwPollEvents();
 
 		// Update the viewport
+		int old_width = width, old_height = height;
 		glfwGetWindowSize(window, &width, &height);
 
 		// Update the window projection
-		PerspectiveCamera::on_viewport_resize(width, height);
+		if (old_width != width || old_height != height)
+		{
+			PerspectiveCamera::on_viewport_resize(width, height);
+		}
 
 		// Update cursor
 		bool input_on_imgui = ImGui::GetIO().WantCaptureMouse;
@@ -194,32 +198,26 @@ int main(int, char**)
 				// Continuous key presses with getKey commands
 				if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::dolly(10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::FORWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::dolly(-10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::BACKWARD);
 				}
 				if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::truck(-10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::LEFT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::truck(10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::RIGHT);
 				}
 				if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::pedestal(-10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::DOWN);
 				}
 				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 				{
-					/*PerspectiveCamera::pedestal(10.0f);*/
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::UP);
 				}
 			}
@@ -336,6 +334,9 @@ int main(int, char**)
 			{
 				if (!input_on_imgui)
 				{
+					PerspectiveCamera::rotate(delta_time_seconds,
+						window_input.m_mouse_x - old_mouse_pos.x,
+						window_input.m_mouse_y - old_mouse_pos.y);
 					// Scene event handling when the LMB is just pressed
 					is_dragging = true;
 				}
@@ -402,9 +403,33 @@ int main(int, char**)
 			ImGui::EndFrame();
 		}
 
+		// Update the selection system
+		if (old_width != width || old_height != height)
+		{
+			selection_system->on_screen_resize(width, height);
+		}
+		if (window_input.m_mouse_x != -1.0 && 
+			window_input.m_mouse_y != -1.0)
+		{
+			unsigned int idx = selection_system->on_update(
+				static_cast<int>(window_input.m_mouse_x),
+				static_cast<int>(window_input.m_mouse_y)
+			);
+			hovered_shape_index = idx - 1;
+			if (idx != 0)
+			{
+				std::cout << "Index : " << idx << std::endl;
+			}
+			if (idx > list.shape_models().size())
+			{
+				printf("\x1B[31mError : Hovered model index was %d\033[0m\n", idx);
+				hovered_shape_index = - 1;
+			}
+		}
+
 		// Clear background
 		Renderer::set_viewport(window);
-		Renderer::clear((float*)&clear_color);
+		Renderer::clear();
 
 		// Draw the draw list
 		list.draw_all();
@@ -420,6 +445,9 @@ int main(int, char**)
 
 	// Cleanup
 	Shape::destroy_static_members_allocated_on_the_heap();
+	delete selection_system; 
+	delete tree_surface_texture_obj;
+	delete leaf_texture_obj;
 
 	// Shutdown ImGui & GLFW
 	shutdown_imgui();
