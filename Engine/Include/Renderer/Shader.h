@@ -9,7 +9,7 @@ private:
 	std::string m_shader_path;
 	std::unordered_map<std::string, int> m_uniform_location_cache;
 public:
-	Shader() {}
+	Shader() : m_shader_id(0), m_shader_path(""), m_uniform_location_cache({}) {}
 	Shader(const char* path);
 	~Shader();
 

@@ -28,6 +28,7 @@
 #include <string>
 #include <filesystem>
 #include <chrono>
+#include <magic_enum/magic_enum.hpp>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -154,11 +155,17 @@ int main(int, char**)
 	// Selection System
 	SelectionSystem3D* selection_system = new SelectionSystem3D(&list, width, height);
 	int hovered_shape_index = -1;
+	int cur_selected_index = -1;
 
 	bool is_dragging = false;
-	ImGuiColorEditFlags f = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
+	ImVec2 editor_pane_size(width / 6.0f, (float)height);
+	ImGuiColorEditFlags color_edit_flags = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
-		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
+		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;		
+	ImGuiWindowFlags flags_editor_pane =
+		ImGuiWindowFlags_NoDecoration |
+		ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_NoResize;
 	
 	// Delta time recording
 	auto last_frame_time = 0.0;
@@ -186,6 +193,7 @@ int main(int, char**)
 		if (old_width != width || old_height != height)
 		{
 			PerspectiveCamera::on_viewport_resize(width, height);
+			editor_pane_size = { width / 6.0f, (float)height };
 		}
 
 		// Update cursor
@@ -225,6 +233,18 @@ int main(int, char**)
 
 		// LMB States
 		{
+			if (left_mouse_previous_state == Input::ButtonState::Released
+				&& window_input.m_lmb_state == Input::ButtonState::Released)
+			{
+				window_input.m_mouse_press_y = -1.0f;
+				window_input.m_mouse_press_x = -1.0f;
+				window_input.m_mouse_release_y = -1.0f;
+				window_input.m_mouse_release_x = -1.0f;
+				window_input.m_lmb_state = Input::ButtonState::Idle;
+				std::cout << "Bug-fix occurred" << std::endl;
+				is_dragging = false;
+			}
+
 			if (left_mouse_previous_state == Input::ButtonState::BeingPressed
 			&& window_input.m_lmb_state == Input::ButtonState::Released)
 			{
@@ -239,14 +259,16 @@ int main(int, char**)
 							std::cout << "THIS IS A CLICK" << std::endl;
 
 							// Do sth. with the click - cursor_released vector is the world coordinate of the click
-
+							cur_selected_index = hovered_shape_index;
 						}
 						else
 						{
 							std::cout << "THIS IS A DRAG" << std::endl;
-
+							if (cur_selected_index == -1)
+							{
+								cur_selected_index = hovered_shape_index;
+							}
 							// Do sth. with drag vector here
-
 						}
 					}
 				}
@@ -366,42 +388,65 @@ int main(int, char**)
 		// ImGui Components 
 		new_imgui_frame();
 		{
-
-			ImGui::Begin("Hello, world!");
+			ImGui::SetNextWindowPos(ImVec2(width - editor_pane_size.x, 0), ImGuiCond_::ImGuiCond_Always);
+			ImGui::SetNextWindowSize(editor_pane_size, ImGuiCond_::ImGuiCond_Always);
+			if (ImGui::Begin("Editor Pane", nullptr, flags_editor_pane))
 			{
-				ImGui::Text("This is some useful text.");
+				if (ImGui::BeginTabBar("##tabs"))
+				{
+					if (ImGui::BeginTabItem("Selection"))
+					{
+						if (cur_selected_index > 0)
+						{
+							ShapeModel* cur_selected = list.shape_models().at(cur_selected_index);
+							ImGui::Text("Selected Entity Type : %s", magic_enum::enum_name<ShapeModel::StaticShape>(cur_selected->shape_def()).data());
 
-				ImGui::NewLine();
+							ImGui::NewLine();
 
-				ImGui::SliderFloat("Crate-XPos", &text_a->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-YPos", &text_a->position().y, -2000.0f, 2000.0f, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-zPos", &text_a->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
-				ImGui::SliderFloat("Crate-xrot", &text_a->rotation().x, -180.0f, 180.0f,  "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-yrot", &text_a->rotation().y, -180.0f, 180.0f,  "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-zrot", &text_a->rotation().z, -180.0f, 180.0f,  "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-xscale", &text_a->scale().x, 0.0f, 1000, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-yscale", &text_a->scale().y, 0.0f, 1000, "%.3f", 1.0f);
-				ImGui::SliderFloat("Crate-zscale", &text_a->scale().z, 0.0f, 1000, "%.3f", 1.0f);
+							ImGui::SliderFloat("X Position", &cur_selected->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
+							ImGui::SliderFloat("Y Position", &cur_selected->position().y, -2000.0f, 2000.0f, "%.1f", 1.0f);
+							ImGui::SliderFloat("Z Position", &cur_selected->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
+							ImGui::SliderFloat("X Rotation", &cur_selected->rotation().x, -180.0f, 180.0f, "%.3f", 1.0f);
+							ImGui::SliderFloat("Y Rotation", &cur_selected->rotation().y, -180.0f, 180.0f, "%.3f", 1.0f);
+							ImGui::SliderFloat("Z Rotation", &cur_selected->rotation().z, -180.0f, 180.0f, "%.3f", 1.0f);
+						}
+						else if (cur_selected_index == 0)
+						{
+							ImGui::Text("Platform surface was selected...");
+						}
+						else
+						{
+							ImGui::Text("No selection at the moment...");
+						}
+						
 
-				ImGui::NewLine();
-				ImGui::Text("Camera-Pos.x: %f", PerspectiveCamera::position().x);
-				ImGui::Text("Camera-Pos.y: %f", PerspectiveCamera::position().y);
-				ImGui::Text("Camera-Pos.z: %f", PerspectiveCamera::position().z);
-				ImGui::Text("Pitch: %f", PerspectiveCamera::pitch());
-				ImGui::Text("Yaw: %f", PerspectiveCamera::yaw());
-				ImGui::Text("Roll: %f", PerspectiveCamera::roll());
+						ImGui::NewLine();
+						ImGui::Text("Hovered Entity Index : %d", hovered_shape_index);
+						ImGui::Text("Selected Entity Index : %d", cur_selected_index);
 
-				ImGui::NewLine();
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-					1000.0f / ImGui::GetIO().Framerate,
-					ImGui::GetIO().Framerate);
 
-				// Get cursor model coordinates
-				ImGui::End();
+						ImGui::NewLine();
+						ImGui::Text("Camera-Pos.x: %f", PerspectiveCamera::position().x);
+						ImGui::Text("Camera-Pos.y: %f", PerspectiveCamera::position().y);
+						ImGui::Text("Camera-Pos.z: %f", PerspectiveCamera::position().z);
+						ImGui::Text("Pitch: %f", PerspectiveCamera::pitch());
+						ImGui::Text("Yaw: %f", PerspectiveCamera::yaw());
+						ImGui::Text("Roll: %f", PerspectiveCamera::roll());
+
+						ImGui::NewLine();
+						ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+							1000.0f / ImGui::GetIO().Framerate,
+							ImGui::GetIO().Framerate);
+
+					}
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
 			}
+			ImGui::End();
 
-			ImGui::EndFrame();
 		}
+		ImGui::EndFrame();
 
 		// Update the selection system
 		if (old_width != width || old_height != height)
@@ -416,10 +461,6 @@ int main(int, char**)
 				static_cast<int>(window_input.m_mouse_y)
 			);
 			hovered_shape_index = idx - 1;
-			if (idx != 0)
-			{
-				std::cout << "Index : " << idx << std::endl;
-			}
 			if (idx > list.shape_models().size())
 			{
 				printf("\x1B[31mError : Hovered model index was %d\033[0m\n", idx);

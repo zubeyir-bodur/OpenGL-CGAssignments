@@ -11,9 +11,9 @@ private:
 
 	float m_movement_speed = 750.0f;
 	float m_rotation_sensitivity = 0.1f;
-	float m_fovy;
-	int m_viewport_width;
-	int m_viewport_height;
+	float m_fovy = 60.0f;
+	int m_viewport_width = 640;
+	int m_viewport_height = 480;
 	float m_z_near = 0.1f;
 	float m_z_far = 1e+38f;
 

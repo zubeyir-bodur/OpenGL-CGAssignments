@@ -90,7 +90,12 @@ private:
 	static Shape* s_colored_unit_cube;
 	static Shape* s_textured_unit_cube;
 public:
-	Shape() {}
+	Shape() : 
+		m_index_buffer(nullptr) , 
+		m_vertex_array(nullptr), 
+		m_vertex_buffer(nullptr),
+		m_indices(nullptr),
+		m_no_transform_vertex_positions(nullptr) {}
 	// Convex polygon constructor
 	Shape(const std::vector<Angel::vec3>& model_coords_center_translated_to_origin);
 	~Shape();

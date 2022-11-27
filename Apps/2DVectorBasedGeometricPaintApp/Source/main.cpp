@@ -198,9 +198,9 @@ int main(int, char**)
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;
 	Angel::vec3 camera_pos_released;
-	float camera_zoom_released;
+	float camera_zoom_released = 100.0f;
 	Angel::vec3 camera_pos_pressed;
-	float camera_zoom_pressed;
+	float camera_zoom_pressed = 100.0f;
 	auto map_from_global_any = [](double x, double y, Angel::vec3 c_pos, float c_z) -> Angel::vec3
 	{
 		return (c_pos + Angel::vec3((float)x, (float)y, 0.0f)) * (100.0f / c_z);

@@ -8,7 +8,12 @@ private:
 	float m_zoom_ratio;
 	Angel::mat4 m_view_matrix;
 	bool m_should_update = false;
-	OrthogtraphicCamera() {};
+	OrthogtraphicCamera() : 
+		m_zoom_ratio(100),
+		m_camera_pos({}),
+		m_should_update(false),
+		m_view_matrix(Angel::identity())
+	{};
 	~OrthogtraphicCamera() {};
 	OrthogtraphicCamera(const OrthogtraphicCamera&) = delete;
 public:
