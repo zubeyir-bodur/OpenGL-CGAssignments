@@ -198,6 +198,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Camera\OrthogtraphicCamera.cpp" />
+    <ClCompile Include="Source\EntityManager\ArticulatedModel.cpp" />
+    <ClCompile Include="Source\EntityManager\ArticulatedModelNode.cpp" />
     <ClCompile Include="Source\EntityManager\DrawList.cpp" />
     <ClCompile Include="Source\EntityManager\DSerializer.cpp" />
     <ClCompile Include="Source\Core\ErrorManager.cpp" />
@@ -218,6 +220,8 @@
     <ClCompile Include="Source\Renderer\VertexBufferLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\EntityManager\ArticulatedModel.h" />
+    <ClInclude Include="Include\EntityManager\ArticulatedModelNode.h" />
     <ClInclude Include="Include\Renderer\FrameBuffer.h" />
     <ClInclude Include="Include\Camera\OrthogtraphicCamera.h" />
     <ClInclude Include="Include\EntityManager\DrawList.h" />

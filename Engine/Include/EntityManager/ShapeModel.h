@@ -55,6 +55,8 @@ public:
 	inline Angel::vec3& scale() { return *m_scale; }
 	inline Angel::vec4& color() { return *m_color; }
 	inline bool& is_hidden() { return m_is_hidden; }
+	inline Texture* texture() { return m_texture; }
+	inline int texture_slot() { return m_texture_slot; }
 	inline const VertexArray* vertex_array() { return m_shape_def->vertex_array(); }
 	inline const IndexBuffer* index_buffer() { return m_shape_def->index_buffer(); }
 	inline void select() { m_is_selected = true; }

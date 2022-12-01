@@ -217,10 +217,22 @@ unsigned int ShapeModel::true_num_vertices()
 std::vector<Angel::vec3> ShapeModel::model_coords()
 {
 	std::vector<float> raw_vertices = m_shape_def->vertices();
+
+	int stride = NUM_COORDINATES;
+	if (m_e_def == StaticShape::COL_CUBE)
+	{
+		stride += NUM_RGBA;
+	}
+	else if (m_e_def == StaticShape::TEX_CUBE)
+	{
+		stride += NUM_TEXTURE_COORDINATES;
+	}
+
+
 	if (m_e_def == StaticShape::NONE)
 	{
 		// Exclude the first vertex, which is the precomputed mid point
-		raw_vertices.erase(raw_vertices.begin(), raw_vertices.begin() + NUM_COORDINATES);
+		raw_vertices.erase(raw_vertices.begin(), raw_vertices.begin() + stride);
 	}
 	Angel::mat4 mat_model = model_matrix();
 	std::vector<Angel::vec3> out;
@@ -234,9 +246,9 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 	}
 	for (unsigned int i = 0; i < out.capacity(); i++)
 	{
-		float x = raw_vertices[i * NUM_COORDINATES];
-		float y = raw_vertices[i * NUM_COORDINATES + 1];
-		float z = raw_vertices[i * NUM_COORDINATES + 2];
+		float x = raw_vertices[i * stride];
+		float y = raw_vertices[i * stride + 1];
+		float z = raw_vertices[i * stride + 2];
 		Angel::vec4 tmp = mat_model * Angel::vec4(x, y, z, 1.0f);
 		out.emplace_back(tmp.x, tmp.y, tmp.z);
 	}
@@ -245,7 +257,16 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 
 Angel::mat4 ShapeModel::model_matrix()
 {
-	if (m_e_def == StaticShape::COL_CUBE
+	if (m_position == nullptr 
+		&& m_rotation == nullptr
+		&& m_scale != nullptr
+		&& (m_e_def == StaticShape::COL_CUBE
+			|| m_e_def == StaticShape::TEX_CUBE)
+		) // fallback code for articulated models
+	{
+		return Angel::Scale(*m_scale) * Angel::Translate(-center_raw_bottom());
+	}
+	else if (m_e_def == StaticShape::COL_CUBE
 		|| m_e_def == StaticShape::TEX_CUBE)
 	{
 		return ((Angel::Translate((*m_position))
@@ -318,7 +339,6 @@ Angel::vec3 ShapeModel::center_raw_bottom()
 	for (unsigned int i = 0; i < vert.size(); i += stride)
 	{
 		center.x += vert[i];
-		/*center.y += vert[i + 1];*/ // TODO Generalize to choose the bottom surface only
 		center.z += vert[i + 2];
 	}
 	float y_tmp = center.y;
@@ -425,7 +445,7 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 		}
 		else
 		{
-			m_texture->bind();
+			m_texture->bind(m_texture_slot);
 			Shape::textured_shader()->bind();
 			Shape::textured_shader()->set_uniform_1i("u_texture", m_texture_slot);
 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);

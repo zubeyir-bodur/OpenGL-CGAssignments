@@ -143,7 +143,7 @@ int main(int, char**)
 	Angel::vec3* text_a_pos, * text_a_rot, * text_a_scale;
 	text_a_pos = new Angel::vec3(0.0f, -280.0f, 0.0f);
 	text_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	text_a_scale = new Angel::vec3(75.0f, 500.0f, 75.0f);
+	text_a_scale = new Angel::vec3(15.0f, 500.0f, 15.0f);
 	ShapeModel* text_a = new ShapeModel(ShapeModel::StaticShape::TEX_CUBE,
 		text_a_pos,
 		text_a_rot,

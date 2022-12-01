@@ -58,6 +58,12 @@
     <ClCompile Include="Source\EntityManager\SelectionSystem3D.cpp">
       <Filter>Source\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="Source\EntityManager\ArticulatedModel.cpp">
+      <Filter>Source\EntityManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EntityManager\ArticulatedModelNode.cpp">
+      <Filter>Source\EntityManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Renderer\VertexBufferLayout.h">
@@ -119,6 +125,12 @@
     </ClInclude>
     <ClInclude Include="Include\Renderer\FrameBuffer.h">
       <Filter>Include\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\EntityManager\ArticulatedModel.h">
+      <Filter>Include\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\EntityManager\ArticulatedModelNode.h">
+      <Filter>Include\EntityManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
