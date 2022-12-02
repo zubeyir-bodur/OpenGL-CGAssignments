@@ -146,6 +146,9 @@
     <None Include="Shaders\pickable_triangle.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\textured_shaded_triangle.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Include">

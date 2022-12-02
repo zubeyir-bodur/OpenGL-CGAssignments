@@ -13,6 +13,7 @@
 #include "EntityManager/Shape.h"
 #include "EntityManager/DSerializer.h"
 #include "EntityManager/SelectionSystem3D.h"
+#include "EntityManager/ArticulatedModel.h"
 
 #include "Camera/PerspectiveCamera.h"
 
@@ -151,6 +152,11 @@ int main(int, char**)
 		0,
 		tree_surface_texture_obj);
 	list.add_shape(text_a);
+
+	// Articulated Tree Model
+	auto hierarchical_model = new ArticulatedModel(Angel::vec3(300.0f, -280.0f, 150.0f), 
+		tree_surface_texture_obj, 0,
+		proj_matrix, view_matrix);
 
 	// Selection System
 	SelectionSystem3D* selection_system = new SelectionSystem3D(&list, width, height);
@@ -475,6 +481,9 @@ int main(int, char**)
 		// Draw the draw list
 		list.draw_all();
 
+		// Draw the model
+		hierarchical_model->draw_model();
+
 		// Always draw ImGui on top of the app
 		render_imgui();
 
@@ -489,6 +498,7 @@ int main(int, char**)
 	delete selection_system; 
 	delete tree_surface_texture_obj;
 	delete leaf_texture_obj;
+	delete hierarchical_model;
 
 	// Shutdown ImGui & GLFW
 	shutdown_imgui();

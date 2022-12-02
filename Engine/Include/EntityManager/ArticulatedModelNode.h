@@ -42,8 +42,8 @@ public:
 	Angel::mat4 translation_minus_p();
 	Angel::mat4 translation_q();
 
-	void insert_child(
-		const  float parent_joint_height_normalized,
+	ArticulatedModelNode* insert_child(
+		const float parent_joint_height_normalized,
 		const Angel::vec3& scale, 
 		const Angel::vec3& rotation,
 		Texture* texture,

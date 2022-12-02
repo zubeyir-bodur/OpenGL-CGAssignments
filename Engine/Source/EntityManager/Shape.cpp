@@ -284,37 +284,37 @@ void Shape::init_static_members()
 
 	tex_cube_positions->insert(tex_cube_positions->begin(), {
 		//  X			Y			Z			 U	  V
-		// Top
+		// Top -> N_top = (0, 1, 0)
 		-unit_half,	unit_half,	-unit_half,		0.0f, 0.0f, 
 		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f,
 		unit_half,	unit_half,	unit_half,		1.0f, 1.0f, 
 		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f, 
 
-		// Left
+		// Left -> N_left = (-1, 0, 0)
 		-unit_half,	unit_half,	unit_half,		0.0f, 0.0f,
 		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,
 		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,
 		-unit_half,	unit_half,	-unit_half,		0.0f, 1.0f,
 														  
-		// Right										  
+		// Right -> N_right = (1, 0, 0)									  
 		unit_half,	unit_half,	unit_half,		1.0f, 1.0f,
 		unit_half,	-unit_half,	unit_half,		0.0f, 1.0f,
 		unit_half,	-unit_half,	-unit_half,		0.0f, 0.0f,
 		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f,
 
-		// Front
+		// Front -> N_front = (0, 0, 1)	
 		unit_half,	unit_half,	unit_half,		1.0f, 1.0f, 
 		unit_half,	-unit_half,	unit_half,		1.0f, 0.0f, 
 		-unit_half,	-unit_half,	unit_half,		0.0f, 0.0f, 
 		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f, 
 
-		// Back
+		// Back -> N_back = (0, 0, -1)	
 		unit_half,	unit_half,	-unit_half,		0.0f, 0.0f, 
 		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f, 
 		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f, 
 		-unit_half,	unit_half,	-unit_half,		1.0f, 0.0f, 
 
-		// Bottom
+		// Bottom -> N_bottom = (0, -1, 0)	
 		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,
 		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,
 		unit_half,	-unit_half,	unit_half,		0.0f, 0.0f,

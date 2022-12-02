@@ -58,7 +58,7 @@ Angel::mat4 ArticulatedModelNode::translation_q()
 /// <param name="rotation"></param>
 /// <param name="texture"></param>
 /// <param name="texture_slot"></param>
-void ArticulatedModelNode::insert_child(
+ArticulatedModelNode* ArticulatedModelNode::insert_child(
 	const float parent_joint_height_normalized,
 	const Angel::vec3& scale, 
 	const Angel::vec3& rotation, 
@@ -74,11 +74,12 @@ void ArticulatedModelNode::insert_child(
 		entity_id);
 
 	ASSERT(parent_joint_height_normalized >= 0.0f && parent_joint_height_normalized <= 1.0f);
-	child->m_parent_joint_point = parent_joint_height_normalized * this->joint_point()
-		+ (1 - parent_joint_height_normalized) * (this->joint_point() + this->m_cube->scale().y);
+	child->m_parent_joint_point = (1 - parent_joint_height_normalized) * this->joint_point()
+		+ (parent_joint_height_normalized) * (this->joint_point() + Angel::vec3(0, this->m_cube->scale().y, 0));
 
 	child->m_parent = this;
 	this->m_children_nodes.push_back(child);
+	return child;
 }
 
 /// <summary>
@@ -104,7 +105,8 @@ void ArticulatedModelNode::draw_node(
 	const Angel::mat4& view,
 	const Angel::vec3& model_position)
 {
-	Angel::mat4 MVP_matrix = proj * view * Angel::Translate(model_position) * model_matrix();
+	Angel::mat4 model_mat = Angel::Translate(model_position) * model_matrix() * m_cube->model_matrix();
+	Angel::mat4 MVP_matrix = proj * view * model_mat;
 	m_cube->texture()->bind(m_cube->texture_slot());
 	Shape::textured_shader()->bind();
 	Shape::textured_shader()->set_uniform_1i("u_texture", m_cube->texture_slot());
