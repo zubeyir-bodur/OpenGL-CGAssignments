@@ -14,7 +14,7 @@ ArticulatedModel::ArticulatedModel(
 	m_num_nodes = 0;
 	m_proj = const_cast<Angel::mat4*>(&proj);
 	m_view = const_cast<Angel::mat4*>(&view);
-	init_random_tree();
+	init_static_tree();
 }
 
 ArticulatedModel::~ArticulatedModel()
@@ -22,40 +22,57 @@ ArticulatedModel::~ArticulatedModel()
 	destroy_tree();
 }
 
+void ArticulatedModel::init_random_tree(int branch_depth, int min_children_per_trunk, int max_children_per_trunk, const Angel::vec3& initial_trunk_size)
+{
+
+}
+
 void ArticulatedModel::draw_model()
 {
 	Angel::mat4& proj = *m_proj;
 	Angel::mat4& view = *m_view;
-	m_torso->traverse_all([&proj, &view, tr_pos=m_position](ArticulatedModelNode* node) -> void
+	if (m_model_root)
 	{
-		node->draw_node(proj, view, tr_pos);
+		m_model_root->traverse_all([&proj, &view, tr_pos = m_position](ArticulatedModelNode* node) -> void
+		{
+			if (node)
+			{
+				node->draw_node(proj, view, tr_pos);
+			}
 
-	});
+		});
+	}
 }
 
 void ArticulatedModel::traverse_all_nodes(const std::function<void(ArticulatedModelNode*)>& function)
 {
-	m_torso->traverse_all(function);
+	if (m_model_root)
+	{
+		m_model_root->traverse_all(function);
+	}
 }
 
 ArticulatedModelNode* ArticulatedModel::get_node(unsigned int entity_id)
 {
 	ArticulatedModelNode* selected_node = nullptr;
-	m_torso->traverse_all([&selected_node, entity_id](ArticulatedModelNode* node) -> void
+	if (m_model_root)
 	{
-		if (node->entity_id() == entity_id)
+		m_model_root->traverse_all([&selected_node, entity_id](ArticulatedModelNode* node) -> void
 		{
-			selected_node = node;
-			return;
-		}
-	});
+			if (node && node->entity_id() == entity_id)
+			{
+				selected_node = node;
+				return;
+			}
+		});
+	}
 	return selected_node;
 }
 
 std::vector<Angel::vec3*> ArticulatedModel::collect_rotations()
 {
 	std::vector<Angel::vec3*> rotations;
-	m_torso->traverse_all([&rotations](ArticulatedModelNode* node) -> void
+	m_model_root->traverse_all([&rotations](ArticulatedModelNode* node) -> void
 	{
 		rotations.push_back(&node->rotation_vec());
 	});
@@ -77,21 +94,21 @@ std::vector<Angel::vec3*> ArticulatedModel::collect_rotations()
 ///	m_torso->insert_child(..., entity_id=MAX_ENTITY_ID - m_num_nodes + 1);
 ///	...
 /// </summary>
-void ArticulatedModel::init_random_tree()
+void ArticulatedModel::init_static_tree()
 {
 	const unsigned int MAX_ENTITY_ID = max_entity_id();
 	m_num_nodes++;
-	m_torso = new ArticulatedModelNode(
+	m_model_root = new ArticulatedModelNode(
 		{ 20.0f, 300.0f, 20.0f },
 		{0.0f, 0.0f, 0.0f },
 		m_texture, m_texture_slot,
 		MAX_ENTITY_ID - m_num_nodes + 1);
 
 	m_num_nodes++;
-	auto leaf_1 = m_torso->insert_child(
+	auto leaf_1 = m_model_root->insert_child(
 		1.0f, 
 		{ 15.0f, 100.0f, 15.0f },
-		{ -15.0f, -15.0f, -55.0f },
+		{ -15.0f, -20.0f, -55.0f },
 		m_texture, 
 		m_texture_slot, 
 		MAX_ENTITY_ID - m_num_nodes + 1);
@@ -100,31 +117,32 @@ void ArticulatedModel::init_random_tree()
 	auto leaf_2 = leaf_1->insert_child(
 		0.5f, 
 		{ 8.0f, 50.0f, 8.0f },
-		{ -16.0f, -120.0f, -66.0f },
+		{ 30.0f, 0.0f, 30.0f },
 		m_texture, 
 		m_texture_slot, 
 		MAX_ENTITY_ID - m_num_nodes + 1);
 
 	m_num_nodes++;
-	auto leaf_3 = m_torso->insert_child(
+	auto leaf_3 = m_model_root->insert_child(
 		1.0f, 
 		{ 15.0f, 100.0f, 15.0f },
-		{ 45.0f, -20.0f, 55.0f },
+		{ -15.0f, 20.0f, 55.0f },
 		m_texture, m_texture_slot, MAX_ENTITY_ID - m_num_nodes + 1);
 
 	m_num_nodes++;
 	auto leaf_4 = leaf_3->insert_child(
 		0.5f, 
 		{ 8.0f, 50.0f, 8.0f },
-		{ -140.0f, -65.0f, -90.0f },
+		{ -13.0f, 0.0f, -45.0f},
 		m_texture, m_texture_slot, MAX_ENTITY_ID - m_num_nodes + 1);
 }
 
 void ArticulatedModel::destroy_tree()
 {
-	if (m_torso != nullptr)
+	if (m_model_root != nullptr)
 	{
-		m_torso->destroy_children();
-		delete m_torso;
+		m_model_root->destroy_children();
+		delete m_model_root;
+		m_model_root = nullptr;
 	}
 }

@@ -58,15 +58,18 @@ unsigned int SelectionSystem3D::on_update(int window_x, int window_y)
 			const Angel::vec3& tr_position = m_hierarchical_model->position();
 			m_hierarchical_model->traverse_all_nodes([picker_shader = m_picker_shader, &proj, &view, tr_pos = tr_position](ArticulatedModelNode* node) -> void
 			{
-				std::array<uint8_t, 3> u_shape_model_id = map_drawlist_idx_to_rgb(node->entity_id());
-				picker_shader->set_uniform_3ui("u_shape_model_id",
-					u_shape_model_id[0],
-					u_shape_model_id[1],
-					u_shape_model_id[2]);
-				Angel::mat4 model_mat = Angel::Translate(tr_pos) * node->model_matrix() * node->cube_model_matrix();
-				Angel::mat4 MVP_matrix = proj * view * model_mat;
-				picker_shader->set_uniform_mat4f("u_MVP", MVP_matrix);
-				Renderer::draw_triangles(node->cube_vao(), node->cube_ibo(), picker_shader);
+				if (node)
+				{
+					std::array<uint8_t, 3> u_shape_model_id = map_drawlist_idx_to_rgb(node->entity_id());
+					picker_shader->set_uniform_3ui("u_shape_model_id",
+						u_shape_model_id[0],
+						u_shape_model_id[1],
+						u_shape_model_id[2]);
+					Angel::mat4 model_mat = Angel::Translate(tr_pos) * node->model_matrix() * node->cube_model_matrix();
+					Angel::mat4 MVP_matrix = proj * view * model_mat;
+					picker_shader->set_uniform_mat4f("u_MVP", MVP_matrix);
+					Renderer::draw_triangles(node->cube_vao(), node->cube_ibo(), picker_shader);
+				}
 			});
 			
 		});

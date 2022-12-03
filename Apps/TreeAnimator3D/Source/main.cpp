@@ -151,7 +151,7 @@ int main(int, char**)
 	int cur_selected_index = -1;
 
 	bool is_dragging = false;
-	ImVec2 editor_pane_size(width / 6.0f, (float)height);
+	ImVec2 editor_pane_size(width / 5.0f, (float)height);
 	ImGuiColorEditFlags color_edit_flags = ImGuiColorEditFlags_::ImGuiColorEditFlags_PickerHueWheel
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_NoInputs
 		| ImGuiColorEditFlags_::ImGuiColorEditFlags_DisplayHSV;		
@@ -162,6 +162,11 @@ int main(int, char**)
 	
 	// Delta time recording
 	auto last_frame_time = 0.0;
+
+	int branch_depth = 4;
+	int max_children_per_branch = 7;
+	int min_children_per_branch = 2;
+	Angel::vec3 initial_trunk_size = { 30.0f, 300.0f, 30.0f };
 
 	// Rendering & Event Loop
 	while (!glfwWindowShouldClose(window))
@@ -186,7 +191,7 @@ int main(int, char**)
 		if (old_width != width || old_height != height)
 		{
 			PerspectiveCamera::on_viewport_resize(width, height);
-			editor_pane_size = { width / 6.0f, (float)height };
+			editor_pane_size = { width / 5.0f, (float)height };
 		}
 
 		// Update cursor
@@ -261,11 +266,13 @@ int main(int, char**)
 						else
 						{
 							std::cout << "THIS IS A DRAG" << std::endl;
-							if (cur_selected_index == -1)
+							// deselect previous
+							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
+							if (node != nullptr)
 							{
-								cur_selected_index = hovered_shape_index;
+								node->set_selected(false);
 							}
-							// Do sth. with drag vector here
+							cur_selected_index = hovered_shape_index;
 						}
 						if (cur_selected_index >= hierarchical_model->min_entity_id()
 							&& cur_selected_index <= ArticulatedModel::max_entity_id())
@@ -400,6 +407,58 @@ int main(int, char**)
 			{
 				if (ImGui::BeginTabBar("##tabs"))
 				{
+					if (ImGui::BeginTabItem("Tree Generation"))
+					{
+						ImGui::InputInt("Branch depth", &branch_depth);
+						if (branch_depth < 2)
+						{
+							branch_depth = 2;
+						}
+						bool b1 = ImGui::InputInt("Min branches/trunk", &min_children_per_branch);
+						if (min_children_per_branch < 2)
+						{
+							min_children_per_branch = 2;
+						}
+						bool b2 = ImGui::InputInt("Max branches/trunk", &max_children_per_branch);
+						if (max_children_per_branch < 2)
+						{
+							max_children_per_branch = 2;
+						}
+						if (max_children_per_branch < min_children_per_branch)
+						{
+							if (b1)
+							{
+								max_children_per_branch = min_children_per_branch;
+							}
+							if (b2)
+							{
+								min_children_per_branch = max_children_per_branch;
+							}
+						}
+						ImGui::InputFloat3("Initial trunk size", &initial_trunk_size.x);
+						if (initial_trunk_size.x < 10.0f)
+						{
+							initial_trunk_size.x = 10.0f;
+						}
+						if (initial_trunk_size.y < 50.0f)
+						{
+							initial_trunk_size.y = 50.0f;
+						}
+						if (initial_trunk_size.z < 10.0f)
+						{
+							initial_trunk_size.z = 10.0f;
+						}
+						if (ImGui::Button("Restart & Generate"))
+						{
+							hierarchical_model->destroy_tree();
+							hierarchical_model->init_random_tree(
+								branch_depth,
+								min_children_per_branch,
+								max_children_per_branch,
+								initial_trunk_size);
+						}
+						ImGui::EndTabItem();
+					}
 					if (ImGui::BeginTabItem("Selection"))
 					{
 						if (cur_selected_index > 0 && cur_selected_index < list.shape_models().size())
@@ -462,13 +521,12 @@ int main(int, char**)
 						ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 							1000.0f / ImGui::GetIO().Framerate,
 							ImGui::GetIO().Framerate);
-
+						ImGui::EndTabItem();
 					}
-					ImGui::EndTabItem();
+					ImGui::EndTabBar();
 				}
-				ImGui::EndTabBar();
+				ImGui::End();
 			}
-			ImGui::End();
 
 		}
 		ImGui::EndFrame();

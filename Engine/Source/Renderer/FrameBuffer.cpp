@@ -64,7 +64,7 @@ void FrameBuffer::on_screen_resize(int new_width, int new_height)
 	m_viewport_height = new_height;
 	__glCallVoid(glBindTexture(GL_TEXTURE_2D, m_fb_texture_id));
 
-	// Level = 0, Border = 0, RGB32 - 32 bit opaque color range
+	// Level = 0, Border = 0, RGB8 - 8 bit opaque color range
 	// But the data is mull
 	// This way, an empty texture will be reinitialized to our bound texture
 	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8UI,
