@@ -130,13 +130,15 @@ void Shape::init_static_members()
 	// Basic shader
 	s_basic_shader = new Shader("../../Engine/Shaders/triangle.glsl");
 
-	// Layout for textured shader
+	// Layout for textured and smooth shaded shader
 	s_textured_layout = new VertexBufferLayout();
 	s_textured_layout->push_back_elements<float>(NUM_COORDINATES);
 	s_textured_layout->push_back_elements<float>(NUM_TEXTURE_COORDINATES);
+	// Vertex normals for optional lighting - complete opaque object will still display the albedo color
+	s_textured_layout->push_back_elements<float>(NUM_COORDINATES); 
 
 	// Textured Shader
-	s_textured_shader = new Shader("../../Engine/Shaders/textured_triangle.glsl");
+	s_textured_shader = new Shader("../../Engine/Shaders/textured_shaded_triangle.glsl");
 
 	// Colored Shader
 	s_colored_shader = new Shader("../../Engine/Shaders/colored_triangle.glsl");
@@ -280,45 +282,45 @@ void Shape::init_static_members()
 
 	// Create VAO, VBO & IBO for a textured cube
 	auto* tex_cube_positions = new std::vector<float>;
-	tex_cube_positions->reserve(num_cube_vertices* (NUM_COORDINATES + NUM_TEXTURE_COORDINATES));
+	tex_cube_positions->reserve(num_cube_vertices* (NUM_COORDINATES + NUM_TEXTURE_COORDINATES + NUM_COORDINATES));
 
 	tex_cube_positions->insert(tex_cube_positions->begin(), {
-		//  X			Y			Z			 U	  V
-		// Top -> N_top = (0, 1, 0)
-		-unit_half,	unit_half,	-unit_half,		0.0f, 0.0f, 
-		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f,
-		unit_half,	unit_half,	unit_half,		1.0f, 1.0f, 
-		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f, 
+		//  X			Y			Z			 U	  V			X_norm	Y_norm	Z_norm
+		// Top 
+		-unit_half,	unit_half,	-unit_half,		0.0f, 0.0f,		0.0f,	1.0f,	0.0f,
+		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f,		0.0f,	1.0f,	0.0f,
+		unit_half,	unit_half,	unit_half,		1.0f, 1.0f,		0.0f,	1.0f,	0.0f,
+		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f,		0.0f,	1.0f,	0.0f,
 
-		// Left -> N_left = (-1, 0, 0)
-		-unit_half,	unit_half,	unit_half,		0.0f, 0.0f,
-		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,
-		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,
-		-unit_half,	unit_half,	-unit_half,		0.0f, 1.0f,
+		// Left
+		-unit_half,	unit_half,	unit_half,		0.0f, 0.0f,		-1.0f,	0.0f,	0.0f,
+		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,		-1.0f,	0.0f,	0.0f,
+		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,		-1.0f,	0.0f,	0.0f,
+		-unit_half,	unit_half,	-unit_half,		0.0f, 1.0f,		-1.0f,	0.0f,	0.0f,
 														  
-		// Right -> N_right = (1, 0, 0)									  
-		unit_half,	unit_half,	unit_half,		1.0f, 1.0f,
-		unit_half,	-unit_half,	unit_half,		0.0f, 1.0f,
-		unit_half,	-unit_half,	-unit_half,		0.0f, 0.0f,
-		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f,
+		// Right							  
+		unit_half,	unit_half,	unit_half,		1.0f, 1.0f,		1.0f,	0.0f,	0.0f,
+		unit_half,	-unit_half,	unit_half,		0.0f, 1.0f,		1.0f,	0.0f,	0.0f,
+		unit_half,	-unit_half,	-unit_half,		0.0f, 0.0f,		1.0f,	0.0f,	0.0f,
+		unit_half,	unit_half,	-unit_half,		1.0f, 0.0f,		1.0f,	0.0f,	0.0f,
 
-		// Front -> N_front = (0, 0, 1)	
-		unit_half,	unit_half,	unit_half,		1.0f, 1.0f, 
-		unit_half,	-unit_half,	unit_half,		1.0f, 0.0f, 
-		-unit_half,	-unit_half,	unit_half,		0.0f, 0.0f, 
-		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f, 
+		// Front
+		unit_half,	unit_half,	unit_half,		1.0f, 1.0f,		0.0f,	0.0f,	1.0f,
+		unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,		0.0f,	0.0f,	1.0f,
+		-unit_half,	-unit_half,	unit_half,		0.0f, 0.0f,		0.0f,	0.0f,	1.0f,
+		-unit_half,	unit_half,	unit_half,		0.0f, 1.0f,		0.0f,	0.0f,	1.0f,
 
-		// Back -> N_back = (0, 0, -1)	
-		unit_half,	unit_half,	-unit_half,		0.0f, 0.0f, 
-		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f, 
-		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f, 
-		-unit_half,	unit_half,	-unit_half,		1.0f, 0.0f, 
+		// Back
+		unit_half,	unit_half,	-unit_half,		0.0f, 0.0f,		0.0f,	0.0f,	-1.0f,
+		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f,		0.0f,	0.0f,	-1.0f,
+		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,		0.0f,	0.0f,	-1.0f,
+		-unit_half,	unit_half,	-unit_half,		1.0f, 0.0f,		0.0f,	0.0f,	-1.0f,
 
-		// Bottom -> N_bottom = (0, -1, 0)	
-		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,
-		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,
-		unit_half,	-unit_half,	unit_half,		0.0f, 0.0f,
-		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f,
+		// Bottom
+		-unit_half,	-unit_half,	-unit_half,		1.0f, 1.0f,		0.0f,	-1.0f,	0.0f,
+		-unit_half,	-unit_half,	unit_half,		1.0f, 0.0f,		0.0f,	-1.0f,	0.0f,
+		unit_half,	-unit_half,	unit_half,		0.0f, 0.0f,		0.0f,	-1.0f,	0.0f,
+		unit_half,	-unit_half,	-unit_half,		0.0f, 1.0f,		0.0f,	-1.0f,	0.0f,
 		});
 
 	auto* tex_cube_va = new VertexArray;

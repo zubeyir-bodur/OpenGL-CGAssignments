@@ -18,6 +18,7 @@ public:
 
 	void set_uniform_1i(const std::string& name, int value);
 	void set_uniform_3ui(const std::string& name, unsigned int v0, unsigned int v1, unsigned int v2);
+	void set_uniform_1f(const std::string& name, float v0);
 	void set_uniform_4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void set_uniform_mat4f(const std::string& name, Angel::mat4 mat);
 

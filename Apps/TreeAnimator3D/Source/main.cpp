@@ -66,7 +66,7 @@ int main(int, char**)
 	}
 	glfwMakeContextCurrent(window);
 	glfwMaximizeWindow(window);
-	glfwSwapInterval(0); // Enable vsync
+	glfwSwapInterval(0); // Disable vsync
 
 	// Init GLEW
 	if (glewInit() != GLEW_OK)

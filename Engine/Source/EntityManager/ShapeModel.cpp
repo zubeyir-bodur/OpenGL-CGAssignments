@@ -225,7 +225,7 @@ std::vector<Angel::vec3> ShapeModel::model_coords()
 	}
 	else if (m_e_def == StaticShape::TEX_CUBE)
 	{
-		stride += NUM_TEXTURE_COORDINATES;
+		stride += NUM_TEXTURE_COORDINATES + NUM_COORDINATES;
 	}
 
 
@@ -260,9 +260,7 @@ Angel::mat4 ShapeModel::model_matrix()
 	if (m_position == nullptr 
 		&& m_rotation == nullptr
 		&& m_scale != nullptr
-		&& (m_e_def == StaticShape::COL_CUBE
-			|| m_e_def == StaticShape::TEX_CUBE)
-		) // fallback code for articulated models
+		&& m_e_def == StaticShape::TEX_CUBE) // fallback code for articulated models
 	{
 		return Angel::Scale(*m_scale) * Angel::Translate(-center_raw_bottom());
 	}
@@ -303,7 +301,7 @@ Angel::vec3 ShapeModel::center_raw()
 	}
 	else if (m_e_def == StaticShape::TEX_CUBE)
 	{
-		stride += NUM_TEXTURE_COORDINATES;
+		stride += NUM_TEXTURE_COORDINATES + NUM_COORDINATES;
 	}
 	for (unsigned int i = 0; i < vert.size(); i+= stride)
 	{
@@ -334,7 +332,7 @@ Angel::vec3 ShapeModel::center_raw_bottom()
 	}
 	else if (m_e_def == StaticShape::TEX_CUBE)
 	{
-		stride += NUM_TEXTURE_COORDINATES;
+		stride += NUM_TEXTURE_COORDINATES + NUM_COORDINATES;
 	}
 	for (unsigned int i = 0; i < vert.size(); i += stride)
 	{
@@ -424,6 +422,7 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 {
 	if (!is_hidden())
 	{
+		Angel::mat4 MV_matrix = view * model_matrix();
 		Angel::mat4 MVP_matrix = proj * view * model_matrix();
 		Shape::basic_shader()->bind();
 		Shape::basic_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
@@ -449,6 +448,18 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 			Shape::textured_shader()->bind();
 			Shape::textured_shader()->set_uniform_1i("u_texture", m_texture_slot);
 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+			Shape::textured_shader()->set_uniform_mat4f("u_MV", MV_matrix);
+			Shape::textured_shader()->set_uniform_mat4f("u_P", proj);
+			Angel::vec4 light_source_pos = view * Angel::vec4(0.0f, 300.0f, 0.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_light_position",
+				light_source_pos.x,
+				light_source_pos.y,
+				light_source_pos.z,
+				light_source_pos.w);
+			Shape::textured_shader()->set_uniform_4f("u_ambient", 0.2f, 0.2f, 0.2f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_diffuse", 0.2f, 0.16f, 0.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_specular", 0.33f, 0.33f, 0.33f, 1.0f);
+			Shape::textured_shader()->set_uniform_1f("u_shininess", 1.0f);
 		}
 
 		// draw

@@ -106,11 +106,24 @@ void ArticulatedModelNode::draw_node(
 	const Angel::vec3& model_position)
 {
 	Angel::mat4 model_mat = Angel::Translate(model_position) * model_matrix() * m_cube->model_matrix();
+	Angel::mat4 MV_matrix = view * model_mat;
 	Angel::mat4 MVP_matrix = proj * view * model_mat;
 	m_cube->texture()->bind(m_cube->texture_slot());
 	Shape::textured_shader()->bind();
 	Shape::textured_shader()->set_uniform_1i("u_texture", m_cube->texture_slot());
 	Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
+	Shape::textured_shader()->set_uniform_mat4f("u_MV", MV_matrix);
+	Shape::textured_shader()->set_uniform_mat4f("u_P", proj);
+	Angel::vec4 light_source_pos = view * Angel::vec4(0.0f, 300.0f, 0.0f, 1.0f);
+	Shape::textured_shader()->set_uniform_4f("u_light_position", 
+		light_source_pos.x, 
+		light_source_pos.y, 
+		light_source_pos.z, 
+		light_source_pos.w);
+	Shape::textured_shader()->set_uniform_4f("u_ambient", 0.2f, 0.2f, 0.2f , 1.0f);
+	Shape::textured_shader()->set_uniform_4f("u_diffuse", 0.2f, 0.16f, 0.0f, 1.0f);
+	Shape::textured_shader()->set_uniform_4f("u_specular", 0.33f, 0.33f, 0.33f, 1.0f);
+	Shape::textured_shader()->set_uniform_1f("u_shininess", 1.0f);
 	m_cube->texture()->bind(m_cube->texture_slot());
 	Renderer::draw_triangles(m_cube->vertex_array(), m_cube->index_buffer(), Shape::textured_shader());
 }
