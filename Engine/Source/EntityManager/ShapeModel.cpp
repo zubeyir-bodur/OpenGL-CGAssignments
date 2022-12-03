@@ -456,10 +456,10 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 				light_source_pos.y,
 				light_source_pos.z,
 				light_source_pos.w);
-			Shape::textured_shader()->set_uniform_4f("u_ambient", 0.1f, 0.08f, 0.0f, 1.0f);
-			Shape::textured_shader()->set_uniform_4f("u_diffuse", 1.0f, 0.8f, 0.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_ambient", 0.32f, 0.173f, 0.118f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_diffuse", 0.75f, 0.5f, 0.0f, 1.0f);
 			Shape::textured_shader()->set_uniform_4f("u_specular", 1.0f, 1.0f, 1.0f, 1.0f);
-			Shape::textured_shader()->set_uniform_1f("u_shininess", 100.0f);
+			Shape::textured_shader()->set_uniform_1f("u_shininess", 50.0f);
 		}
 
 		// draw

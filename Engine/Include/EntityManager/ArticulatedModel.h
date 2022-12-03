@@ -23,6 +23,12 @@ public:
 
 	~ArticulatedModel();
 	void draw_model();
+	void traverse_all_nodes(const std::function<void(ArticulatedModelNode*)>& function);
+	ArticulatedModelNode* get_node(unsigned int entity_id);
 	std::vector<Angel::vec3*> collect_rotations();
-	inline Angel::vec3& position();
+	inline Angel::vec3& position() { return m_position; }
+	inline const ArticulatedModelNode* torso() { return m_torso; }
+	inline const unsigned int& num_nodes() { return m_num_nodes; }
+	static inline const unsigned int max_entity_id() { return pow(2, 24) - 1; }
+	inline const unsigned int min_entity_id() { return pow(2, 24) - m_num_nodes; }
 };

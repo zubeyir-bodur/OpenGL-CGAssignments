@@ -22,6 +22,7 @@ ArticulatedModelNode::ArticulatedModelNode(
 	m_rotation = rotation;
 	m_parent_joint_point = {}; // trivial for the torso
 	m_entity_id = entity_id;
+	m_is_selected = false;
 }
 
 ArticulatedModelNode::~ArticulatedModelNode()
@@ -46,6 +47,11 @@ Angel::mat4 ArticulatedModelNode::translation_minus_p()
 Angel::mat4 ArticulatedModelNode::translation_q()
 {
 	return Angel::Translate(m_parent_joint_point);
+}
+
+Angel::vec3& ArticulatedModelNode::rotation_vec()
+{
+	return m_rotation;
 }
 
 /// <summary>
@@ -100,6 +106,31 @@ Angel::mat4 ArticulatedModelNode::model_matrix()
 	}
 }
 
+Angel::mat4 ArticulatedModelNode::cube_model_matrix()
+{
+	return m_cube->model_matrix();
+}
+
+const Texture* ArticulatedModelNode::cube_texture()
+{
+	return m_cube->texture();
+}
+
+int ArticulatedModelNode::cube_texture_slot()
+{
+	return m_cube->texture_slot();
+}
+
+const VertexArray* ArticulatedModelNode::cube_vao()
+{
+	return m_cube->vertex_array();
+}
+
+const IndexBuffer* ArticulatedModelNode::cube_ibo()
+{
+	return m_cube->index_buffer();
+}
+
 void ArticulatedModelNode::draw_node(
 	const Angel::mat4& proj, 
 	const Angel::mat4& view,
@@ -120,10 +151,11 @@ void ArticulatedModelNode::draw_node(
 		light_source_pos.y, 
 		light_source_pos.z, 
 		light_source_pos.w);
-	Shape::textured_shader()->set_uniform_4f("u_ambient", 0.1f, 0.08f, 0.0f, 1.0f);
-	Shape::textured_shader()->set_uniform_4f("u_diffuse", 1.0f, 0.8f, 0.0f, 1.0f);
+	Shape::textured_shader()->set_uniform_4f("u_ambient", 0.32f, 0.173f, 0.118f, 1.0f);
+	Shape::textured_shader()->set_uniform_4f("u_diffuse", 0.75f, 0.5f, 0.0f, 1.0f);
 	Shape::textured_shader()->set_uniform_4f("u_specular", 1.0f, 1.0f, 1.0f, 1.0f);
-	Shape::textured_shader()->set_uniform_1f("u_shininess", 100.0f);
+	Shape::textured_shader()->set_uniform_1f("u_shininess", 50.0f);
+	Shape::textured_shader()->set_uniform_1i("u_selected", m_is_selected);
 	m_cube->texture()->bind(m_cube->texture_slot());
 	Renderer::draw_triangles(m_cube->vertex_array(), m_cube->index_buffer(), Shape::textured_shader());
 }

@@ -2,11 +2,13 @@
 #include "Renderer/FrameBuffer.h"
 
 #include "EntityManager/DrawList.h"
+#include "EntityManager/ArticulatedModel.h"
 
 class SelectionSystem3D
 {
 private:
 	DrawList* m_draw_list = nullptr;
+	ArticulatedModel* m_hierarchical_model = nullptr;
 	Shader* m_picker_shader = nullptr;
 	FrameBuffer* m_entity_picker_fb = nullptr;
 
@@ -21,7 +23,7 @@ private:
 	unsigned int get_entity_idx_at(int window_x, int window_y);
 public:
 	SelectionSystem3D() = default;
-	SelectionSystem3D(DrawList* draw_list, int width, int height);
+	SelectionSystem3D(DrawList* draw_list, ArticulatedModel* model, int width, int height);
 	~SelectionSystem3D();
 
 	unsigned int on_update(int window_x, int window_y);

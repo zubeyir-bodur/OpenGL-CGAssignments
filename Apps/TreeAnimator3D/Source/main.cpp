@@ -140,26 +140,13 @@ int main(int, char**)
 		platform_surface_pos, platform_surface_rot, platform_surface_scale);
 	list.add_shape(platform_surface);
 
-	// A textured cube
-	Angel::vec3* text_a_pos, * text_a_rot, * text_a_scale;
-	text_a_pos = new Angel::vec3(0.0f, -280.0f, 0.0f);
-	text_a_rot = new Angel::vec3(0.0f, 0.0f, 0.0f);
-	text_a_scale = new Angel::vec3(15.0f, 500.0f, 15.0f);
-	ShapeModel* text_a = new ShapeModel(ShapeModel::StaticShape::TEX_CUBE,
-		text_a_pos,
-		text_a_rot,
-		text_a_scale,
-		0,
-		tree_surface_texture_obj);
-	list.add_shape(text_a);
-
 	// Articulated Tree Model
-	auto hierarchical_model = new ArticulatedModel(Angel::vec3(300.0f, -280.0f, 150.0f), 
+	auto hierarchical_model = new ArticulatedModel(Angel::vec3(0.0f, -280.0f, 0.0f), 
 		tree_surface_texture_obj, 0,
 		proj_matrix, view_matrix);
 
 	// Selection System
-	SelectionSystem3D* selection_system = new SelectionSystem3D(&list, width, height);
+	SelectionSystem3D* selection_system = new SelectionSystem3D(&list, hierarchical_model, width, height);
 	int hovered_shape_index = -1;
 	int cur_selected_index = -1;
 
@@ -263,8 +250,12 @@ int main(int, char**)
 							&& std::abs(window_input.m_mouse_release_x - window_input.m_mouse_press_x) < 1.0f)
 						{
 							std::cout << "THIS IS A CLICK" << std::endl;
-
-							// Do sth. with the click - cursor_released vector is the world coordinate of the click
+							// deselect previous
+							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
+							if (node != nullptr)
+							{
+								node->set_selected(false);
+							}
 							cur_selected_index = hovered_shape_index;
 						}
 						else
@@ -275,6 +266,15 @@ int main(int, char**)
 								cur_selected_index = hovered_shape_index;
 							}
 							// Do sth. with drag vector here
+						}
+						if (cur_selected_index >= hierarchical_model->min_entity_id()
+							&& cur_selected_index <= ArticulatedModel::max_entity_id())
+						{
+							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
+							if (node != nullptr)
+							{
+								node->set_selected(true);
+							}
 						}
 					}
 				}
@@ -402,7 +402,7 @@ int main(int, char**)
 				{
 					if (ImGui::BeginTabItem("Selection"))
 					{
-						if (cur_selected_index > 0)
+						if (cur_selected_index > 0 && cur_selected_index < list.shape_models().size())
 						{
 							ShapeModel* cur_selected = list.shape_models().at(cur_selected_index);
 							ImGui::Text("Selected Entity Type : %s", magic_enum::enum_name<ShapeModel::StaticShape>(cur_selected->shape_def()).data());
@@ -410,7 +410,6 @@ int main(int, char**)
 							ImGui::NewLine();
 
 							ImGui::SliderFloat("X Position", &cur_selected->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
-							ImGui::SliderFloat("Y Position", &cur_selected->position().y, -2000.0f, 2000.0f, "%.1f", 1.0f);
 							ImGui::SliderFloat("Z Position", &cur_selected->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
 							ImGui::SliderFloat("X Rotation", &cur_selected->rotation().x, -180.0f, 180.0f, "%.3f", 1.0f);
 							ImGui::SliderFloat("Y Rotation", &cur_selected->rotation().y, -180.0f, 180.0f, "%.3f", 1.0f);
@@ -419,6 +418,26 @@ int main(int, char**)
 						else if (cur_selected_index == 0)
 						{
 							ImGui::Text("Platform surface was selected...");
+						}
+						else if (cur_selected_index >= hierarchical_model->min_entity_id()
+							&& cur_selected_index <= ArticulatedModel::max_entity_id())
+						{
+							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
+							if (node == hierarchical_model->torso())
+							{
+								ImGui::Text("Trunk position: ");
+								ImGui::SliderFloat("X Position", &hierarchical_model->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
+								ImGui::SliderFloat("Z Position", &hierarchical_model->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
+								ImGui::NewLine();
+								ImGui::Text("Trunk rotation: ");
+							}
+							else
+							{
+								ImGui::Text("Branch rotation: ");
+							}
+							ImGui::SliderFloat("X Rotation", &node->rotation_vec().x, -180.0f, 180.0f, "%.3f", 1.0f);
+							ImGui::SliderFloat("Y Rotation", &node->rotation_vec().y, -180.0f, 180.0f, "%.3f", 1.0f);
+							ImGui::SliderFloat("Z Rotation", &node->rotation_vec().z, -180.0f, 180.0f, "%.3f", 1.0f);
 						}
 						else
 						{
@@ -467,7 +486,12 @@ int main(int, char**)
 				static_cast<int>(window_input.m_mouse_y)
 			);
 			hovered_shape_index = idx - 1;
-			if (idx > list.shape_models().size())
+			if (idx >= hierarchical_model->min_entity_id()
+				&& idx <= ArticulatedModel::max_entity_id())
+			{
+				hovered_shape_index = idx;
+			}
+			else if (idx > list.shape_models().size())
 			{
 				printf("\x1B[31mError : Hovered model index was %d\033[0m\n", idx);
 				hovered_shape_index = - 1;

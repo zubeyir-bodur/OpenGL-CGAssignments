@@ -42,6 +42,7 @@ uniform vec4 u_diffuse;
 uniform vec4 u_specular; 
 uniform float u_shininess; 
 uniform sampler2D u_texture;
+uniform bool u_selected;
 
 void main()
 {    
@@ -63,7 +64,11 @@ void main()
 
     fragment_color = (ambient_color + diffuse_color + specular_color) * texture_color;
     fragment_color.a = 1.0;
-
+	
+	if (u_selected)
+	{
+		fragment_color.rb = vec2(0.0, 0.0);
+	}
 	gl_FragColor = fragment_color;
 }
 #endif

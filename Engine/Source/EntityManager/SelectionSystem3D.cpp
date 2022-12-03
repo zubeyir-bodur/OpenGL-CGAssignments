@@ -4,13 +4,14 @@
 #include <functional>
 #include <glew.h>
 
-SelectionSystem3D::SelectionSystem3D(DrawList* draw_list, int width, int height)
+SelectionSystem3D::SelectionSystem3D(DrawList* draw_list, ArticulatedModel* model, int width, int height)
 {
 	// Initialize FrameBuffer
 	m_entity_picker_fb = new FrameBuffer(width, height);
 	
-	// Give access to the DrawList of the app
+	// Give access to the DrawList & hierarchical model of the app
 	m_draw_list = draw_list;
+	m_hierarchical_model = model;
 
 	// Shader for the selection system to write the 
 	// DrawList index to this FrameBuffer
@@ -28,6 +29,7 @@ unsigned int SelectionSystem3D::on_update(int window_x, int window_y)
 	m_picker_shader->bind();
 	m_entity_picker_fb->on_update([&]() 
 		{
+			// Render DrawList into the FBO texture
 			auto& list = m_draw_list->shape_models();
 			unsigned int index = 1;
 			for (auto shape_model : list)
@@ -49,6 +51,23 @@ unsigned int SelectionSystem3D::on_update(int window_x, int window_y)
 				}
 				index++;
 			}
+
+			// Render Articulated Model into the FBO texture
+			const Angel::mat4& proj = m_draw_list->projection_matrix();
+			const Angel::mat4& view = m_draw_list->view_matrix();
+			const Angel::vec3& tr_position = m_hierarchical_model->position();
+			m_hierarchical_model->traverse_all_nodes([picker_shader = m_picker_shader, &proj, &view, tr_pos = tr_position](ArticulatedModelNode* node) -> void
+			{
+				std::array<uint8_t, 3> u_shape_model_id = map_drawlist_idx_to_rgb(node->entity_id());
+				picker_shader->set_uniform_3ui("u_shape_model_id",
+					u_shape_model_id[0],
+					u_shape_model_id[1],
+					u_shape_model_id[2]);
+				Angel::mat4 model_mat = Angel::Translate(tr_pos) * node->model_matrix() * node->cube_model_matrix();
+				Angel::mat4 MVP_matrix = proj * view * model_mat;
+				picker_shader->set_uniform_mat4f("u_MVP", MVP_matrix);
+				Renderer::draw_triangles(node->cube_vao(), node->cube_ibo(), picker_shader);
+			});
 			
 		});
 	// Do the work for unbinding the frame buffer, depth buffer & texture here
