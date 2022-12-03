@@ -17,11 +17,7 @@ void main()
 {
 	vec3 vertex_pos = (u_MV * v_position).xyz;
 
-	mat4 normal_matrix4x4 = transpose(inverse(u_MV));
-	mat3 normal_matrix;
-	normal_matrix[0].xyz = normal_matrix4x4[0].xyz;
-	normal_matrix[1].xyz = normal_matrix4x4[2].xyz;
-	normal_matrix[2].xyz = normal_matrix4x4[1].xyz;
+	mat4 normal_matrix = transpose(inverse(u_MV));
 	if(u_light_position.w == 0.0)
 	{
 		L = normalize(u_light_position.xyz);
@@ -31,7 +27,7 @@ void main()
 		L = normalize(u_light_position.xyz - vertex_pos);
 	}
 	E =  -normalize(vertex_pos);
-    N = normalize(normal_matrix * v_normal.xyz);
+    N = normalize(vec3(normal_matrix * v_normal).xyz);
 
 	gl_Position = u_P * u_MV * v_position;
 	f_text_coord = v_text_coord;

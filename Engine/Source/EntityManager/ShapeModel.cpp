@@ -450,16 +450,16 @@ void ShapeModel::draw_shape(const Angel::mat4& proj, const Angel::mat4& view)
 			Shape::textured_shader()->set_uniform_mat4f("u_MVP", MVP_matrix);
 			Shape::textured_shader()->set_uniform_mat4f("u_MV", MV_matrix);
 			Shape::textured_shader()->set_uniform_mat4f("u_P", proj);
-			Angel::vec4 light_source_pos = view * Angel::vec4(0.0f, 300.0f, 0.0f, 1.0f);
+			Angel::vec4 light_source_pos = view * Angel::vec4(0.0f, 1000.0f, 1000.0f, 1.0f);
 			Shape::textured_shader()->set_uniform_4f("u_light_position",
 				light_source_pos.x,
 				light_source_pos.y,
 				light_source_pos.z,
 				light_source_pos.w);
-			Shape::textured_shader()->set_uniform_4f("u_ambient", 0.2f, 0.2f, 0.2f, 1.0f);
-			Shape::textured_shader()->set_uniform_4f("u_diffuse", 0.2f, 0.16f, 0.0f, 1.0f);
-			Shape::textured_shader()->set_uniform_4f("u_specular", 0.33f, 0.33f, 0.33f, 1.0f);
-			Shape::textured_shader()->set_uniform_1f("u_shininess", 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_ambient", 0.1f, 0.08f, 0.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_diffuse", 1.0f, 0.8f, 0.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_4f("u_specular", 1.0f, 1.0f, 1.0f, 1.0f);
+			Shape::textured_shader()->set_uniform_1f("u_shininess", 100.0f);
 		}
 
 		// draw
