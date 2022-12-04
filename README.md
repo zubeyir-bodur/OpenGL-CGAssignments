@@ -69,6 +69,11 @@ using Visual Studio 2022 is reccommended.
 
 ### Modeling and Animating Randomly Generated Tree Models
 - Features:
-    - To be implemented
+    - A simple 3D camera to move around the scene, using raw, pitch and roll angles
+    - Rendering hierarchical models, such as a tree, and changing the orientation and position of the model
+    - Smooth shading using the Phong model, along with textures
+    - Randomly generating hierarchical models so that these models look more like a tree
+    - Mouse picking for selecting a part of the model, or anything entity in the drawlist
+        - Also supports selection highlighting by rendering the green channel only (smoothly shaded entities only)
 ## Remarks
  Huge shoutout to [TheCherno](https://www.github.com/TheCherno), whom I followed his [OpenGL series](https://www.youtube.com/watch?v=W3gAzLwfIP0&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2) to implement my basic OpenGL framework for the assignments.
