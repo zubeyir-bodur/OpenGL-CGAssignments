@@ -21,16 +21,15 @@ private:
 	bool m_is_selected;
 
 	/// <summary>
-	/// p = (0, -0.5, 0), every branch will rotate around its bottom
-	/// </summary>
-	/// <returns></returns>
-	Angel::vec3 joint_point();
-
-	/// <summary>
 	/// u
 	/// </summary>
 	Angel::vec3 m_rotation;
 
+	/// <summary>
+	/// p = (0, -0.5, 0), every branch will rotate around its bottom
+	/// </summary>
+	/// <returns></returns>
+	Angel::vec3 joint_point();
 public:
 	ArticulatedModelNode(
 		const Angel::vec3& scale,
@@ -52,12 +51,14 @@ public:
 		Texture* texture,
 		int texture_slot,
 		unsigned int entity_id);
+
 	Angel::mat4 model_matrix();
 	Angel::mat4 cube_model_matrix();
 	const Texture* cube_texture();
 	int cube_texture_slot();
 	const VertexArray* cube_vao();
 	const IndexBuffer* cube_ibo();
+	const Angel::vec3& cube_scale();
 	inline unsigned int entity_id() { return m_entity_id; }
 	inline void set_selected(bool selected) { m_is_selected = selected; }
 	void draw_node(

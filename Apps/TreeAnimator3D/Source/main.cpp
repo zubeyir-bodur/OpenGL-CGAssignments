@@ -274,8 +274,8 @@ int main(int, char**)
 							}
 							cur_selected_index = hovered_shape_index;
 						}
-						if (cur_selected_index >= hierarchical_model->min_entity_id()
-							&& cur_selected_index <= ArticulatedModel::max_entity_id())
+						if (cur_selected_index >= (int)hierarchical_model->min_entity_id()
+							&& cur_selected_index <= (int)ArticulatedModel::max_entity_id())
 						{
 							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
 							if (node != nullptr)
@@ -478,15 +478,15 @@ int main(int, char**)
 						{
 							ImGui::Text("Platform surface was selected...");
 						}
-						else if (cur_selected_index >= hierarchical_model->min_entity_id()
-							&& cur_selected_index <= ArticulatedModel::max_entity_id())
+						else if (cur_selected_index >= (int)hierarchical_model->min_entity_id()
+							&& cur_selected_index <= (int)ArticulatedModel::max_entity_id())
 						{
 							ArticulatedModelNode* node = hierarchical_model->get_node(cur_selected_index);
 							if (node == hierarchical_model->torso())
 							{
 								ImGui::Text("Trunk position: ");
-								ImGui::SliderFloat("X Position", &hierarchical_model->position().x, -2000.0f, 2000.0f, "%.1f", 1.0f);
-								ImGui::SliderFloat("Z Position", &hierarchical_model->position().z, -2000.0f, 2000.0f, "%.1f", 1.0f);
+								ImGui::SliderFloat("X Position", &hierarchical_model->position().x, -width/2.0f, width/2.0f, "%.1f", 1.0f);
+								ImGui::SliderFloat("Z Position", &hierarchical_model->position().z, -height/2.0f, height/2.0f, "%.1f", 1.0f);
 								ImGui::NewLine();
 								ImGui::Text("Trunk rotation: ");
 							}

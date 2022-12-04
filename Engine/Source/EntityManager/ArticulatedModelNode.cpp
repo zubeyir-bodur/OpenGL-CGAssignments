@@ -131,6 +131,11 @@ const IndexBuffer* ArticulatedModelNode::cube_ibo()
 	return m_cube->index_buffer();
 }
 
+const Angel::vec3& ArticulatedModelNode::cube_scale()
+{
+	return m_cube->scale();
+}
+
 void ArticulatedModelNode::draw_node(
 	const Angel::mat4& proj, 
 	const Angel::mat4& view,
@@ -189,4 +194,16 @@ void ArticulatedModelNode::destroy_children()
 Angel::vec3 ArticulatedModelNode::joint_point()
 {
 	return { 0.0f, -0.5f, 0.0f };
+}
+
+unsigned int random_uint(unsigned int min, unsigned int max)
+{
+	float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+	return static_cast<unsigned int>(std::roundf(r * (max - min) + min));
+}
+
+float random_float(float min, float max)
+{
+	float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+	return r * (max - min) + min;
 }
