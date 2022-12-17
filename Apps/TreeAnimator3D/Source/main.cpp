@@ -524,6 +524,7 @@ int main(int, char**)
 						ImGui::Text("Pitch: %f", PerspectiveCamera::pitch());
 						ImGui::Text("Yaw: %f", PerspectiveCamera::yaw());
 						ImGui::Text("Roll: %f", PerspectiveCamera::roll());
+						ImGui::Text("Zoom Ratio: %f", PerspectiveCamera::zoom_ratio());
 
 						ImGui::NewLine();
 						ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",

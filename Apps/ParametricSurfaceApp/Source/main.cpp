@@ -99,6 +99,19 @@ int main(int, char**)
 	float init_shape_length = width / 8.0f;
 	ImVec4 clear_col = { 0.6f, 0.6f, 0.6f, 1.0f };
 	Renderer renderer;
+	enum class RadioButtons
+	{
+		Wireframe,
+		Gouraud,
+		Phong
+	};
+	int radio_button_cur = (int)RadioButtons::Phong;
+
+	// Surface parameters
+	float R = 1.5f;
+	float r = 1.0f;
+	float l = 3.0f;
+	float q = 30.0f;
 
 	// Enable blending
 	__glCallVoid(glEnable(GL_BLEND));
@@ -353,7 +366,18 @@ int main(int, char**)
 				{
 					if (ImGui::BeginTabItem("Model"))
 					{
-
+						ImGui::Text("Currently, a cephalopod is being displayed...");
+						ImGui::NewLine();
+						ImGui::RadioButton("Wireframe", &radio_button_cur, (int)RadioButtons::Wireframe);
+						ImGui::SameLine();
+						ImGui::RadioButton("Gouraud", &radio_button_cur, (int)RadioButtons::Gouraud);
+						ImGui::SameLine();
+						ImGui::RadioButton("Phong", &radio_button_cur, (int)RadioButtons::Phong);
+						ImGui::NewLine();
+						ImGui::SliderFloat("R", &R, 0.5f, 3.5f, "%.3f", 1.0f);
+						ImGui::SliderFloat("r", &r, 0.1f, 2.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("l", &l, 2.0f, 4.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("q", &q, 20.0f, 40.0f, "%.3f", 1.0f);
 						ImGui::EndTabItem();
 					}
 					if (ImGui::BeginTabItem("Camera"))
@@ -364,6 +388,7 @@ int main(int, char**)
 						ImGui::Text("Pitch: %f", PerspectiveCamera::pitch());
 						ImGui::Text("Yaw: %f", PerspectiveCamera::yaw());
 						ImGui::Text("Roll: %f", PerspectiveCamera::roll());
+						ImGui::Text("Zoom Ratio: %f", PerspectiveCamera::zoom_ratio());
 
 						ImGui::NewLine();
 						ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",

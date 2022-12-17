@@ -16,7 +16,7 @@ void PerspectiveCamera::update()
 	m_camera_up = Angel::normalize(Angel::cross(m_camera_right, m_camera_front)); 
 
 	// Only update the view matrix
-	m_view_matrix = Angel::Scale(m_zoom / 100.0f, m_zoom / 100.0f, 1.0f) * Angel::LookAt(m_camera_position, m_camera_position + m_camera_front, m_camera_up);
+	m_view_matrix = Angel::Scale(m_zoom_ratio / 100.0f, m_zoom_ratio / 100.0f, 1.0f) * Angel::LookAt(m_camera_position, m_camera_position + m_camera_front, m_camera_up);
 }
 
 PerspectiveCamera& PerspectiveCamera::instance()
@@ -83,6 +83,12 @@ const float& PerspectiveCamera::roll()
 {
 	PerspectiveCamera& c = instance();
 	return c.m_roll;
+}
+
+const float& PerspectiveCamera::zoom_ratio()
+{
+	PerspectiveCamera& c = instance();
+	return c.m_zoom_ratio;
 }
 
 void PerspectiveCamera::move(const float& dt_seconds, const MovementDirection direction)
@@ -159,21 +165,21 @@ void PerspectiveCamera::zoom(const float& dt_seconds, const float scroll_delta)
 {
 	PerspectiveCamera& c = instance();
 	// Camera zooming with mouse wheel
-	if (c.m_zoom >= MIN_ZOOM && c.m_zoom <= MAX_ZOOM)
+	if (c.m_zoom_ratio >= MIN_ZOOM && c.m_zoom_ratio <= MAX_ZOOM)
 	{
 		if (scroll_delta != 0)
 		{
-			c.m_zoom += scroll_delta * c.m_zoom_sensitivity * dt_seconds;
+			c.m_zoom_ratio += scroll_delta * c.m_zoom_sensitivity * dt_seconds;
 		}
 	}
 	// Avoid exceeding limits
-	if (c.m_zoom < MIN_ZOOM)
+	if (c.m_zoom_ratio < MIN_ZOOM)
 	{
-		c.m_zoom = MIN_ZOOM;
+		c.m_zoom_ratio = MIN_ZOOM;
 	}
-	if (c.m_zoom > MAX_ZOOM)
+	if (c.m_zoom_ratio > MAX_ZOOM)
 	{
-		c.m_zoom = MAX_ZOOM;
+		c.m_zoom_ratio = MAX_ZOOM;
 	}
 	c.update();
 }

@@ -17,7 +17,7 @@ private:
 	int m_viewport_height = 480;
 	float m_z_near = 0.1f;
 	float m_z_far = 1e+38f;
-	float m_zoom = 100.0f;
+	float m_zoom_ratio = 100.0f;
 
 	Angel::vec3 m_world_up; // World up is the general up direction of the world, regardless from camera orientation
 	Angel::vec3 m_camera_position;
@@ -47,6 +47,7 @@ public:
 	static const float& pitch();
 	static const float& yaw();
 	static const float& roll();
+	static const float& zoom_ratio();
 
 	//Functions
 	static void move(const float& dt_seconds, const MovementDirection direction);
