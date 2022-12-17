@@ -11,11 +11,13 @@ private:
 
 	float m_movement_speed = 750.0f;
 	float m_rotation_sensitivity = 0.1f;
+	float m_zoom_sensitivity = 2500.0f;
 	float m_fovy = 60.0f;
 	int m_viewport_width = 640;
 	int m_viewport_height = 480;
 	float m_z_near = 0.1f;
 	float m_z_far = 1e+38f;
+	float m_zoom = 100.0f;
 
 	Angel::vec3 m_world_up; // World up is the general up direction of the world, regardless from camera orientation
 	Angel::vec3 m_camera_position;
@@ -49,6 +51,7 @@ public:
 	//Functions
 	static void move(const float& dt_seconds, const MovementDirection direction);
 	static void rotate(const float& dt_seconds, const double& offset_x, const double& offset_y);
+	static void zoom(const float& dt_seconds, const float scroll_delta);
 	static void on_viewport_resize(int width, int height);
 
 };

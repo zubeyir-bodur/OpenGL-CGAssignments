@@ -10,6 +10,13 @@ Input::Input(GLFWwindow* app_window)
 	m_mouse_y = -1.0;
 	m_lmb_state = ButtonState::Idle;
 	m_rmb_state = ButtonState::Idle;
+	m_scroll_y = 0.0f;
+	m_mouse_press_x = -1.0;
+	m_mouse_press_y = -1.0;
+	m_mouse_release_x = -1.0;
+	m_mouse_release_y = -1.0;
+	m_copy_just_pressed = false;
+	m_paste_just_pressed = false;
 	glfwSetScrollCallback(app_window, Input::mouse_scroll_callback);
 	glfwSetCursorPosCallback(app_window, Input::mouse_move_callback);
 	glfwSetMouseButtonCallback(app_window, Input::mouse_button_callback);

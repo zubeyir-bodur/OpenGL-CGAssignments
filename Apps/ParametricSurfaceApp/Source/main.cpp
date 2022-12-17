@@ -140,6 +140,9 @@ int main(int, char**)
 		Input::ButtonState left_mouse_previous_state = window_input.m_lmb_state;
 		Input::ButtonState right_mouse_previous_state = window_input.m_rmb_state;
 
+		// Reset scroll
+		window_input.m_scroll_y = 0.0;
+
 		glfwPollEvents();
 
 		// Update the viewport
@@ -186,6 +189,11 @@ int main(int, char**)
 					PerspectiveCamera::move(delta_time_seconds, PerspectiveCamera::MovementDirection::UP);
 				}
 			}
+		}
+
+		// Wheel States
+		{
+			PerspectiveCamera::zoom(delta_time_seconds, (float)window_input.m_scroll_y);
 		}
 
 		// LMB States

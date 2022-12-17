@@ -1,4 +1,6 @@
 #include "Camera/PerspectiveCamera.h"
+#define MIN_ZOOM 100.0f
+#define MAX_ZOOM 800.0f
 
 /// <summary>
 /// FIX-ME-OPT: Update the view matrix once per frame only when the camera is moved or rotated
@@ -14,7 +16,7 @@ void PerspectiveCamera::update()
 	m_camera_up = Angel::normalize(Angel::cross(m_camera_right, m_camera_front)); 
 
 	// Only update the view matrix
-	m_view_matrix = Angel::LookAt(m_camera_position, m_camera_position + m_camera_front, m_camera_up);
+	m_view_matrix = Angel::Scale(m_zoom / 100.0f, m_zoom / 100.0f, 1.0f) * Angel::LookAt(m_camera_position, m_camera_position + m_camera_front, m_camera_up);
 }
 
 PerspectiveCamera& PerspectiveCamera::instance()
@@ -151,6 +153,29 @@ void PerspectiveCamera::rotate(const float& dt_seconds, const double& offset_x, 
 		c.m_yaw = 0.f;
 	}
 	c.update(); // Compute the multiplications iff there is a change
+}
+
+void PerspectiveCamera::zoom(const float& dt_seconds, const float scroll_delta)
+{
+	PerspectiveCamera& c = instance();
+	// Camera zooming with mouse wheel
+	if (c.m_zoom >= MIN_ZOOM && c.m_zoom <= MAX_ZOOM)
+	{
+		if (scroll_delta != 0)
+		{
+			c.m_zoom += scroll_delta * c.m_zoom_sensitivity * dt_seconds;
+		}
+	}
+	// Avoid exceeding limits
+	if (c.m_zoom < MIN_ZOOM)
+	{
+		c.m_zoom = MIN_ZOOM;
+	}
+	if (c.m_zoom > MAX_ZOOM)
+	{
+		c.m_zoom = MAX_ZOOM;
+	}
+	c.update();
 }
 
 void PerspectiveCamera::on_viewport_resize(int width, int height)
