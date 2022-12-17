@@ -75,5 +75,17 @@ using Visual Studio 2022 is reccommended.
     - Randomly generating hierarchical models so that these models look more like a tree
     - Mouse picking for selecting a part of the model, or anything entity in the drawlist
         - Also supports selection highlighting by rendering the green channel only (smoothly shaded entities only)
+
+### Realistic Rendering of Parametric Surfaces
+- Features:
+    - 3D camera which can zoom in and out
+    - Generating parametric surfaces 
+    - Bump Mapping
+    - Display options:
+        - Wireframe
+        - Gouraud Shaded
+        - Phong Shaded
+
+
 ## Remarks
  Huge shoutout to [TheCherno](https://www.github.com/TheCherno), whom I followed his [OpenGL series](https://www.youtube.com/watch?v=W3gAzLwfIP0&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2) to implement my basic OpenGL framework for the assignments.
