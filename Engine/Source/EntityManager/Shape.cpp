@@ -1,5 +1,9 @@
 #include "EntityManager/Shape.h"
+
 #include "Core/ErrorManager.h"
+
+#include "Renderer/Shader.h"
+
 #include <glew.h>
 
 // Declare static members

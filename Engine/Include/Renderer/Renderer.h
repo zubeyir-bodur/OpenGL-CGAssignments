@@ -20,6 +20,10 @@ public:
 		const IndexBuffer* index_buffer_obj,
 		const Shader* shader_obj, int count = -1, const void* offset = nullptr);
 
+	static void draw_seperate_lines(const VertexArray* vertex_array_obj,
+		const IndexBuffer* index_buffer_obj,
+		const Shader* shader_obj);
+
 	static void clear(const float* clear_color);
 	static void clear();
 

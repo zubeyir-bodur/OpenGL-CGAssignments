@@ -40,6 +40,14 @@ void Renderer::draw_lines(const VertexArray* vertex_array_obj,
 	}
 }
 
+void Renderer::draw_seperate_lines(const VertexArray* vertex_array_obj, const IndexBuffer* index_buffer_obj, const Shader* shader_obj)
+{
+	shader_obj->bind();
+	vertex_array_obj->bind();
+	index_buffer_obj->bind();
+	__glCallVoid(glDrawElements(GL_LINES, index_buffer_obj->count(), GL_UNSIGNED_INT, nullptr));
+}
+
 void Renderer::clear(const float* clear_color)
 {
 	__glCallVoid(glClearColor(clear_color[0] * clear_color[3],
