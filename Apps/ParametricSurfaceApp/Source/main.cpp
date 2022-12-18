@@ -9,6 +9,7 @@
 #include "Renderer/Shader.h"
 
 #include "EntityManager/Shape.h"
+#include "EntityManager/ParametricMesh.h"
 
 #include "Camera/PerspectiveCamera.h"
 
@@ -99,13 +100,7 @@ int main(int, char**)
 	float init_shape_length = width / 8.0f;
 	ImVec4 clear_col = { 0.6f, 0.6f, 0.6f, 1.0f };
 	Renderer renderer;
-	enum class RadioButtons
-	{
-		Wireframe,
-		Gouraud,
-		Phong
-	};
-	int radio_button_cur = (int)RadioButtons::Phong;
+	int radio_button_cur = (int)ParametricMesh::DisplayType::Phong;
 
 	// Surface parameters
 	float R = 1.5f;
@@ -368,11 +363,11 @@ int main(int, char**)
 					{
 						ImGui::Text("Currently, a cephalopod is being displayed...");
 						ImGui::NewLine();
-						ImGui::RadioButton("Wireframe", &radio_button_cur, (int)RadioButtons::Wireframe);
+						ImGui::RadioButton("Wireframe", &radio_button_cur, (int)ParametricMesh::DisplayType::Wireframe);
 						ImGui::SameLine();
-						ImGui::RadioButton("Gouraud", &radio_button_cur, (int)RadioButtons::Gouraud);
+						ImGui::RadioButton("Gouraud", &radio_button_cur, (int)ParametricMesh::DisplayType::Gouraud);
 						ImGui::SameLine();
-						ImGui::RadioButton("Phong", &radio_button_cur, (int)RadioButtons::Phong);
+						ImGui::RadioButton("Phong", &radio_button_cur, (int)ParametricMesh::DisplayType::Phong);
 						ImGui::NewLine();
 						ImGui::SliderFloat("R", &R, 0.5f, 3.5f, "%.3f", 1.0f);
 						ImGui::SliderFloat("r", &r, 0.1f, 2.0f, "%.3f", 1.0f);

@@ -64,6 +64,9 @@
     <ClCompile Include="Source\EntityManager\ArticulatedModelNode.cpp">
       <Filter>Source\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="Source\EntityManager\ParametricMesh.cpp">
+      <Filter>Source\EntityManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Renderer\VertexBufferLayout.h">
@@ -130,6 +133,9 @@
       <Filter>Include\EntityManager</Filter>
     </ClInclude>
     <ClInclude Include="Include\EntityManager\ArticulatedModelNode.h">
+      <Filter>Include\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\EntityManager\ParametricMesh.h">
       <Filter>Include\EntityManager</Filter>
     </ClInclude>
   </ItemGroup>
