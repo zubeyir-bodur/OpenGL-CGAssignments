@@ -19,9 +19,9 @@ public:
 		Phong
 	};
 private:
-	// Mesh Data -> 50x50x2x3 mesh data (u, v, element, coordinate)
-	std::vector<std::vector<Angel::vec3>> m_mesh_points;
-	std::vector<std::vector<Angel::vec3>> m_mesh_normals;
+	// Mesh Data -> 50-1x50-1x2x3 mesh data (u, v, element, coordinate)
+	Angel::vec3** m_mesh_points;
+	Angel::vec3** m_mesh_normals;
 	std::vector<float> m_mesh_buffer_data;
 
 	VertexArray* m_vao;
