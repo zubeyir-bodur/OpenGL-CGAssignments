@@ -146,6 +146,11 @@ void ParametricMesh::construct_mesh(float R, float r, float l, float q)
 			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j + 1].z); // Z
 		}
 	}
+	m_vbo = new VertexBuffer(m_mesh_buffer_data.data(), m_mesh_buffer_data.size() * sizeof(float));
+	m_vao = new VertexArray;
+	m_vao->add_buffer(*m_vbo, *s_parametric_mesh_layout);
+	m_vao->unbind();
+	m_vbo->unbind();
 	m_just_changed = false;
 }
 
@@ -155,8 +160,8 @@ ParametricMesh::ParametricMesh(float R, float r, float l, float q, const Angel::
 	m_just_changed = false;
 	m_vao = nullptr;
 	m_vbo = nullptr;
-	m_mesh_points = {};
-	m_mesh_normals = {};
+	m_mesh_points = nullptr;
+	m_mesh_normals = nullptr;
 	m_mesh_buffer_data = {};
 	construct_mesh(m_R, m_r, m_l, m_q);
 }
