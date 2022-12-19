@@ -53,6 +53,7 @@ public:
 	static void move(const float& dt_seconds, const MovementDirection direction);
 	static void rotate(const float& dt_seconds, const double& offset_x, const double& offset_y);
 	static void zoom(const float& dt_seconds, const float scroll_delta);
+	static void set_speed(const float& move_speed, const float& rotate_speed, const float& zoom_speed);
 	static void on_viewport_resize(int width, int height);
 
 };

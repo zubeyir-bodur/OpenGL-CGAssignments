@@ -247,7 +247,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\colored_triangle.glsl" />
+    <None Include="Shaders\g_shaded_triangle.glsl" />
+    <None Include="Shaders\normal_triangle.glsl" />
     <None Include="Shaders\pickable_triangle.glsl" />
+    <None Include="Shaders\p_shaded_triangle.glsl" />
     <None Include="Shaders\textured_shaded_triangle.glsl" />
     <None Include="Shaders\triangle.glsl" />
     <None Include="Shaders\textured_triangle.glsl" />

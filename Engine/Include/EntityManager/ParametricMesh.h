@@ -27,7 +27,16 @@ private:
 	VertexArray* m_vao;
 	VertexBuffer* m_vbo;
 
+	// Albedo color
 	Angel::vec4 m_color;
+
+	// Lighting parameters
+	Angel::vec4 m_ambient = { 0.32f, 0.173f, 0.118f, 1.0f };
+	Angel::vec4 m_diffuse = { 0.75f, 0.5f, 0.0f, 1.0f };
+	Angel::vec4 m_specular = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float m_shininess = 50.0f;
+
+	// Curve parameters
 	float m_R, m_r, m_l, m_q;
 
 	bool m_just_changed;
@@ -55,6 +64,10 @@ public:
 	inline void set_l(float l) { if (l != m_l) m_just_changed = true; m_l = l; }
 	inline void set_q(float q) { if (q != m_q) m_just_changed = true; m_q = q; }
 	inline Angel::vec4& color() { return m_color; }
+	inline Angel::vec4& ambient() { return m_ambient; }
+	inline Angel::vec4& diffuse() { return m_diffuse; }
+	inline Angel::vec4& specular() { return m_specular; }
+	inline float& shininess() { return m_shininess; }
 
 	static void init_static_members();
 	static void destroy_static_members();

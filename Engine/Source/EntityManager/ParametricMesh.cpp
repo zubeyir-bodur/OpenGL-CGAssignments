@@ -55,7 +55,7 @@ void ParametricMesh::construct_mesh(float R, float r, float l, float q)
 	}
 	if (m_mesh_buffer_data.capacity() != 0)
 	{
-		m_mesh_buffer_data.~vector();
+		m_mesh_buffer_data = {};
 	}
 	m_mesh_points = new Angel::vec3 * [NUM_ROWS];
 	m_mesh_normals = new Angel::vec3 * [NUM_ROWS];
@@ -246,10 +246,10 @@ void ParametricMesh::update_and_draw(
 			m_color.y,
 			m_color.z,
 			m_color.w);
-		shader_to_use->set_uniform_4f("u_ambient", 0.32f, 0.173f, 0.118f, 1.0f);
-		shader_to_use->set_uniform_4f("u_diffuse", 0.75f, 0.5f, 0.0f, 1.0f);
-		shader_to_use->set_uniform_4f("u_specular", 1.0f, 1.0f, 1.0f, 1.0f);
-		shader_to_use->set_uniform_1f("u_shininess", 50.0f);
+		shader_to_use->set_uniform_4f("u_ambient", m_ambient.x, m_ambient.y, m_ambient.z, m_ambient.w);
+		shader_to_use->set_uniform_4f("u_diffuse", m_diffuse.x, m_diffuse.y, m_diffuse.z, m_diffuse.w);
+		shader_to_use->set_uniform_4f("u_specular", m_specular.x, m_specular.y, m_specular.z, m_specular.w);
+		shader_to_use->set_uniform_1f("u_shininess", m_shininess);
 		Renderer::draw_triangles(m_vao, s_ibo, shader_to_use);
 	}
 }

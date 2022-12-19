@@ -184,6 +184,14 @@ void PerspectiveCamera::zoom(const float& dt_seconds, const float scroll_delta)
 	c.update();
 }
 
+void PerspectiveCamera::set_speed(const float& move_speed, const float& rotate_speed, const float& zoom_speed)
+{
+	PerspectiveCamera& c = instance();
+	c.m_movement_speed = move_speed;
+	c.m_rotation_sensitivity = rotate_speed;
+	c.m_zoom_sensitivity = zoom_speed;
+}
+
 void PerspectiveCamera::on_viewport_resize(int width, int height)
 {
 	PerspectiveCamera& c = instance();

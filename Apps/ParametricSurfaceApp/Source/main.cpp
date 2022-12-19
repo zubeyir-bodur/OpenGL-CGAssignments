@@ -100,13 +100,7 @@ int main(int, char**)
 	float init_shape_length = width / 8.0f;
 	ImVec4 clear_col = { 0.6f, 0.6f, 0.6f, 1.0f };
 	Renderer renderer;
-	int radio_button_cur = (int)ParametricMesh::DisplayType::Phong;
-
-	// Surface parameters
-	float R = 1.5f;
-	float r = 1.0f;
-	float l = 3.0f;
-	float q = 30.0f;
+	int radio_button_cur = (int)ParametricMesh::DisplayType::Wireframe;
 
 	// Enable blending
 	__glCallVoid(glEnable(GL_BLEND));
@@ -114,12 +108,11 @@ int main(int, char**)
 
 	renderer.clear(&clear_col.x);
 
-	// Enable Depth Test & Back-Face Culling
+	// Enable Depth Test for displaying inside of the objects as well
 	__glCallVoid(glEnable(GL_DEPTH_TEST));
-	__glCallVoid(glDepthMask(GL_TRUE));
-	__glCallVoid(glEnable(GL_CULL_FACE));
-	__glCallVoid(glFrontFace(GL_CCW));
-	__glCallVoid(glCullFace(GL_BACK));
+	__glCallVoid(glDepthFunc(GL_LEQUAL));
+	__glCallVoid(glEnable(GL_POLYGON_OFFSET_FILL));
+	__glCallVoid(glPolygonOffset(1.0f, 2.0f));
 
 	// Line width for GL_LINES
 	__glCallVoid(glLineWidth(1.0f));
@@ -127,8 +120,17 @@ int main(int, char**)
 	// Also initializes the basic shader
 	Shape::init_static_members();
 
+	// Surface parameters & mesh
+	float R = 1.5f;
+	float r = 1.0f;
+	float l = 3.0f;
+	float q = 30.0f;
+	ParametricMesh::init_static_members();
+	ParametricMesh* four_i = new ParametricMesh(R, r, l, q, {1.0f, 1.0f, 1.0f, 1.0f});
+
 	// View matrix - camera
-	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
+	PerspectiveCamera::init({ 0.0f, 0.0f, 5.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
+	PerspectiveCamera::set_speed(10.0f, 0.1f, 2500.0f);
 	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
 	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
 
@@ -369,10 +371,23 @@ int main(int, char**)
 						ImGui::SameLine();
 						ImGui::RadioButton("Phong", &radio_button_cur, (int)ParametricMesh::DisplayType::Phong);
 						ImGui::NewLine();
-						ImGui::SliderFloat("R", &R, 0.5f, 3.5f, "%.3f", 1.0f);
-						ImGui::SliderFloat("r", &r, 0.1f, 2.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("R", &R, 0.1f, 30.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("r", &r, 0.1f, 20.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("l", &l, 2.0f, 4.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("q", &q, 20.0f, 40.0f, "%.3f", 1.0f);
+						four_i->set_R(R);
+						four_i->set_r(r);
+						four_i->set_l(l);
+						four_i->set_q(q);
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("Lighting & Shading"))
+					{
+						ImGui::ColorEdit4("Albedo color", &four_i->color().x, color_edit_flags);
+						ImGui::ColorEdit4("Ambient color", &four_i->ambient().x, color_edit_flags);
+						ImGui::ColorEdit4("Diffuse color", &four_i->diffuse().x, color_edit_flags);
+						ImGui::ColorEdit4("Specular color", &four_i->specular().x, color_edit_flags);
+						ImGui::SliderFloat("Shininess", &four_i->shininess(), 0.0f, 100.0f, "%.1f", 1.0f);
 						ImGui::EndTabItem();
 					}
 					if (ImGui::BeginTabItem("Camera"))
@@ -403,6 +418,8 @@ int main(int, char**)
 		Renderer::set_viewport(window);
 		Renderer::clear(&clear_col.x);
 
+		four_i->update_and_draw(proj_matrix, view_matrix, (ParametricMesh::DisplayType)radio_button_cur);
+
 		// Always draw ImGui on top of the app
 		render_imgui();
 
@@ -411,7 +428,8 @@ int main(int, char**)
 
 	// Cleanup
 	Shape::destroy_static_members_allocated_on_the_heap();
-
+	delete four_i;
+	ParametricMesh::destroy_static_members();
 	// Shutdown ImGui & GLFW
 	shutdown_imgui();
 	glfwDestroyWindow(window);

@@ -155,6 +155,15 @@
     <None Include="Shaders\textured_shaded_triangle.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\g_shaded_triangle.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\p_shaded_triangle.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\normal_triangle.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Include">
