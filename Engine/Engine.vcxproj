@@ -206,6 +206,7 @@
     <ClCompile Include="Source\Core\ImGuiManager.cpp" />
     <ClCompile Include="Source\EntityManager\ParametricMesh.cpp" />
     <ClCompile Include="Source\EntityManager\SelectionSystem3D.cpp" />
+    <ClCompile Include="Source\Renderer\BumpMap.cpp" />
     <ClCompile Include="Source\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="Source\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="Source\Platform\Input.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="Include\EntityManager\ArticulatedModel.h" />
     <ClInclude Include="Include\EntityManager\ArticulatedModelNode.h" />
     <ClInclude Include="Include\EntityManager\ParametricMesh.h" />
+    <ClInclude Include="Include\Renderer\BumpMap.h" />
     <ClInclude Include="Include\Renderer\FrameBuffer.h" />
     <ClInclude Include="Include\Camera\OrthogtraphicCamera.h" />
     <ClInclude Include="Include\EntityManager\DrawList.h" />

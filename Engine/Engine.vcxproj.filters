@@ -67,6 +67,9 @@
     <ClCompile Include="Source\EntityManager\ParametricMesh.cpp">
       <Filter>Source\EntityManager</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\BumpMap.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Renderer\VertexBufferLayout.h">
@@ -137,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="Include\EntityManager\ParametricMesh.h">
       <Filter>Include\EntityManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\BumpMap.h">
+      <Filter>Include\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
