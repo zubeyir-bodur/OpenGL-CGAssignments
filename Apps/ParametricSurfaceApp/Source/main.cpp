@@ -125,8 +125,10 @@ int main(int, char**)
 	float r = 1.0f;
 	float l = 3.0f;
 	float q = 30.0f;
+	unsigned int rsbd = 50, csbd = 50;
 	ParametricMesh::init_static_members();
-	ParametricMesh* four_i = new ParametricMesh(R, r, l, q, {1.0f, 1.0f, 1.0f, 1.0f});
+	auto* bumpmap = new BumpMap("../../Data/maps/bump_cross.jpg");
+	ParametricMesh* four_i = new ParametricMesh(R, r, l, q, rsbd, csbd, {1.0f, 1.0f, 1.0f, 1.0f}, bumpmap);
 
 	// View matrix - camera
 	PerspectiveCamera::init({ 0.0f, 0.0f, 5.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
@@ -373,12 +375,16 @@ int main(int, char**)
 						ImGui::NewLine();
 						ImGui::SliderFloat("R", &R, 0.1f, 30.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("r", &r, 0.1f, 20.0f, "%.3f", 1.0f);
-						ImGui::SliderFloat("l", &l, 2.0f, 4.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("l", &l, 0.5f, 4.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("q", &q, 20.0f, 40.0f, "%.3f", 1.0f);
+						ImGui::SliderInt("Row Subdiv.", (int*)&rsbd, 50, 200, "%d", 0);
+						ImGui::SliderInt("Col Subdiv.", (int*)&csbd, 50, 200, "%d", 0);
 						four_i->set_R(R);
 						four_i->set_r(r);
 						four_i->set_l(l);
 						four_i->set_q(q);
+						four_i->set_row_subdiv(rsbd);
+						four_i->set_col_subdiv(csbd);
 						ImGui::EndTabItem();
 					}
 					if (ImGui::BeginTabItem("Lighting & Shading"))

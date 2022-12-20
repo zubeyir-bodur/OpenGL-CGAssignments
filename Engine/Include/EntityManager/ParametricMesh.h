@@ -6,6 +6,7 @@
 #include "Renderer/VertexBufferLayout.h"
 #include "Renderer/VertexArray.h"
 #include "Renderer/IndexBuffer.h"
+#include "Renderer/BumpMap.h"
 
 #include <vector>
 
@@ -26,6 +27,9 @@ private:
 
 	VertexArray* m_vao;
 	VertexBuffer* m_vbo;
+	IndexBuffer* m_ibo;
+	IndexBuffer* m_wireframe_ibo;
+	BumpMap* m_bumpmap;
 
 	// Albedo color
 	Angel::vec4 m_color;
@@ -38,6 +42,7 @@ private:
 
 	// Curve parameters
 	float m_R, m_r, m_l, m_q;
+	unsigned int m_row_subdiv, m_col_subdiv, m_old_row_subdiv, m_old_col_subdiv;
 
 	bool m_just_changed;
 
@@ -45,24 +50,25 @@ private:
 	static Shader* s_p_shader; // Phong Shading
 	static Shader* s_wireframe_shader;
 	static VertexBufferLayout* s_parametric_mesh_layout;
-	static IndexBuffer* s_ibo;
-	static IndexBuffer* s_wireframe_ibo;
 
-	void construct_mesh(float R, float r, float l, float q);
+	void construct_mesh();
 public:
 
-	ParametricMesh(float R, float r, float l,  float q, 
-		const Angel::vec4& col);
+	ParametricMesh(float R, float r, float l,  float q,
+		unsigned int row_subdiv, unsigned int col_subdiv, 
+		const Angel::vec4& col, BumpMap* bumpmap);
 	~ParametricMesh();
 	
 	void update_and_draw(
 		const Angel::mat4& proj, 
 		const Angel::mat4& view, 
 		DisplayType display_type);
-	inline void set_R(float R) { if (R != m_R) m_just_changed = true; m_R = R; }
-	inline void set_r(float r) { if (r != m_r) m_just_changed = true; m_r = r; }
-	inline void set_l(float l) { if (l != m_l) m_just_changed = true; m_l = l; }
-	inline void set_q(float q) { if (q != m_q) m_just_changed = true; m_q = q; }
+	void set_R(float R);
+	void set_r(float r);
+	void set_l(float l);
+	void set_q(float q);
+	void set_row_subdiv(unsigned int r_sbd);
+	void set_col_subdiv(unsigned int c_sbd);
 	inline Angel::vec4& color() { return m_color; }
 	inline Angel::vec4& ambient() { return m_ambient; }
 	inline Angel::vec4& diffuse() { return m_diffuse; }
