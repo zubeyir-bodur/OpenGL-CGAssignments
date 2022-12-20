@@ -10,6 +10,8 @@ private:
 	int m_width, m_height, m_bytes_per_pixel;
 public:
 	Texture(const std::string& path);
+	Texture(unsigned char* buffer, int width, int height, int bpp, 
+		uint32_t internal_format, uint32_t format, uint32_t type_);
 	~Texture();
 
 	void bind(unsigned int slot_number = 0) const;

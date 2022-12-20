@@ -57,6 +57,7 @@ void main()
 in vec4 f_color;
 
 uniform vec4 u_color;
+uniform sampler2D u_bump_texture;
 
 void main()
 {    

@@ -435,7 +435,9 @@ int main(int, char**)
 	// Cleanup
 	Shape::destroy_static_members_allocated_on_the_heap();
 	delete four_i;
+	delete bumpmap;
 	ParametricMesh::destroy_static_members();
+
 	// Shutdown ImGui & GLFW
 	shutdown_imgui();
 	glfwDestroyWindow(window);

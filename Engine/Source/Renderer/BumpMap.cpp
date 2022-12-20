@@ -1,6 +1,7 @@
 #include "Renderer/BumpMap.h"
 #include <Core/ErrorManager.h>
 #include <nothings-stb/stb_image.h>
+#include <glew.h>
 
 BumpMap::BumpMap(const std::string& path) : m_map_filepath(path)
 {
@@ -8,11 +9,11 @@ BumpMap::BumpMap(const std::string& path) : m_map_filepath(path)
 	// Only gray channel is needed
 	unsigned char* l_buffer = stbi_load(m_map_filepath.data(), &m_width, &m_height, &m_bpp, 1);
 
-	m_displacement_derivative = new Angel::vec2*[m_width];
-	for (int i = 0; i < m_width; i++)
+	// derivative, ranging from [0, 255]
+	m_displacement_derivative = new unsigned char[m_width * m_height * 3];
+	for (int j = 0; j < m_height; j++)
 	{
-		m_displacement_derivative[i] = new Angel::vec2[m_height];
-		for (int j = 0; j < m_height; j++)
+		for (int i = 0; i < m_width; i++)
 		{
 			unsigned char d_i_j = l_buffer[j * m_width + i];
 
@@ -36,12 +37,15 @@ BumpMap::BumpMap(const std::string& path) : m_map_filepath(path)
 				d_i_j1 = 0;
 			}
 
-			// Normalize the derivative between 0 & 1
-			m_displacement_derivative[i][j] = Angel::vec2(
-					d_i_j - d_i1_j, 
-					d_i_j - d_i_j1) / 255.0f;
+			// Normalize the derivative to [0, 255]
+			m_displacement_derivative[3*(j*m_width + i) + 0] = ((d_i_j - d_i1_j) + 255) / 2;
+			m_displacement_derivative[3*(j*m_width + i) + 1] = ((d_i_j - d_i_j1) + 255) / 2;
+			m_displacement_derivative[3*(j*m_width + i) + 2] = 255;
 		}
 	}
+	m_bump_texture = new Texture(m_displacement_derivative, m_width, m_height, 
+		m_bpp, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
+
 	if (l_buffer)
 	{
 		stbi_image_free(l_buffer);
@@ -50,11 +54,8 @@ BumpMap::BumpMap(const std::string& path) : m_map_filepath(path)
 
 BumpMap::~BumpMap()
 {
-	for (int i = 0; i < m_width; i++)
-	{
-		delete[] m_displacement_derivative[i];
-	}
 	delete[] m_displacement_derivative;
+	delete m_bump_texture;
 }
 
 float BumpMap::del_d_del_u(float u, float v)
@@ -65,7 +66,7 @@ float BumpMap::del_d_del_u(float u, float v)
 	unsigned int j = std::roundf(v * (m_height - 1));
 	if (i < 0) i = 0; if (i >= m_width) i = m_width - 1;
 	if (j < 0) j = 0; if (j >= m_height) j = m_height - 1;
-	return m_displacement_derivative[i][j].x;
+	return (m_displacement_derivative[3 * (j * m_width + i) + 0] * 2.0f - 255.0f) / 255.0f;
 }
 
 float BumpMap::del_d_del_v(float u, float v)
@@ -76,5 +77,5 @@ float BumpMap::del_d_del_v(float u, float v)
 	unsigned int j = v * (m_height - 1);
 	if (i < 0) i = 0; if (i >= m_width) i = m_width - 1;
 	if (j < 0) j = 0; if (j >= m_height) j = m_height - 1;
-	return m_displacement_derivative[i][j].y;
+	return (m_displacement_derivative[3 * (j * m_width + i) + 1] * 2.0f - 255.0f) / 255.0f;
 }

@@ -38,6 +38,7 @@ uniform vec4 u_ambient;
 uniform vec4 u_diffuse;	 
 uniform vec4 u_specular; 
 uniform float u_shininess;
+uniform sampler2D u_bump_texture;
 
 void main()
 {    

@@ -26,6 +26,22 @@ Texture::Texture(const std::string& path) :
 	}
 }
 
+Texture::Texture(unsigned char* buffer, int width, int height, int bpp, 
+	uint32_t internal_format, uint32_t format, uint32_t type_)
+	: m_file_path(""), m_width(width), m_height(height),
+	m_texture_id(0), m_local_buffer(buffer), m_bytes_per_pixel(bpp)
+{
+	__glCallVoid(glGenTextures(1, &m_texture_id));
+	__glCallVoid(glBindTexture(GL_TEXTURE_2D, m_texture_id));
+
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, internal_format, m_width, m_height, 0, format, type_, m_local_buffer));
+	unbind();
+}
+
 Texture::~Texture()
 {
 	__glCallVoid(glDeleteTextures(1, &m_texture_id));

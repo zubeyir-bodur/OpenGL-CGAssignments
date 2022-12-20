@@ -311,6 +311,8 @@ void ParametricMesh::update_and_draw(
 		shader_to_use->set_uniform_4f("u_diffuse", m_diffuse.x, m_diffuse.y, m_diffuse.z, m_diffuse.w);
 		shader_to_use->set_uniform_4f("u_specular", m_specular.x, m_specular.y, m_specular.z, m_specular.w);
 		shader_to_use->set_uniform_1f("u_shininess", m_shininess);
+		m_bumpmap->bump_texture()->bind(0);
+		shader_to_use->set_uniform_1i("u_bump_texture", 0);
 		Renderer::draw_triangles(m_vao, m_ibo, shader_to_use);
 	}
 }
