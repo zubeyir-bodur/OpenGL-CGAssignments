@@ -62,9 +62,10 @@ float BumpMap::del_d_del_u(float u, float v)
 {
 	ASSERT(u >= 0.0f && u <= 1.0f);
 	ASSERT(v >= 0.0f && v <= 1.0f);
-	unsigned int i = std::roundf(u * (m_width - 1));
-	unsigned int j = std::roundf(v * (m_height - 1));
+	unsigned int i = std::roundf(v * (m_width - 1));
+	unsigned int j = std::roundf(u * (m_height - 1));
 	if (i < 0) i = 0; if (i >= m_width) i = m_width - 1;
+	i = m_width - i - 1; // flips horizontally
 	if (j < 0) j = 0; if (j >= m_height) j = m_height - 1;
 	return (m_displacement_derivative[3 * (j * m_width + i) + 0] * 2.0f - 255.0f) / 255.0f;
 }
@@ -73,9 +74,10 @@ float BumpMap::del_d_del_v(float u, float v)
 {
 	ASSERT(u >= 0.0f && u <= 1.0f);
 	ASSERT(v >= 0.0f && v <= 1.0f);
-	unsigned int i = u * (m_width - 1);
-	unsigned int j = v * (m_height - 1);
+	unsigned int i = std::roundf(v * (m_width - 1));
+	unsigned int j = std::roundf(u * (m_height - 1));
 	if (i < 0) i = 0; if (i >= m_width) i = m_width - 1;
+	i = m_width - i - 1; // flips horizontally
 	if (j < 0) j = 0; if (j >= m_height) j = m_height - 1;
 	return (m_displacement_derivative[3 * (j * m_width + i) + 1] * 2.0f - 255.0f) / 255.0f;
 }

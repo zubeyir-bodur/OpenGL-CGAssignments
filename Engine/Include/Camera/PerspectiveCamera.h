@@ -39,7 +39,7 @@ public:
 	enum class MovementDirection { FORWARD = 0, BACKWARD, LEFT, RIGHT, UP, DOWN };
 	// Singleton utils
 	static PerspectiveCamera& instance();
-	static void init(Angel::vec3 position, Angel::vec3 up, float fov, int width, int height);
+	static void init(const Angel::vec3& position, const Angel::vec3& rotation, const Angel::vec3& world_up, float fov, int width, int height);
 	//Accessors
 	static const Angel::mat4& view_matrix();
 	static const Angel::mat4& projection_matrix();

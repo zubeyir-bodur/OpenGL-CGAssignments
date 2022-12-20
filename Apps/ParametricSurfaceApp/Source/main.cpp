@@ -127,11 +127,11 @@ int main(int, char**)
 	float q = 30.0f;
 	unsigned int rsbd = 50, csbd = 50;
 	ParametricMesh::init_static_members();
-	auto* bumpmap = new BumpMap("../../Data/maps/bump_cross.jpg");
+	auto* bumpmap = new BumpMap("../../Data/maps/bump_example.png");
 	ParametricMesh* four_i = new ParametricMesh(R, r, l, q, rsbd, csbd, {1.0f, 1.0f, 1.0f, 1.0f}, bumpmap);
 
 	// View matrix - camera
-	PerspectiveCamera::init({ 0.0f, 0.0f, 5.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
+	PerspectiveCamera::init({ 0.2f, 2.0f, -0.6f }, { -30.0f, -180.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
 	PerspectiveCamera::set_speed(10.0f, 0.1f, 2500.0f);
 	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
 	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
@@ -375,8 +375,8 @@ int main(int, char**)
 						ImGui::NewLine();
 						ImGui::SliderFloat("R", &R, 0.1f, 30.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("r", &r, 0.1f, 20.0f, "%.3f", 1.0f);
-						ImGui::SliderFloat("l", &l, 0.5f, 4.0f, "%.3f", 1.0f);
-						ImGui::SliderFloat("q", &q, 20.0f, 40.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("l", &l, 0.1f, 4.0f, "%.3f", 1.0f);
+						ImGui::SliderFloat("q", &q, 0.1f, 40.0f, "%.3f", 1.0f);
 						ImGui::SliderInt("Row Subdiv.", (int*)&rsbd, 50, 200, "%d", 0);
 						ImGui::SliderInt("Col Subdiv.", (int*)&csbd, 50, 200, "%d", 0);
 						four_i->set_R(R);
@@ -393,7 +393,7 @@ int main(int, char**)
 						ImGui::ColorEdit4("Ambient color", &four_i->ambient().x, color_edit_flags);
 						ImGui::ColorEdit4("Diffuse color", &four_i->diffuse().x, color_edit_flags);
 						ImGui::ColorEdit4("Specular color", &four_i->specular().x, color_edit_flags);
-						ImGui::SliderFloat("Shininess", &four_i->shininess(), 0.0f, 100.0f, "%.1f", 1.0f);
+						ImGui::SliderFloat("Shininess", &four_i->shininess(), 1.0f, 100.0f, "%.1f", 1.0f);
 						ImGui::EndTabItem();
 					}
 					if (ImGui::BeginTabItem("Camera"))

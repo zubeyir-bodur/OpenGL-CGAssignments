@@ -35,8 +35,8 @@ private:
 	Angel::vec4 m_color;
 
 	// Lighting parameters
-	Angel::vec4 m_ambient = { 0.32f, 0.173f, 0.118f, 1.0f };
-	Angel::vec4 m_diffuse = { 0.75f, 0.5f, 0.0f, 1.0f };
+	Angel::vec4 m_ambient = { 0.0f, 0.0f, 0.0f, 1.0f };
+	Angel::vec4 m_diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Angel::vec4 m_specular = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float m_shininess = 50.0f;
 

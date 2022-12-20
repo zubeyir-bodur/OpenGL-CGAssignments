@@ -26,12 +26,12 @@ PerspectiveCamera& PerspectiveCamera::instance()
 }
 
 
-void PerspectiveCamera::init(Angel::vec3 position, Angel::vec3 world_up, float fov, int width, int height)
+void PerspectiveCamera::init(const Angel::vec3& position, const Angel::vec3& rotation, const Angel::vec3& world_up, float fov, int width, int height)
 {
 	PerspectiveCamera& c = instance();
 
 	// Store the initial world up value
-	c.m_world_up = world_up; 
+	c.m_world_up = world_up;
 
 	// Viewport
 	c.m_viewport_width = width;
@@ -46,6 +46,11 @@ void PerspectiveCamera::init(Angel::vec3 position, Angel::vec3 world_up, float f
 
 	// Pseudo state look at vectors, to be updated in the update function
 	c.m_camera_up = c.m_world_up;
+
+	c.m_pitch = rotation.x;
+	c.m_yaw = rotation.y;
+	c.m_roll = rotation.z;
+
 	c.update();
 }
 
@@ -128,23 +133,6 @@ void PerspectiveCamera::rotate(const float& dt_seconds, const double& offset_x, 
 	c.m_pitch -= static_cast<float>(offset_y) * c.m_rotation_sensitivity/* * dt_seconds*/; // Bug-fix for fast camera rotation when FPS is low
 	c.m_yaw += static_cast<float>(offset_x) * c.m_rotation_sensitivity/* * dt_seconds*/;
 
-	// FIX-ME-OPT: use proper quaternions to fix the gimball lock
-	//if (c.m_pitch > 89.999f && c.m_pitch <= 90.0f)
-	//{
-	//	c.m_pitch = 90.001f;
-	//}
-	//else if (c.m_pitch < -89.999f && c.m_pitch >= -90.0f)
-	//{
-	//	c.m_pitch = -90.001f;
-	//}
-	// 	if (c.m_pitch >= 360.0f)
-	// 	{
-	// 		c.m_pitch = 0.0f;
-	// 	}
-	// 	else if (c.m_pitch <= -360.0f)
-	// 	{
-	// 		c.m_pitch = 0.0f;
-	// 	}
 	if (c.m_pitch >= 89.0f)
 	{
 		c.m_pitch = 89.0f;
