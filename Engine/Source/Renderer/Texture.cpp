@@ -34,8 +34,8 @@ Texture::Texture(unsigned char* buffer, int width, int height, int bpp,
 	__glCallVoid(glGenTextures(1, &m_texture_id));
 	__glCallVoid(glBindTexture(GL_TEXTURE_2D, m_texture_id));
 
-	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	__glCallVoid(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 	__glCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, internal_format, m_width, m_height, 0, format, type_, m_local_buffer));

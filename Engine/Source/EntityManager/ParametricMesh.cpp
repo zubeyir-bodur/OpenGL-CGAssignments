@@ -1,11 +1,12 @@
-#include "EntityManager/ParametricMesh.h"
+﻿#include "EntityManager/ParametricMesh.h"
 
 #include "Renderer/Renderer.h"
 
 #define NUM_ROWS m_row_subdiv
 #define NUM_COLUMNS m_col_subdiv
-#define NUM_MESH_ELEMENTS 2
+#define NUM_MESH_ELEMENTS 4
 #define NUM_MESH_COORDINATES 3
+#define NUM_UV_COORDINATES 2
 
 #define NUM_VERTICES_PER_QUAD 4
 #define NUM_INDICES_PER_QUAD 6
@@ -51,16 +52,22 @@ void ParametricMesh::construct_mesh()
 		}
 		delete[] m_mesh_normals;
 	}
-	if (m_mesh_buffer_data.capacity() != 0)
+	if (m_mesh_buffer_data != nullptr)
 	{
-		m_mesh_buffer_data = {};
+		delete[] m_mesh_buffer_data;
+		m_mesh_buffer_data = nullptr;
 	}
 	m_mesh_points = new Angel::vec3*[m_row_subdiv];
-	m_mesh_normals = new Angel::vec3*[m_row_subdiv];
+	m_mesh_normals = new Angel::vec3 * [m_row_subdiv];
+	m_mesh_buffer_data = new float[NUM_VERTICES * ((NUM_MESH_ELEMENTS - 1) * NUM_MESH_COORDINATES + NUM_UV_COORDINATES)];
+
+	Angel::vec3** l_del_p_del_u = new Angel::vec3*[m_row_subdiv];
+	unsigned int data_idx = 0;
 	for (unsigned int i = 0; i < m_row_subdiv; i++)
 	{
 		m_mesh_points[i] = new Angel::vec3[m_col_subdiv];
 		m_mesh_normals[i] = new Angel::vec3[m_col_subdiv];
+		l_del_p_del_u[i] = new Angel::vec3[m_col_subdiv];
 
 		for (unsigned int j = 0; j < m_col_subdiv; j++)
 		{
@@ -83,6 +90,8 @@ void ParametricMesh::construct_mesh()
 				* (m_R + m_r * std::cosf(v))
 				* (std::sinf(m_l * u) + m_l * u * std::cosf(m_l * u));
 			del_p_del_u.z = 3 * m_r * std::sinf(v) + std::cosf(2 * v) * (2 * m_q * u * std::cosf(2 * m_q * u) + std::sinf(2 * m_q * u));
+			l_del_p_del_u[i][j] = del_p_del_u;
+
 
 			del_p_del_v.x = -3 * m_r * u * std::sinf(v) * std::cosf(m_l * u) / (2 * M_PI);
 			del_p_del_v.y = -3 * m_r * u * std::sinf(v) * std::sinf(m_l * u) / (2 * M_PI);
@@ -93,68 +102,162 @@ void ParametricMesh::construct_mesh()
 			// Process the bumpmap
 			if (m_bumpmap)
 			{
-				const Angel::vec3& n = m_mesh_normals[i][j];
-				Angel::vec3 perturbed_normal = n
-					+ Angel::cross(m_bumpmap->del_d_del_u(u, v) * n, del_p_del_v)
-					+ Angel::cross(m_bumpmap->del_d_del_v(u, v) * n, del_p_del_u);
-				m_mesh_normals[i][j] = Angel::normalize(perturbed_normal);
+				//const Angel::vec3& n = m_mesh_normals[i][j];
+				//Angel::vec3 perturbed_normal = n
+				//	+ Angel::cross(m_bumpmap->del_d_del_u(u, v) * n, del_p_del_v)
+				//	+ Angel::cross(m_bumpmap->del_d_del_v(u, v) * n, del_p_del_u);
+				//m_mesh_normals[i][j] = Angel::normalize(perturbed_normal);
 			}
 		}
 	}
-	m_mesh_buffer_data.reserve(NUM_VERTICES * NUM_MESH_ELEMENTS * NUM_MESH_COORDINATES);
 	for (unsigned int i = 0; i < m_row_subdiv - 1; i++)
 	{
 		for (unsigned int j = 0; j < m_col_subdiv - 1; j++)
 		{
+			float u = i / (float)(m_row_subdiv - 1);
+			float v = j / (float)(m_col_subdiv - 1);
+			float u_1 = (i + 1) / (float)(m_row_subdiv - 1);
+			float v_1 = (j + 1) / (float)(m_col_subdiv - 1);
+
 			// VERTEX 0
 			// Points
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j].x; // P_X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j].y; // P_Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j].z; // P_Z
+			data_idx++;
 
 			// Normals
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j].x; // N_X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j].y; // N_Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j].z; // N_Z
+			data_idx++;
+
+			// Parametric Coordinates
+			m_mesh_buffer_data[data_idx] = u;						// U
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = v;						// V
+			data_idx++;
+
+			// ∂p/∂u - Tangent Vector
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j].x; // ∂p/∂u.X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j].y; // ∂p/∂u.Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j].z; // ∂p/∂u.Z
+			data_idx++;
 
 
 			// VERTEX 1
 			// Points
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j].z; // Z
+			data_idx++;
 
 			// Normals
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j].z; // Z		
+			data_idx++;
+
+			// Parametric Coordinates
+			m_mesh_buffer_data[data_idx] = u_1;						// U
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = v;							// V
+			data_idx++;
+
+			// ∂p/∂u - Tangent Vector
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j].x; // ∂p/∂u.X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j].y; // ∂p/∂u.Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j].z; // ∂p/∂u.Z
+			data_idx++;
 
 
 			// VERTEX 2
 			// Points
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j + 1].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j + 1].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i + 1][j + 1].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j + 1].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j + 1].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i + 1][j + 1].z; // Z
+			data_idx++;
 
 			// Normals
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j + 1].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j + 1].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i + 1][j + 1].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j + 1].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j + 1].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i + 1][j + 1].z; // Z	
+			data_idx++;
+
+			// Parametric Coordinates
+			m_mesh_buffer_data[data_idx] = u_1;							// U
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = v_1;							// V
+			data_idx++;
+
+			// ∂p/∂u - Tangent Vector
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j + 1].x; // ∂p/∂u.X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j + 1].y; // ∂p/∂u.Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i + 1][j + 1].z; // ∂p/∂u.Z
+			data_idx++;
 
 
 			// VERTEX 3
 			// Points
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j + 1].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j + 1].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_points[i][j + 1].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j + 1].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j + 1].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_points[i][j + 1].z; // Z
+			data_idx++;
 
 			// Normals
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j + 1].x); // X
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j + 1].y); // Y
-			m_mesh_buffer_data.emplace_back(m_mesh_normals[i][j + 1].z); // Z
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j + 1].x; // X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j + 1].y; // Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = m_mesh_normals[i][j + 1].z; // Z	
+			data_idx++;
+
+			// Parametric Coordinates
+			m_mesh_buffer_data[data_idx] = u;							// U
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = v_1;						// V
+			data_idx++;
+
+			// ∂p/∂u - Tangent Vector
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j + 1].x; // ∂p/∂u.X
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j + 1].y; // ∂p/∂u.Y
+			data_idx++;
+			m_mesh_buffer_data[data_idx] = l_del_p_del_u[i][j + 1].z; // ∂p/∂u.Z
+			data_idx++;
 		}
 	}
-	m_vbo = new VertexBuffer(m_mesh_buffer_data.data(), m_mesh_buffer_data.size() * sizeof(float));
+
+	for (unsigned int i = 0; i < m_row_subdiv; i++)
+	{
+		delete[] l_del_p_del_u[i];
+	}
+	delete[] l_del_p_del_u;
+
+	m_vbo = new VertexBuffer(m_mesh_buffer_data, 
+		NUM_VERTICES 
+		* ((NUM_MESH_ELEMENTS - 1) * NUM_MESH_COORDINATES + NUM_UV_COORDINATES) 
+		* sizeof(float));
 	m_vao = new VertexArray;
 	m_vao->add_buffer(*m_vbo, *s_parametric_mesh_layout);
 
@@ -215,7 +318,7 @@ ParametricMesh::ParametricMesh(float R, float r, float l, float q, unsigned int 
 	m_vbo = nullptr;
 	m_mesh_points = nullptr;
 	m_mesh_normals = nullptr;
-	m_mesh_buffer_data = {};
+	m_mesh_buffer_data = nullptr;
 	construct_mesh();
 }
 
@@ -382,6 +485,8 @@ void ParametricMesh::init_static_members()
 
 	s_parametric_mesh_layout = new VertexBufferLayout;
 	s_parametric_mesh_layout->push_back_elements<float>(NUM_MESH_COORDINATES);
+	s_parametric_mesh_layout->push_back_elements<float>(NUM_MESH_COORDINATES);
+	s_parametric_mesh_layout->push_back_elements<float>(NUM_UV_COORDINATES);
 	s_parametric_mesh_layout->push_back_elements<float>(NUM_MESH_COORDINATES);
 
 	s_g_shader->unbind();

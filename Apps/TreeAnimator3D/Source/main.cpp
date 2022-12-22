@@ -125,7 +125,7 @@ int main(int, char**)
 	tree_surface_texture_obj->unbind();
 
 	// View matrix - camera
-	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
+	PerspectiveCamera::init({ 0.0f, 0.0f, height / 2.0f }, {0.0f, -90.0f, 0.0f}, { 0.0f, 1.0f, 0.0f }, 60.0f, width, height);
 	const Angel::mat4& view_matrix = PerspectiveCamera::view_matrix();
 	const Angel::mat4& proj_matrix = PerspectiveCamera::projection_matrix();
 

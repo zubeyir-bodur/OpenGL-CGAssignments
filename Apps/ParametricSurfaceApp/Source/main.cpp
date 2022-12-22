@@ -125,7 +125,7 @@ int main(int, char**)
 	float r = 1.0f;
 	float l = 3.0f;
 	float q = 30.0f;
-	unsigned int rsbd = 50, csbd = 50;
+	unsigned int rsbd = 20, csbd = 20;
 	ParametricMesh::init_static_members();
 	auto* bumpmap = new BumpMap("../../Data/maps/bump_example.png");
 	ParametricMesh* four_i = new ParametricMesh(R, r, l, q, rsbd, csbd, {1.0f, 1.0f, 1.0f, 1.0f}, bumpmap);
@@ -377,8 +377,8 @@ int main(int, char**)
 						ImGui::SliderFloat("r", &r, 0.1f, 20.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("l", &l, 0.1f, 4.0f, "%.3f", 1.0f);
 						ImGui::SliderFloat("q", &q, 0.1f, 40.0f, "%.3f", 1.0f);
-						ImGui::SliderInt("Row Subdiv.", (int*)&rsbd, 50, 200, "%d", 0);
-						ImGui::SliderInt("Col Subdiv.", (int*)&csbd, 50, 200, "%d", 0);
+						ImGui::SliderInt("Row Subdiv.", (int*)&rsbd, 20, 200, "%d", 0);
+						ImGui::SliderInt("Col Subdiv.", (int*)&csbd, 20, 200, "%d", 0);
 						four_i->set_R(R);
 						four_i->set_r(r);
 						four_i->set_l(l);
