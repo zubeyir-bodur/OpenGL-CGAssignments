@@ -83,9 +83,9 @@ using Visual Studio 2022 is reccommended.
     - Bump Mapping
     - Display options:
         - Wireframe
-        - Gouraud Shaded
-        - Phong Shaded
-
+        - Gouraud Shaded, bump mapping and shading per vertex
+        - Phong Shaded, bump mapping and shading per fragment
+    - Parameter tuning on the fly for shading and curve parameters
 
 ## Remarks
  Huge shoutout to [TheCherno](https://www.github.com/TheCherno), whom I followed his [OpenGL series](https://www.youtube.com/watch?v=W3gAzLwfIP0&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2) to implement my basic OpenGL framework for the assignments.
