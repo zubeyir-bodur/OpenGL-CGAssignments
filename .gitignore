@@ -368,3 +368,4 @@ FodyWeavers.xsd
 *.zip
 /JSON/Schemas/Catalog
 /JSON
+/Data/scenes

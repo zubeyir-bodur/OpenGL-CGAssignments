@@ -34,6 +34,12 @@ using Visual Studio 2022 is reccommended.
 ## Applications
 
 ### 2D Vector-based Geometric Paint Application
+
+
+<img src="Data/docs/assignment 1.gif" alt="Figure 1: 2D Vector-based Geometric Paint Application" align="centered">
+<br>
+<p align="center"><i>Figure 1: 2D Vector-based Geometric Paint Application</i></p>
+
 - Features:
    - Drawing predefined shapes, rectangulars and equilateral triangles
    - Changing the drawing color using a HSV color picker, as well as support for transparent shapes
@@ -68,6 +74,11 @@ using Visual Studio 2022 is reccommended.
 <br>
 
 ### Modeling and Animating Randomly Generated Tree Models
+
+<img src="Data/docs/assignment 2.gif" alt="Figure 2: Modeling and Animating Randomly Generated Tree Models Demo" align="centered">
+<br>
+<p align="center"><i>Figure 2: Modeling and Animating Randomly Generated Tree Models Demo</i></p>
+
 - Features:
     - A simple 3D camera to move around the scene, using raw, pitch and roll angles
     - Rendering hierarchical models, such as a tree, and changing the orientation and position of the model
@@ -77,6 +88,12 @@ using Visual Studio 2022 is reccommended.
         - Also supports selection highlighting by rendering the green channel only (smoothly shaded entities only)
 
 ### Realistic Rendering of Parametric Surfaces
+
+
+<img src="Data/docs/assignment 3.gif" alt="Figure 3: Realistic Rendering of Parametric Surfaces Demo" align="centered">
+<br>
+<p align="center"><i>Figure 3: Realistic Rendering of Parametric Surfaces Demo</i></p>
+
 - Features:
     - 3D camera which can zoom in and out
     - Generating parametric surfaces 
