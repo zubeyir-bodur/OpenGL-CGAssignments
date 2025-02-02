@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\Angel-maths;$(SolutionDir)Engine\Include;$(SolutionDir)ThirdParty;$(SolutionDir)ThirdParty\GLEW\include\GL;$(SolutionDir)ThirdParty\GLFW\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp" />
-  </ItemGroup> 
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Engine\Engine.vcxproj">
       <Project>{43d0b166-fa15-4c34-8ecb-acff67b633b5}</Project>

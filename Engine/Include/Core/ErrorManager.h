@@ -1,5 +1,6 @@
 #pragma once
 #include <csignal>
+#include <source_location>
 #pragma warning(push)
 #pragma warning( disable : 4005 )
 #define IS_DEBUG 1
@@ -7,7 +8,7 @@
 #define IS_DEBUG 0	
 #endif 
 #pragma warning(pop)
-
+#define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION 1
 #if defined(SIGTRAP)
 #define GENERAL_BREAK() raise(SIGTRAP)
 #else
@@ -28,14 +29,20 @@ else \
 }\
 
 #define __glCallVoid(x) \
-	__glClearErrors();\
-	x;\
-	ASSERT(!__glLogCall(#x, __FILE__, __LINE__))
+	{\
+		std::source_location sloc = std::source_location::current();\
+		__glClearErrors();\
+		x;\
+		ASSERT(!__glLogCall(#x, sloc.file_name(), sloc.line(), sloc.column(), sloc.function_name()))\
+	}\
 
 #define __glCallReturn(x, out) \
-	__glClearErrors();\
-	out = x;\
-	ASSERT(!__glLogCall(#x, __FILE__, __LINE__))
+	{\
+		std::source_location sloc = std::source_location::current();\
+		__glClearErrors();\
+		out = x;\
+		ASSERT(!__glLogCall(#x, sloc.file_name(), sloc.line(), sloc.column(), sloc.function_name()))\
+	}\
 
 void __glClearErrors();
-bool __glLogCall(const char* function, const char* file, int line);
+bool __glLogCall(const char* function, const char* file, int line, int column, const char* func);

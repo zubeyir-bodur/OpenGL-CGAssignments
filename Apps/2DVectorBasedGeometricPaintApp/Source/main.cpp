@@ -202,9 +202,9 @@ int main(int, char**)
 	Angel::vec3 camera_pos_pressed;
 	float camera_zoom_pressed = 100.0f;
 	auto map_from_global_any = [](double x, double y, Angel::vec3 c_pos, float c_z) -> Angel::vec3
-	{
-		return (c_pos + Angel::vec3((float)x, (float)y, 0.0f)) * (100.0f / c_z);
-	};
+		{
+			return (c_pos + Angel::vec3((float)x, (float)y, 0.0f)) * (100.0f / c_z);
+		};
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -217,9 +217,9 @@ int main(int, char**)
 		const Angel::vec3 old_camera_pos = old_camera.position();
 		const float old_camera_zoom_ratio = old_camera.zoom_ratio();
 		auto map_from_global_using_old_camera = [&, old_camera_pos, old_camera_zoom_ratio](double x, double y) -> Angel::vec3
-		{
-			return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
-		};
+			{
+				return map_from_global_any(x, y, old_camera_pos, old_camera_zoom_ratio);
+			};
 
 		// Reset scroll
 		window_input.m_scroll_y = 0.0;
@@ -277,7 +277,7 @@ int main(int, char**)
 		}
 		if (window_input.m_copy_just_pressed)
 		{
-			for (auto* ptr: clipboard)
+			for (auto* ptr : clipboard)
 			{
 				delete ptr;
 			}
@@ -334,7 +334,7 @@ int main(int, char**)
 				std::vector<ShapeModel*> pasted_shapes;
 				pasted_shapes.reserve(clipboard.size());
 
-				for (auto* clipboard_item: clipboard)
+				for (auto* clipboard_item : clipboard)
 				{
 					ShapeModel* pasted_shape;
 					ShapeModel::StaticShape type = clipboard_item->shape_def();
@@ -361,7 +361,7 @@ int main(int, char**)
 				{
 					pasted_shape->position() += cursor_pos - center_clipboard;
 				}
-				
+
 				// Add deep copy to the draw list
 				for (auto pasted_shape : pasted_shapes)
 				{
@@ -449,7 +449,7 @@ int main(int, char**)
 							item->deselect();
 						}
 						cur_selections.clear();
-						for (const auto& item: multiple_selection)
+						for (const auto& item : multiple_selection)
 						{
 							cur_selections.push_back(item);
 							item->select();
@@ -495,7 +495,7 @@ int main(int, char**)
 								in_selections = true;
 							}
 						}
-						if (!in_selections || 
+						if (!in_selections ||
 							in_selections && cur_selections.size() < 2)
 						{
 							list.remove_shape(s_release);
@@ -508,7 +508,7 @@ int main(int, char**)
 							{
 								item->deselect();
 							}
-							for (auto& item: cur_selections)
+							for (auto& item : cur_selections)
 							{
 								list.remove_shape(item);
 							}
@@ -645,7 +645,7 @@ int main(int, char**)
 			drawing_selector_box = false;
 			drawing_drawer_box = false;
 			selector_pos = { 0, 0, 0 };
-			selector_scale = { 1, 1, 1};
+			selector_scale = { 1, 1, 1 };
 			drawer_pos = { 0, 0, 0 };
 			drawer_scale = { 1, 1, 1 };
 			is_dragging = false;
@@ -982,7 +982,7 @@ int main(int, char**)
 								{
 									list.shutdown();
 									undo_redo.clear_stacks();
-									for (auto& shape: loaded_scene)
+									for (auto& shape : loaded_scene)
 									{
 										list.add_shape(shape);
 									}
@@ -1040,7 +1040,7 @@ int main(int, char**)
 			}
 			ImGui::EndFrame();
 		}
-		
+
 		// Clear background
 		Renderer::set_viewport(window);
 		Renderer::clear((float*)&clear_color);
@@ -1145,7 +1145,7 @@ int main(int, char**)
 		// Update the frame buffer
 		glfwSwapBuffers(window);
 	}
-	
+
 	// Clear the draw list & delete the VB/IB/VA objects for polygons
 	list.shutdown();
 

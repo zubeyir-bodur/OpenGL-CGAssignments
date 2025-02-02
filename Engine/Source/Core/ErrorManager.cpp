@@ -31,13 +31,13 @@ void __glClearErrors()
 	}
 }
 
-bool __glLogCall(const char* function, const char* file, int line)
+bool __glLogCall(const char* function, const char* file, int line, int column, const char* func)
 {
 	bool has_error = false;
 	GLenum error = glGetError();
 	while (error != GL_NO_ERROR)
 	{
-		std::cout << "[OpenGL Error]  (" << file << "): " << function << ":" << line << " = " << to_string(error) << std::endl;
+		std::cout << "[OpenGL Error]" << "["<< file << "("<< line << ":"<< column << ") `" << func << "`]" << " = " << to_string(error) << std::endl;
 		has_error = true;
 		error = glGetError();
 	}
